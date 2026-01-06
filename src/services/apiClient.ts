@@ -1,5 +1,5 @@
 /**
- * REST API Client for Bookmark Manager Backend
+ * REST API Client for PostZaper - Bookmark Manager Backend
  * Handles HTTP requests to the Express/MongoDB backend
  */
 

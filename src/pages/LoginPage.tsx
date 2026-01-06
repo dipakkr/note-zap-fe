@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth, googleProvider } from '../lib/firebase';
-import { Bookmark, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import Logo from '../components/Logo';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -71,9 +72,10 @@ export default function LoginPage() {
       <div className="max-w-md w-full">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-2 text-3xl font-bold text-blue-600 mb-2">
-            <Bookmark className="w-10 h-10" />
-            <span>Bookmark Manager</span>
+          <div className="flex items-center justify-center mb-6">
+            <div className="h-12 text-blue-600">
+              <Logo className="h-12" />
+            </div>
           </div>
           <p className="text-gray-600">{isSignUp ? 'Create your account' : 'Welcome back'}</p>
         </div>
