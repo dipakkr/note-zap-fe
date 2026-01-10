@@ -7,12 +7,27 @@ const Hero = () => {
   const navigate = useNavigate();
 
   return (
-    <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden bg-white pt-6 pb-16">
+    <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden bg-gradient-to-b from-purple-50/50 via-white to-white pt-6 pb-16">
 
-      {/* Background Gradients */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-purple-100/40 rounded-full blur-[100px] opacity-60 mix-blend-multiply" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] bg-blue-50/40 rounded-full blur-[100px] opacity-60 mix-blend-multiply" />
+      {/* Background Effects */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+        {/* Gradient Orbs */}
+        <div className="absolute top-[-10%] right-[10%] w-[600px] h-[600px] bg-gradient-to-br from-purple-200/50 to-purple-100/40 rounded-full blur-[120px] opacity-70" />
+        <div className="absolute top-[20%] left-[-5%] w-[400px] h-[400px] bg-gradient-to-br from-blue-100/50 to-cyan-50/40 rounded-full blur-[100px] opacity-60" />
+        <div className="absolute bottom-[10%] right-[20%] w-[350px] h-[350px] bg-gradient-to-br from-orange-100/40 to-yellow-50/30 rounded-full blur-[100px] opacity-50" />
+
+        {/* Subtle Grid Pattern */}
+        <div
+          className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          }}
+        />
+
+        {/* Decorative floating shapes */}
+        <div className="absolute top-[15%] left-[15%] w-4 h-4 rounded-full bg-purple-300/40 animate-pulse" />
+        <div className="absolute top-[25%] right-[25%] w-3 h-3 rounded-full bg-blue-300/40 animate-pulse animation-delay-200" />
+        <div className="absolute bottom-[30%] left-[20%] w-2 h-2 rounded-full bg-orange-300/40 animate-pulse animation-delay-400" />
       </div>
 
       <div className="container-tight z-10 flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
@@ -32,7 +47,7 @@ const Hero = () => {
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600">Find Forever.</span>
             </h1>
             <p className="text-md text-gray-600 leading-relaxed max-w-lg">
-              The second brain for your social life. Capture posts, threads, and profiles from LinkedIn & X with one click.
+              Capture posts, threads, and profiles from LinkedIn & X with one click.
             </p>
           </div>
 
@@ -55,21 +70,8 @@ const Hero = () => {
               className="bg-gray-900 text-white hover:bg-gray-800 h-12 px-6 rounded-full text-base shadow-xl shadow-gray-200/50 transition-all hover:scale-105 active:scale-95 flex items-center gap-2"
               onClick={() => window.open('https://chromewebstore.google.com/detail/postzaper-save-linkedin-t/hgecghfgpkhjjipffbnlgkdfbbpdjbiñ', '_blank')}
             >
-              {/* Chrome ISO Logo */}
-              <svg width="20" height="20" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M24 0C10.7452 0 0 10.7452 0 24C0 37.2548 10.7452 48 24 48C37.2548 48 48 37.2548 48 24C48 10.7452 37.2548 0 24 0Z" fill="#F0F0F0" fillOpacity="0.01" />
-                <path d="M24 22L44 26L24 46L4 26L24 22Z" fill="#2196F3" />
-                <path d="M24 22L36 6H12L24 22Z" fill="#D32F2F" />
-                <path d="M24 22L12 38H36L24 22Z" fill="#FBC02D" />
-                {/* A simpler standardized Chrome Icon Structure */}
-                <circle cx="24" cy="24" r="10" fill="white" />
-                <path d="M23.9999 44C35.0456 44 43.9999 35.0457 43.9999 24C43.9999 12.9543 35.0456 4 23.9999 4C12.9542 4 3.99991 12.9543 3.99991 24C3.99991 35.0457 12.9542 44 23.9999 44Z" fill="white" fillOpacity="0.01" />
-                <path d="M41.2727 24C41.2727 34.1205 32.5936 42.4308 22.2155 43.1491L13.5654 28.1666L23.9999 10.1111L34.4345 28.1666H17.1327" fill="#4CAF50" />
-                <path d="M23.9999 10.1111L13.5654 28.1666L4.91537 13.1841C10.8988 2.82283 23.9999 2.10093 23.9999 10.1111Z" fill="#D32F2F" />
-                <path d="M41.2727 24H23.9999L15.35 9.01755C26.7909 9.01755 37.4087 14.2882 41.2727 24Z" fill="#FBC02D" />
-                <circle cx="24" cy="24" r="9" fill="white" />
-                <circle cx="24" cy="24" r="7.5" fill="#4285F4" />
-              </svg>
+              {/* Chrome Logo */}
+              <img src="/chrome.svg" alt="Chrome" className="w-5 h-5" />
               Add to Chrome
             </Button>
             <Button

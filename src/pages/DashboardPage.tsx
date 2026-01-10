@@ -1,16 +1,112 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { LogOut, Star, Search, RefreshCw, Settings, ChevronDown } from 'lucide-react';
+import {
+  LogOut,
+  Star,
+  Search,
+  Settings,
+  Sparkles,
+  FolderPlus,
+  MoreVertical,
+  Plus,
+  CheckCircle2,
+  Wand2,
+  Library,
+  ChevronRight,
+  Filter,
+  Users,
+  Moon,
+  Sun,
+  Menu,
+  X as CloseIcon,
+  Zap,
+  Repeat2
+} from 'lucide-react';
 import { toast } from 'sonner';
-import { bookmarkService, type Bookmark } from '../services/bookmarkService';
+import { Dialog, DialogContent } from '../components/ui/dialog';
+import { bookmarkService, clusterService, type Bookmark, type Cluster } from '../services/bookmarkService';
 import BookmarkCard from '../components/BookmarkCard';
 import ProfilesTable from '../components/ProfilesTable';
 import AddBookmarkDialog from '../components/AddBookmarkDialog';
+import ProfileDetailDialog from '../components/ProfileDetailDialog';
+import PostDetailDialog from '../components/PostDetailDialog';
+import UpgradeDialog from '../components/UpgradeDialog';
 import { ConfirmDialog } from '../components/ui/confirm-dialog';
+import { BookmarkGridSkeleton, ProfileTableSkeleton } from '../components/ui/skeleton';
+
+function ContentStudioView() {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-120px)] py-4 lg:py-8 px-4 text-center max-w-5xl mx-auto animate-fade-in overflow-hidden">
+      <div className="w-12 h-12 lg:w-14 lg:h-14 bg-primary/10 rounded-2xl flex items-center justify-center mb-4 lg:mb-5 animate-pulse shadow-inner ring-1 ring-primary/20 shrink-0">
+        <Sparkles className="w-6 h-6 lg:w-7 lg:h-7 text-primary" />
+      </div>
+
+      <h2 className="text-2xl lg:text-3xl font-black text-foreground tracking-tight mb-3 uppercase shrink-0">Content Studio</h2>
+      <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-500/10 text-amber-500 rounded-full text-[9px] lg:text-[10px] font-black uppercase tracking-[0.2em] mb-6 border border-amber-500/20 shadow-sm shrink-0">
+        <Zap className="w-3 h-3 fill-current" />
+        Coming Soon
+      </div>
+
+      <p className="text-sm lg:text-base text-muted-foreground mb-8 max-w-2xl leading-relaxed font-medium shrink-0">
+        The ultimate workspace for transforming your saved insights into viral content. Harness the power of AI to bridge the gap between inspiration and publication.
+      </p>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-left w-full mb-8 shrink-0">
+        <div className="p-4 lg:p-5 bg-card border border-border rounded-xl shadow-sm hover:shadow-lg hover:border-primary/20 transition-all duration-300 group">
+          <div className="w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <Wand2 className="w-5 h-5 text-blue-500" />
+          </div>
+          <h4 className="font-bold text-base text-foreground mb-1.5">AI Hook Generator</h4>
+          <p className="text-[12px] text-muted-foreground leading-relaxed">Convert your saved bookmarks into catchy hooks for Twitter and LinkedIn instantly.</p>
+        </div>
+
+        <div className="p-4 lg:p-5 bg-card border border-border rounded-xl shadow-sm hover:shadow-lg hover:border-primary/20 transition-all duration-300 group">
+          <div className="w-10 h-10 bg-purple-500/10 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <Repeat2 className="w-5 h-5 text-purple-500" />
+          </div>
+          <h4 className="font-bold text-base text-foreground mb-1.5">Cluster Remix</h4>
+          <p className="text-[12px] text-muted-foreground leading-relaxed">Turn your clusters of research into full-length threads or thought-leadership articles.</p>
+        </div>
+
+        <div className="p-4 lg:p-5 bg-card border border-border rounded-xl shadow-sm hover:shadow-lg hover:border-primary/20 transition-all duration-300 group">
+          <div className="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <Users className="w-5 h-5 text-emerald-500" />
+          </div>
+          <h4 className="font-bold text-base text-foreground mb-1.5">Tone Matching</h4>
+          <p className="text-[12px] text-muted-foreground leading-relaxed">AI that learns your writing style and applies it to new content based on your saved library.</p>
+        </div>
+      </div>
+
+      <div className="p-6 lg:p-7 bg-primary rounded-2xl text-white overflow-hidden relative group cursor-pointer shadow-xl shadow-primary/20 w-full shrink-0">
+        <div className="absolute top-0 right-0 -mr-12 -mt-12 w-48 h-48 bg-white/10 rounded-full blur-3xl group-hover:scale-110 transition-transform" />
+        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="text-center md:text-left">
+            <h3 className="text-xl font-black mb-1">Want early access?</h3>
+            <p className="text-white/80 text-xs font-medium">Join 500+ creators waiting for the Studio Beta.</p>
+          </div>
+          <button className="px-6 py-3 bg-white text-primary rounded-xl font-black text-[11px] lg:text-xs uppercase tracking-widest hover:scale-105 transition-transform shadow-lg shrink-0">
+            Join Waitlist
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function DashboardPage() {
   const { user, workspaceId, signOut } = useAuth();
-  const [activeFilter, setActiveFilter] = useState('all');
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const activeFilter = searchParams.get('type') || 'all';
+  const detailId = searchParams.get('detailId');
+
+  const setActiveFilter = (type: string) => {
+    const next = new URLSearchParams(searchParams);
+    next.set('type', type);
+    setSearchParams(next);
+  };
+
   const [searchQuery, setSearchQuery] = useState('');
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [loading, setLoading] = useState(true);
@@ -19,6 +115,43 @@ export default function DashboardPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingBookmarkId, setDeletingBookmarkId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isUpgradeDialogOpen, setIsUpgradeDialogOpen] = useState(false);
+
+  const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'likes'>('newest');
+  const [sourceFilter, setSourceFilter] = useState<'all' | 'extension' | 'web'>('all');
+  const [showFilterMenu, setShowFilterMenu] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [clusters, setClusters] = useState<Cluster[]>([]);
+  const [isClusterAddOpen, setIsClusterAddOpen] = useState(false);
+  const [newClusterName, setNewClusterName] = useState('');
+  const [newClusterColor, setNewClusterColor] = useState('bg-blue-500');
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [showClusterMenu, setShowClusterMenu] = useState(false);
+
+  const activeCluster = clusters.find(c => c.name.toLowerCase() === activeFilter.toLowerCase());
+  const activeFilterLabel = activeCluster ? activeCluster.name : activeFilter;
+
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return document.documentElement.classList.contains('dark') ||
+        localStorage.getItem('theme') === 'dark';
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [isDarkMode]);
+
+  const toggleTheme = () => setIsDarkMode(!isDarkMode);
 
   const handleSignOut = async () => {
     try {
@@ -29,6 +162,16 @@ export default function DashboardPage() {
     }
   };
 
+  const loadClusters = async () => {
+    if (!workspaceId) return;
+    try {
+      const fetchedClusters = await clusterService.getClusters(workspaceId);
+      setClusters(fetchedClusters);
+    } catch (error) {
+      console.error('Failed to load clusters:', error);
+    }
+  };
+
   const loadBookmarks = async () => {
     if (!workspaceId) return;
 
@@ -36,7 +179,6 @@ export default function DashboardPage() {
     try {
       const options: { type?: string; folder?: string } = {};
 
-      // Apply type filter
       if (activeFilter === 'tweet') {
         options.type = 'tweet';
       } else if (activeFilter === 'linkedin' || activeFilter === 'profiles') {
@@ -59,21 +201,18 @@ export default function DashboardPage() {
 
   useEffect(() => {
     loadBookmarks();
+    loadClusters();
   }, [workspaceId, activeFilter]);
 
   const handleToggleFavorite = async (id: string) => {
     try {
       await bookmarkService.toggleFavorite(id);
-
-      // Optimistic update
       setBookmarks(prev =>
         prev.map(b => (b.id === id ? { ...b, isFavorite: !b.isFavorite } : b))
       );
-
       toast.success('Bookmark updated');
     } catch (error) {
       toast.error('Failed to update bookmark');
-      // Revert on error
       loadBookmarks();
     }
   };
@@ -100,7 +239,6 @@ export default function DashboardPage() {
     }
   };
 
-  // Helper to check if bookmark is a profile
   const isProfile = (b: Bookmark) => {
     return b.tags?.includes('profile') ||
       b.linkedinData?.isProfile === true ||
@@ -119,242 +257,707 @@ export default function DashboardPage() {
     );
   });
 
-  // Filter for favorites and profiles
-  let displayBookmarks = filteredBookmarks;
+  let displayBookmarks = [...filteredBookmarks].sort((a, b) =>
+    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
+
   if (activeFilter === 'favorites') {
-    displayBookmarks = filteredBookmarks.filter(b => b.isFavorite);
+    displayBookmarks = displayBookmarks.filter(b => b.isFavorite);
   } else if (activeFilter === 'profiles') {
-    displayBookmarks = filteredBookmarks.filter(isProfile);
+    displayBookmarks = displayBookmarks.filter(isProfile);
   } else if (activeFilter === 'linkedin') {
-    // Exclude profiles from LinkedIn posts view
-    displayBookmarks = filteredBookmarks.filter(b => !isProfile(b));
+    displayBookmarks = displayBookmarks.filter(b => !isProfile(b));
+  } else {
+    // Check if it's a cluster filter
+    const cluster = clusters.find(c => c.name.toLowerCase() === activeFilter.toLowerCase());
+    if (cluster) {
+      displayBookmarks = displayBookmarks.filter(b => b.tags?.includes(cluster.name));
+    }
   }
 
+  // Apply Source Filter
+  if (sourceFilter !== 'all') {
+    displayBookmarks = displayBookmarks.filter(b => b.source === sourceFilter);
+  }
+
+  // Apply Sorting
+  displayBookmarks = [...displayBookmarks].sort((a, b) => {
+    if (sortBy === 'newest') {
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    }
+    if (sortBy === 'oldest') {
+      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+    }
+    if (sortBy === 'likes') {
+      const getLikes = (bk: Bookmark) => {
+        if (bk.type === 'tweet') return bk.tweetData?.stats?.likes || 0;
+        if (bk.type === 'linkedin') return bk.linkedinData?.stats?.likes || 0;
+        return 0;
+      };
+      return getLikes(b) - getLikes(a);
+    }
+    return 0;
+  });
+
   const filters = [
-    { id: 'all', label: 'All Items', icon: null },
-    { id: 'profiles', label: 'Profiles', icon: '👤' },
-    { id: 'linkedin', label: 'LinkedIn', icon: '🔗' },
-    { id: 'tweet', label: 'Twitter / X', icon: '𝕏' },
-    { id: 'favorites', label: 'Favorites', icon: '⭐' },
+    { id: 'all', label: 'All Items', icon: <Library className="w-4 h-4" /> },
+    { id: 'profiles', label: 'Profiles', icon: <Users className="w-4 h-4" /> },
+    { id: 'linkedin', label: 'LinkedIn', icon: <span className="text-xs font-bold font-sans">In</span> },
+    { id: 'tweet', label: 'Twitter / X', icon: <span className="text-xs font-bold font-sans">𝕏</span> },
+    { id: 'article', label: 'Articles', icon: <Search className="w-4 h-4" /> },
+    { id: 'favorites', label: 'Favorites', icon: <Star className="w-4 h-4" /> },
   ];
 
+  const handleToggleSelection = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+    if (!isSelectionMode) setIsSelectionMode(true);
+  };
+
+  const handleClearSelection = () => {
+    setSelectedIds(new Set());
+    setIsSelectionMode(false);
+  };
+
+  const handleCloseDetailDialog = () => {
+    const next = new URLSearchParams(searchParams);
+    next.delete('detailId');
+    setSearchParams(next);
+  };
+
+  const handleCreateCluster = async () => {
+    if (!newClusterName.trim() || !workspaceId) return;
+
+    try {
+      const cluster = await clusterService.createCluster({
+        workspaceId,
+        name: newClusterName.trim(),
+        color: newClusterColor
+      });
+      setClusters(prev => [...prev, cluster]);
+      setNewClusterName('');
+      setIsClusterAddOpen(false);
+      toast.success('Cluster created');
+    } catch (error) {
+      toast.error('Failed to create cluster');
+    }
+  };
+
+  const handleAssignToCluster = async (clusterName: string) => {
+    const ids = Array.from(selectedIds);
+    try {
+      await Promise.all(ids.map(id => {
+        const bookmark = bookmarks.find(b => b.id === id);
+        if (bookmark) {
+          const newTags = Array.from(new Set([...(bookmark.tags || []), clusterName]));
+          return bookmarkService.updateBookmark(id, { tags: newTags });
+        }
+        return Promise.resolve();
+      }));
+
+      setBookmarks(prev => prev.map(b =>
+        ids.includes(b.id)
+          ? { ...b, tags: Array.from(new Set([...(b.tags || []), clusterName])) }
+          : b
+      ));
+
+      setSelectedIds(new Set());
+      setIsSelectionMode(false);
+      setShowClusterMenu(false);
+      toast.success(`Items added to ${clusterName}`);
+    } catch (error) {
+      toast.error('Failed to assign cluster');
+    }
+  };
+
+  const selectedBookmark = detailId ? bookmarks.find(b => b.id === detailId) : null;
+  const isSelectedProfile = !!(selectedBookmark && (
+    selectedBookmark.tags?.includes('profile') ||
+    selectedBookmark.linkedinData?.isProfile === true ||
+    selectedBookmark.linkedinProfileData !== undefined
+  ));
+
   return (
-
-    <div className="min-h-screen bg-white flex flex-col font-sans text-slate-900">
-      {/* Minimal Navbar */}
-      <nav className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
-          <div className="flex items-center justify-between">
-            {/* Logo */}
-            <a href="/" className="flex items-center gap-2.5 group cursor-pointer">
-              <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform duration-200">
-                <span className="text-white text-sm">📌</span>
-              </div>
-              <span className="text-lg font-bold text-slate-900 tracking-tight">PostZaper</span>
-            </a>
-
-            {/* User Menu */}
-            <div className="relative">
-              <button
-                onClick={() => setShowUserMenu(!showUserMenu)}
-                className="flex items-center gap-2 px-2 py-1.5 rounded-full hover:bg-gray-50 transition border border-transparent hover:border-gray-100"
-              >
-                {user?.picture ? (
-                  <img src={user.picture || ''} alt="" className="w-8 h-8 rounded-full border border-gray-100" />
-                ) : (
-                  <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 text-sm font-semibold border border-gray-200">
-                    {user?.name?.charAt(0) || user?.email?.charAt(0) || 'U'}
-                  </div>
-                )}
-                <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
-              </button>
-
-              {showUserMenu && (
-                <>
-                  <div className="fixed inset-0" onClick={() => setShowUserMenu(false)} />
-                  <div className="absolute right-0 mt-2 w-60 bg-white rounded-xl shadow-xl shadow-gray-200/50 border border-gray-100 py-1.5 z-50">
-                    <div className="px-4 py-3 border-b border-gray-50 mb-1">
-                      <p className="font-medium text-slate-900 truncate">{user?.name || 'User'}</p>
-                      <p className="text-xs text-gray-500 truncate mt-0.5">{user?.email}</p>
-                      {user?.subscription === 'pro' && (
-                        <span className="inline-block mt-2 px-2 py-0.5 bg-slate-900 text-white text-[10px] rounded-full font-semibold tracking-wide">
-                          PRO
-                        </span>
-                      )}
-                    </div>
-                    <button
-                      onClick={() => { }}
-                      className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition"
-                    >
-                      <Settings className="w-4 h-4" />
-                      Settings
-                    </button>
-                    <button
-                      onClick={handleSignOut}
-                      className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      Sign Out
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 py-8 w-full">
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
-          <div>
-            <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">My Feed</h1>
-            <p className="text-gray-500 mt-2 text-lg">{displayBookmarks.length} saved items to read.</p>
-          </div>
-
-          {/* Search & Actions */}
-          <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-            <div className="relative flex-1 sm:flex-initial">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search feed..."
-                className="w-full sm:w-64 pl-10 pr-4 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-black/5 focus:border-gray-300 focus:bg-white transition-all placeholder:text-gray-400"
-              />
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={loadBookmarks}
-                className="p-2.5 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition border border-transparent hover:border-gray-200"
-                title="Refresh"
-              >
-                <RefreshCw className="w-5 h-5" />
-              </button>
-              <button
-                onClick={() => setIsAddDialogOpen(true)}
-                className="flex-1 sm:flex-initial px-5 py-2.5 bg-slate-900 text-white border border-transparent rounded-xl text-sm font-semibold hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/10 transition-all active:scale-95"
-              >
-                + New Bookmark
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Filter Tabs */}
-        <div className="flex items-center gap-1 mb-8 border-b border-gray-200 overflow-x-auto no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
-          {filters.map((filter) => (
-            <button
-              key={filter.id}
-              onClick={() => setActiveFilter(filter.id)}
-              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-all border-b-2 -mb-px whitespace-nowrap ${activeFilter === filter.id
-                ? 'border-blue-600 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-900'
-                }`}
-            >
-              {filter.icon && <span className="text-base">{filter.icon}</span>}
-              {filter.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Bookmarks Grid */}
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-32 text-center">
-            <div className="w-8 h-8 border-2 border-gray-200 border-t-black rounded-full animate-spin mb-4" />
-            <p className="text-gray-500 font-medium">Loading your feed...</p>
-          </div>
-        ) : displayBookmarks.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-32 text-center bg-gray-50/50 rounded-3xl border border-dashed border-gray-200">
-            <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-gray-100">
-              <Star className="w-8 h-8 text-gray-300" />
-            </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">
-              {searchQuery ? 'No results found' : 'Your feed is empty'}
-            </h3>
-            <p className="text-gray-500 max-w-sm mb-8 leading-relaxed">
-              {searchQuery
-                ? 'We couldn\'t find anything matching your search. Try a different term.'
-                : 'Start saving content from Twitter, LinkedIn, and the web using our browser extension.'}
-            </p>
-            {!searchQuery && (
-              <button
-                onClick={() => setIsAddDialogOpen(true)}
-                className="px-6 py-3 bg-white border border-gray-200 text-gray-900 rounded-xl font-semibold hover:bg-gray-50 hover:border-gray-300 transition shadow-sm"
-              >
-                Add Your First Bookmark
-              </button>
-            )}
-          </div>
-        ) : activeFilter === 'profiles' ? (
-          <ProfilesTable
-            profiles={displayBookmarks}
-            onToggleFavorite={handleToggleFavorite}
-            onDelete={handleDeleteClick}
-          />
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {displayBookmarks.map((bookmark) => (
-              <BookmarkCard
-                key={bookmark.id}
-                bookmark={bookmark}
-                onToggleFavorite={handleToggleFavorite}
-                onDelete={handleDeleteClick}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Footer */}
-      <footer className="border-t border-gray-100 mt-auto bg-gray-50/50">
-        <div className="max-w-7xl mx-auto px-6 py-12">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-gray-900">PostZaper</span>
-              <span className="text-sm text-gray-400">© 2024</span>
-            </div>
-
-            <div className="flex flex-wrap justify-center gap-x-8 gap-y-2">
-              <a href="#" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Privacy Policy</a>
-              <a href="#" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Terms of Service</a>
-              <a href="#" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Blog</a>
-              <a href="#" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">About</a>
-            </div>
-
-            <div className="flex gap-4">
-              {/* Social placeholders could go here */}
-              <a href="#" className="text-gray-400 hover:text-gray-600 transition-colors">
-                <span className="sr-only">Twitter</span>
-                {/* Twitter Icon SVG could go here */}
-              </a>
-            </div>
-          </div>
-        </div>
-      </footer>
-
-      {/* Add Bookmark Dialog */}
-      {workspaceId && (
-        <AddBookmarkDialog
-          isOpen={isAddDialogOpen}
-          onClose={() => setIsAddDialogOpen(false)}
-          onSuccess={loadBookmarks}
-          workspaceId={workspaceId || ''}
+    <div className="flex h-screen bg-background font-sans text-foreground transition-colors duration-300 overflow-hidden relative">
+      {/* MOBILE OVERLAY */}
+      {isMobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[60] lg:hidden animate-fade-in"
+          onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
 
-      {/* Delete Confirmation Dialog */}
-      <ConfirmDialog
-        open={deleteDialogOpen}
-        onOpenChange={setDeleteDialogOpen}
-        title="Delete bookmark"
-        description="This action cannot be undone. The bookmark will be permanently removed from your collection."
-        confirmLabel="Delete"
-        cancelLabel="Cancel"
-        onConfirm={handleDeleteConfirm}
-        variant="destructive"
-        loading={isDeleting}
+      {/* SIDEBAR */}
+      <aside className={`
+        fixed lg:relative z-[70] lg:z-0
+        w-64 h-full border-r border-border flex flex-col bg-sidebar-background transition-all duration-300 ease-in-out
+        ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+      `}>
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-8">
+            <a href="/" className="flex items-center gap-2.5 group cursor-pointer">
+              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform duration-200">
+                <span className="text-white text-sm">⚡</span>
+              </div>
+              <span className="text-lg font-black tracking-tight text-foreground">PostZaper</span>
+            </a>
+            <button
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="lg:hidden p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition"
+            >
+              <CloseIcon className="w-5 h-5" />
+            </button>
+          </div>
+
+          <nav className="space-y-6">
+            <div>
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-3 px-3">Library</p>
+              <div className="space-y-1">
+                {filters.slice(0, 1).concat(filters.slice(5)).map(item => (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveFilter(item.id)}
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-all ${activeFilter === item.id
+                      ? 'bg-primary/10 text-primary font-bold'
+                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                      }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      {item.icon}
+                      {item.label}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-3 px-3">Platforms</p>
+              <div className="space-y-1">
+                {filters.slice(1, 5).map(item => (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveFilter(item.id)}
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-all ${activeFilter === item.id
+                      ? 'bg-primary/10 text-primary font-bold'
+                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                      }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      {item.icon}
+                      {item.label}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-3 px-3">Studio</p>
+              <div className="space-y-1">
+                <button
+                  onClick={() => {
+                    setActiveFilter('content-studio');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-all ${activeFilter === 'content-studio'
+                    ? 'bg-primary/10 text-primary font-bold'
+                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                    }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Sparkles className={`w-4 h-4 ${activeFilter === 'content-studio' ? 'animate-pulse' : ''}`} />
+                    Content Studio
+                  </div>
+                  {activeFilter !== 'content-studio' && (
+                    <span className="text-[9px] px-1.5 py-0.5 bg-amber-500/10 text-amber-600 rounded-full font-black uppercase tracking-tighter">Soon</span>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between px-3 mb-3">
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Clusters</p>
+                <Plus
+                  className="w-3.5 h-3.5 text-muted-foreground cursor-pointer hover:text-foreground transition"
+                  onClick={() => setIsClusterAddOpen(true)}
+                />
+              </div>
+              <div className="space-y-1">
+                {clusters.map(cluster => (
+                  <button
+                    key={cluster.id}
+                    onClick={() => setActiveFilter(cluster.name)}
+                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all group ${activeFilter.toLowerCase() === cluster.name.toLowerCase()
+                      ? 'bg-primary/10 text-primary font-bold'
+                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                      }`}
+                  >
+                    <div className={`w-2 h-2 rounded-full ${cluster.color}`} />
+                    <span className="flex-1 text-left truncate">{cluster.name}</span>
+                    <ChevronRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition" />
+                  </button>
+                ))}
+              </div>
+            </div>
+          </nav>
+        </div>
+
+        {/* User Card */}
+        <div className="mt-auto p-4 border-t border-border bg-sidebar-background transition-colors duration-300">
+          <div className="flex items-center justify-between p-2 rounded-xl bg-card border border-border shadow-sm">
+            <div className="flex items-center gap-2.5 min-w-0 text-left">
+              {user?.picture ? (
+                <img src={user.picture} alt="" className="w-8 h-8 rounded-full border border-border" />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground font-semibold border border-border text-xs">
+                  {user?.name?.charAt(0) || 'U'}
+                </div>
+              )}
+              <div className="min-w-0">
+                <p className="text-xs font-bold truncate">{user?.name || 'User'}</p>
+                <p className="text-[10px] text-muted-foreground truncate">{user?.subscription === 'pro' ? 'Pro Member' : 'Free Plan'}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1">
+              <button
+                onClick={toggleTheme}
+                className="p-1.5 hover:bg-muted rounded-lg transition text-muted-foreground hover:text-foreground"
+                title={isDarkMode ? 'Switch to Light' : 'Switch to Dark'}
+              >
+                {isDarkMode ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
+              </button>
+              <div className="relative">
+                <button
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className={`p-1.5 hover:bg-muted rounded-lg ${showUserMenu ? 'bg-muted text-foreground' : 'text-muted-foreground'}`}
+                >
+                  <MoreVertical className="w-3.5 h-3.5" />
+                </button>
+
+                {showUserMenu && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setShowUserMenu(false)} />
+                    <div className="absolute bottom-full right-0 mb-2 w-48 bg-card rounded-xl shadow-xl border border-border py-1.5 z-50">
+                      <button
+                        onClick={() => { }}
+                        className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition"
+                      >
+                        <Settings className="w-3.5 h-3.5" />
+                        Settings
+                      </button>
+                      <button
+                        onClick={handleSignOut}
+                        className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-destructive hover:bg-destructive/10 transition"
+                      >
+                        <LogOut className="w-3.5 h-3.5" />
+                        Sign Out
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      {/* MAIN CONTENT */}
+      <main className="flex-1 flex flex-col bg-background transition-colors duration-300 overflow-hidden relative w-full">
+        <header className="h-16 border-b border-border px-4 lg:px-8 flex items-center justify-between bg-background shrink-0 transition-colors duration-300 sticky top-0 z-50">
+          <div className="flex items-center gap-3 lg:gap-4">
+            <button
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="lg:hidden p-2 -ml-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+            <div className="hidden sm:flex items-center gap-2 text-muted-foreground">
+              <Library className="w-4 h-4" />
+              <ChevronRight className="w-3.5 h-3.5" />
+              <span className="text-sm font-semibold text-foreground capitalize">
+                {activeFilterLabel === 'all' ? 'Library' : activeFilterLabel.replace('-', ' ')}
+              </span>
+            </div>
+            <div className="hidden sm:block h-4 w-px bg-border mx-2" />
+            <div className="flex items-center gap-2">
+              {user?.subscription !== 'pro' && (
+                <button
+                  onClick={() => setIsUpgradeDialogOpen(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-primary to-purple-600 text-white text-[10px] font-bold rounded-full hover:opacity-90 transition-opacity shadow-sm uppercase tracking-wider"
+                >
+                  <Sparkles className="w-3 h-3" />
+                  <span className="hidden xs:inline">Upgrade</span>
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 lg:gap-3">
+            <div className={`relative group flex-1 sm:flex-none ${activeFilter === 'content-studio' ? 'opacity-0 pointer-events-none' : ''}`}>
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+              </div>
+              <input
+                type="text"
+                disabled={activeFilter === 'content-studio'}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="block w-full sm:w-48 lg:w-64 bg-muted border-none rounded-full py-2 lg:py-2.5 pl-9 pr-4 lg:pr-12 text-[11px] font-medium focus:ring-2 focus:ring-primary/20 focus:bg-background transition-all placeholder:text-muted-foreground text-foreground"
+                placeholder={`Search...`}
+              />
+              <div className="absolute inset-y-0 right-0 pr-3 hidden lg:flex items-center pointer-events-none">
+                <kbd className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded border border-border bg-card text-[10px] font-medium text-muted-foreground">
+                  ⌘K
+                </kbd>
+              </div>
+            </div>
+            <button
+              onClick={() => setIsAddDialogOpen(true)}
+              className={`flex items-center justify-center w-9 h-9 sm:w-auto sm:h-auto sm:gap-2 bg-primary text-white text-[11px] font-bold sm:px-4 sm:py-2.5 rounded-full hover:bg-primary/90 shadow-sm shadow-primary/20 ${activeFilter === 'content-studio' ? 'opacity-0 pointer-events-none' : ''}`}
+            >
+              <Plus className="w-4 h-4" />
+              <span className="hidden sm:inline">Capture</span>
+            </button>
+          </div>
+        </header>
+
+        <div className="flex-1 overflow-y-auto p-4 lg:p-8 scroll-smooth no-scrollbar">
+          <div className="max-w-6xl mx-auto">
+            {activeFilter === 'content-studio' ? (
+              <ContentStudioView />
+            ) : (
+              <>
+                <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+                  <div>
+                    <h1 className="text-xl lg:text-2xl font-black text-foreground tracking-tight capitalize">
+                      {activeFilter === 'all' ? 'Your Feed' : activeFilterLabel.replace('-', ' ')}
+                    </h1>
+                    <p className="text-xs lg:text-sm text-muted-foreground mt-1">
+                      Discover and organize your saved {activeFilter === 'all' ? 'content' : activeFilterLabel.replace('-', ' ')}.
+                    </p>
+                  </div>
+
+                  <div className="flex items-center justify-between sm:justify-end gap-3 lg:gap-4">
+                    <button
+                      onClick={() => setIsSelectionMode(!isSelectionMode)}
+                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${isSelectionMode
+                        ? 'bg-primary/10 text-primary border border-primary/20'
+                        : 'text-muted-foreground hover:bg-muted border border-transparent hover:border-border'
+                        }`}
+                    >
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>{isSelectionMode ? 'Cancel' : 'Multi-select'}</span>
+                    </button>
+                    <div className="relative">
+                      <button
+                        onClick={() => setShowFilterMenu(!showFilterMenu)}
+                        className={`p-2 rounded-lg transition ${showFilterMenu
+                          ? 'bg-primary/10 text-primary'
+                          : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                          }`}
+                      >
+                        <Filter className="w-4 h-4" />
+                      </button>
+
+                      {showFilterMenu && (
+                        <>
+                          <div className="fixed inset-0 z-40" onClick={() => setShowFilterMenu(false)} />
+                          <div className="absolute right-0 top-full mt-2 w-56 bg-card rounded-2xl shadow-2xl border border-border py-3 z-50">
+                            <div className="px-4 py-2">
+                              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3">Sort By</p>
+                              <div className="space-y-1">
+                                {[
+                                  { id: 'newest', label: 'Recently Added' },
+                                  { id: 'oldest', label: 'Oldest' },
+                                  { id: 'likes', label: 'Most Popular' }
+                                ].map(option => (
+                                  <button
+                                    key={option.id}
+                                    onClick={() => {
+                                      setSortBy(option.id as any);
+                                      setShowFilterMenu(false);
+                                    }}
+                                    className={`w-full text-left px-3 py-1.5 rounded-lg text-[11px] font-bold transition-colors ${sortBy === option.id ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}
+                                  >
+                                    {option.label}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                            <div className="h-px bg-border my-2" />
+                            <div className="px-4 py-2">
+                              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3">Source</p>
+                              <div className="space-y-1">
+                                {[
+                                  { id: 'all', label: 'All Sources' },
+                                  { id: 'extension', label: 'Extension Only' },
+                                  { id: 'web', label: 'Web Only' }
+                                ].map(option => (
+                                  <button
+                                    key={option.id}
+                                    onClick={() => {
+                                      setSourceFilter(option.id as any);
+                                      setShowFilterMenu(false);
+                                    }}
+                                    className={`w-full text-left px-3 py-1.5 rounded-lg text-[11px] font-bold transition-colors ${sourceFilter === option.id ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}
+                                  >
+                                    {option.label}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {loading ? (
+                  activeFilter === 'profiles' ? (
+                    <ProfileTableSkeleton count={5} />
+                  ) : (
+                    <BookmarkGridSkeleton count={6} />
+                  )
+                ) : displayBookmarks.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-32 text-center bg-muted/30 rounded-3xl border border-dashed border-border">
+                    <div className="w-16 h-16 bg-card rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-border">
+                      <Star className="w-8 h-8 text-muted" />
+                    </div>
+                    <h3 className="text-xl font-bold text-foreground mb-2">
+                      {searchQuery ? 'No results found' : 'Your feed is empty'}
+                    </h3>
+                    <p className="text-muted-foreground max-w-sm mb-8 leading-relaxed">
+                      {searchQuery
+                        ? 'We couldn\'t find anything matching your search. Try a different term.'
+                        : 'Start saving content from Twitter, LinkedIn, and the web using our browser extension.'}
+                    </p>
+                  </div>
+                ) : activeFilter === 'profiles' ? (
+                  <ProfilesTable
+                    profiles={displayBookmarks}
+                    onToggleFavorite={handleToggleFavorite}
+                    onDelete={handleDeleteClick}
+                  />
+                ) : (
+                  <div className="masonry-grid">
+                    {displayBookmarks.map((bookmark) => (
+                      <div key={bookmark.id} className="masonry-item relative group/card">
+                        {isSelectionMode && (
+                          <div
+                            className={`absolute top-4 left-4 z-40 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all cursor-pointer ${selectedIds.has(bookmark.id)
+                              ? 'bg-primary border-primary'
+                              : 'bg-card border-border opacity-60 group-hover/card:opacity-100 shadow-sm'
+                              }`}
+                            onClick={() => handleToggleSelection(bookmark.id)}
+                          >
+                            {selectedIds.has(bookmark.id) && <Plus className="w-4 h-4 text-white rotate-45" />}
+                          </div>
+                        )}
+                        <div
+                          className={`transition-all duration-300 ${selectedIds.has(bookmark.id) ? 'scale-[0.98] ring-2 ring-primary ring-offset-4 rounded-xl' : ''
+                            }`}
+                        >
+                          <BookmarkCard
+                            bookmark={bookmark}
+                            clusters={clusters}
+                            onToggleFavorite={handleToggleFavorite}
+                            onDelete={handleDeleteClick}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* FLOATING ACTION BAR */}
+        {selectedIds.size > 0 && (
+          <div className="fixed bottom-6 lg:bottom-8 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-lg lg:w-auto">
+            <div className="bg-slate-900 border border-white/10 dark:bg-card dark:border-border text-white rounded-2xl p-2 pl-4 lg:pl-6 flex items-center justify-between lg:justify-start gap-4 lg:gap-6 shadow-2xl ring-1 ring-black/5">
+              <div className="flex flex-col">
+                <span className="text-[10px] lg:text-xs font-bold text-white/90 whitespace-nowrap">
+                  {selectedIds.size} post{selectedIds.size > 1 ? 's' : ''}
+                </span>
+                <button
+                  onClick={handleClearSelection}
+                  className="text-[9px] lg:text-[10px] text-gray-400 hover:text-white transition text-left"
+                >
+                  Clear
+                </button>
+              </div>
+              <div className="hidden xs:block h-8 w-px bg-white/10 mx-1 lg:mx-2" />
+              <div className="flex gap-2 relative">
+                <div className="relative">
+                  <button
+                    onClick={() => setShowClusterMenu(!showClusterMenu)}
+                    className={`p-2.5 lg:px-4 lg:py-2.5 rounded-xl text-[11px] font-bold flex items-center gap-2 transition border ${showClusterMenu ? 'bg-white text-slate-900 border-white' : 'bg-white/10 hover:bg-white/20 text-white border-white/5'
+                      }`}
+                  >
+                    <FolderPlus className={`w-4 h-4 ${showClusterMenu ? 'text-primary' : 'text-blue-400'}`} />
+                    <span className="hidden sm:inline">Cluster</span>
+                  </button>
+
+                  {showClusterMenu && (
+                    <div className="absolute bottom-full mb-3 right-0 w-48 bg-card border border-border rounded-2xl shadow-2xl p-2 z-[60] overflow-hidden animate-in fade-in slide-in-from-bottom-2">
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-3 py-2 border-b border-border/50 mb-1">Select Cluster</p>
+                      <div className="max-h-48 overflow-y-auto no-scrollbar">
+                        {clusters.map(cluster => (
+                          <button
+                            key={cluster.id}
+                            onClick={() => handleAssignToCluster(cluster.name)}
+                            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[12px] font-medium text-foreground hover:bg-muted transition-colors text-left"
+                          >
+                            <div className={`w-2 h-2 rounded-full ${cluster.color}`} />
+                            <span className="truncate">{cluster.name}</span>
+                          </button>
+                        ))}
+                        {clusters.length === 0 && (
+                          <p className="px-3 py-4 text-[11px] text-muted-foreground text-center italic">No clusters yet</p>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => {
+                          setIsClusterAddOpen(true);
+                          setShowClusterMenu(false);
+                        }}
+                        className="w-full mt-1 flex items-center gap-2 px-3 py-2 rounded-lg text-[11px] font-bold text-primary hover:bg-primary/5 transition-colors border-t border-border/50"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        Create New
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <button className="px-4 py-2.5 lg:px-5 lg:py-2.5 bg-gradient-to-r from-primary to-purple-500 hover:scale-105 rounded-xl text-[11px] font-black flex items-center gap-2.5 transition shadow-lg shadow-primary/25 group text-white">
+                  <Wand2 className="w-4 h-4 group-hover:rotate-12 transition-transform" />
+                  <span className="hidden xs:inline">Generate</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Cluster Add Dialog */}
+        <Dialog open={isClusterAddOpen} onOpenChange={setIsClusterAddOpen}>
+          <DialogContent className="sm:max-w-md p-6 bg-card border-border shadow-2xl rounded-2xl">
+            <div className="flex flex-col gap-6">
+              <div>
+                <h2 className="text-xl font-black text-foreground tracking-tight">CREATE CLUSTER</h2>
+                <p className="text-sm text-muted-foreground font-medium mt-1">Organize your research by topic.</p>
+              </div>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">Cluster Name</label>
+                  <input
+                    type="text"
+                    autoFocus
+                    value={newClusterName}
+                    onChange={(e) => setNewClusterName(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleCreateCluster()}
+                    className="w-full bg-muted/50 border border-border rounded-xl px-4 py-3 text-sm font-medium focus:ring-2 ring-primary/20 focus:bg-background transition-all outline-none"
+                    placeholder="e.g. SaaS Growth Hooks"
+                  />
+                </div>
+
+                <div className="space-y-3">
+                  <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">Label Color</label>
+                  <div className="flex flex-wrap gap-3 p-1">
+                    {[
+                      { name: 'Blue', color: 'bg-blue-500' },
+                      { name: 'Purple', color: 'bg-purple-500' },
+                      { name: 'Amber', color: 'bg-amber-500' },
+                      { name: 'Emerald', color: 'bg-emerald-500' },
+                      { name: 'Rose', color: 'bg-rose-500' },
+                      { name: 'Indigo', color: 'bg-indigo-500' },
+                    ].map(item => (
+                      <button
+                        key={item.color}
+                        onClick={() => setNewClusterColor(item.color)}
+                        className={`w-10 h-10 rounded-xl ${item.color} transition-all duration-200 shadow-sm relative overflow-hidden ${newClusterColor === item.color ? 'ring-2 ring-offset-2 ring-offset-background ring-foreground scale-110 shadow-lg' : 'hover:scale-105 opacity-80'
+                          }`}
+                        title={item.name}
+                      >
+                        {newClusterColor === item.color && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/10">
+                            <Plus className="w-5 h-5 text-white" />
+                          </div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => setIsClusterAddOpen(false)}
+                  className="flex-1 px-4 py-3 rounded-xl text-xs font-bold text-muted-foreground hover:bg-muted border border-transparent hover:border-border transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleCreateCluster}
+                  disabled={!newClusterName.trim()}
+                  className="flex-1 px-4 py-3 bg-primary text-white rounded-xl text-xs font-black shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all disabled:opacity-50 disabled:pointer-events-none uppercase tracking-widest"
+                >
+                  Create Cluster
+                </button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </main>
+
+      {workspaceId && (
+        <>
+          <AddBookmarkDialog
+            isOpen={isAddDialogOpen}
+            onClose={() => setIsAddDialogOpen(false)}
+            onSuccess={loadBookmarks}
+            workspaceId={workspaceId}
+          />
+          <ConfirmDialog
+            open={deleteDialogOpen}
+            onOpenChange={setDeleteDialogOpen}
+            title="Delete bookmark"
+            description="This action cannot be undone. The bookmark will be permanently removed from your collection."
+            confirmLabel="Delete"
+            cancelLabel="Cancel"
+            onConfirm={handleDeleteConfirm}
+            variant="destructive"
+            loading={isDeleting}
+          />
+        </>
+      )}
+
+      <UpgradeDialog
+        isOpen={isUpgradeDialogOpen}
+        onClose={() => setIsUpgradeDialogOpen(false)}
+      />
+
+      <ProfileDetailDialog
+        isOpen={!!detailId && isSelectedProfile}
+        onClose={handleCloseDetailDialog}
+        bookmark={selectedBookmark || null}
+      />
+
+      <PostDetailDialog
+        isOpen={!!detailId && !isSelectedProfile}
+        onClose={handleCloseDetailDialog}
+        bookmark={selectedBookmark || null}
       />
     </div>
   );

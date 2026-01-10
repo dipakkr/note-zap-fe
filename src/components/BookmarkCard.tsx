@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Star, Trash2, ExternalLink, MessageCircle, Repeat2, Heart, MoreHorizontal, Play } from 'lucide-react';
 import type { Bookmark } from '../services/bookmarkService';
 import { formatDistanceToNow } from 'date-fns';
+import { useSearchParams } from 'react-router-dom';
 
 interface MediaItem {
   type: 'image' | 'video' | 'gif';
@@ -14,14 +15,22 @@ interface MediaItem {
 
 interface BookmarkCardProps {
   bookmark: Bookmark;
+  clusters: any[]; // User clusters to match tags against
   onToggleFavorite: (id: string) => void;
   onDelete: (id: string) => void;
 }
 
-export default function BookmarkCard({ bookmark, onToggleFavorite, onDelete }: BookmarkCardProps) {
+export default function BookmarkCard({ bookmark, clusters = [], onToggleFavorite, onDelete }: BookmarkCardProps) {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [showMore, setShowMore] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [imageError, setImageError] = useState<Set<string>>(new Set());
+
+  const isProfileType = () => {
+    return bookmark.tags?.includes('profile') ||
+      bookmark.linkedinData?.isProfile === true ||
+      bookmark.linkedinProfileData !== undefined;
+  };
 
   const getAuthorInfo = () => {
     if (bookmark.type === 'tweet' && bookmark.tweetData?.author) {
@@ -38,7 +47,6 @@ export default function BookmarkCard({ bookmark, onToggleFavorite, onDelete }: B
         avatar: bookmark.linkedinData.author.avatar,
       };
     }
-    // For articles, extract domain
     try {
       const url = new URL(bookmark.url);
       return {
@@ -79,30 +87,13 @@ export default function BookmarkCard({ bookmark, onToggleFavorite, onDelete }: B
     return null;
   };
 
-  const getSourceLabel = () => {
-    switch (bookmark.type) {
-      case 'tweet':
-        return { text: 'Saved from Twitter', icon: '𝕏', color: 'text-gray-600' };
-      case 'linkedin':
-        return { text: 'Saved from LinkedIn', icon: '🔗', color: 'text-blue-600' };
-      case 'article':
-        return { text: 'Saved from Web', icon: '🌐', color: 'text-green-600' };
-      default:
-        return { text: 'Saved', icon: '📌', color: 'text-gray-600' };
-    }
-  };
-
-  // Get media (images/videos) from tweet or linkedin data
   const getMedia = (): MediaItem[] => {
     if (bookmark.type === 'tweet' && bookmark.tweetData) {
-      // Prefer images array, fall back to media array
       const images = bookmark.tweetData.images || [];
       const media = bookmark.tweetData.media || [];
-      
-      // Combine and deduplicate
       const allMedia: MediaItem[] = [];
       const seenUrls = new Set<string>();
-      
+
       [...images, ...media].forEach((item: MediaItem) => {
         const url = item.url || item.poster || '';
         if (url && !seenUrls.has(url) && !url.startsWith('blob:')) {
@@ -110,14 +101,11 @@ export default function BookmarkCard({ bookmark, onToggleFavorite, onDelete }: B
           allMedia.push(item);
         }
       });
-      
       return allMedia;
     }
-    
     if (bookmark.type === 'linkedin' && bookmark.linkedinData?.media) {
       return bookmark.linkedinData.media;
     }
-    
     return [];
   };
 
@@ -128,21 +116,44 @@ export default function BookmarkCard({ bookmark, onToggleFavorite, onDelete }: B
   const author = getAuthorInfo();
   const content = getContent();
   const stats = getEngagementStats();
-  const source = getSourceLabel();
   const media = getMedia();
   const timeAgo = formatDistanceToNow(new Date(bookmark.createdAt), { addSuffix: false });
 
   const isLongContent = content && content.length > 280;
   const displayContent = showMore ? content : content?.slice(0, 280);
-  
-  // Filter out images that failed to load
   const validMedia = media.filter(m => !imageError.has(m.url || m.poster || ''));
 
+  const getTypeInfo = () => {
+    if (isProfileType()) return { label: 'Profile', color: 'bg-primary/10 text-primary' };
+    if (bookmark.type === 'tweet') return { label: 'Tweet', color: 'bg-blue-500/10 text-blue-500' };
+    if (bookmark.type === 'linkedin') return { label: 'LinkedIn Post', color: 'bg-indigo-500/10 text-indigo-500' };
+    if (bookmark.type === 'article') return { label: 'Web Article', color: 'bg-emerald-500/10 text-emerald-500' };
+    return { label: 'Website', color: 'bg-amber-500/10 text-amber-500' };
+  };
+
+  const typeInfo = getTypeInfo();
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest('button') || (e.target as HTMLElement).closest('a')) {
+      return;
+    }
+
+    if (isProfileType() || bookmark.type === 'tweet' || bookmark.type === 'linkedin') {
+      const next = new URLSearchParams(searchParams);
+      next.set('detailId', bookmark.id);
+      setSearchParams(next);
+    } else {
+      window.open(bookmark.url, '_blank', 'noopener,noreferrer');
+    }
+  };
+
   return (
-    <div className="bg-white rounded-xl border border-gray-100 p-5 hover:shadow-lg hover:border-gray-200 transition-all duration-200 group">
-      {/* Author Header */}
-      <div className="flex items-start gap-3 mb-3">
-        <div className="w-11 h-11 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white font-medium overflow-hidden flex-shrink-0">
+    <div
+      onClick={handleCardClick}
+      className="bg-card cursor-pointer rounded-xl border border-border p-5 hover:shadow-xl hover:shadow-primary/5 hover:border-primary/20 transition-all duration-300 group active:scale-[0.99]"
+    >
+      <div className="flex items-start gap-3 mb-4">
+        <div className="w-11 h-11 rounded-full bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center text-white font-black overflow-hidden flex-shrink-0 shadow-sm">
           {author.avatar ? (
             <img src={author.avatar} alt={author.name} className="w-full h-full object-cover" />
           ) : (
@@ -151,58 +162,60 @@ export default function BookmarkCard({ bookmark, onToggleFavorite, onDelete }: B
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="font-semibold text-gray-900 truncate">{author.name}</span>
+            <span className="font-bold text-foreground truncate">{author.name}</span>
             {bookmark.type === 'tweet' && (
-              <span className="text-blue-500">
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+              <span className="text-primary">
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                 </svg>
               </span>
             )}
           </div>
-          <p className="text-sm text-gray-500 truncate">{author.handle}</p>
+          <p className="text-[11px] text-muted-foreground truncate font-medium">{author.handle}</p>
         </div>
 
-        {/* Menu */}
         <div className="relative">
           <button
-            onClick={() => setShowMenu(!showMenu)}
-            className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg opacity-0 group-hover:opacity-100 transition"
+            onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }}
+            className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg opacity-0 group-hover:opacity-100 transition duration-200"
           >
-            <MoreHorizontal className="w-5 h-5" />
+            <MoreHorizontal className="w-4 h-4" />
           </button>
           {showMenu && (
             <>
-              <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
-              <div className="absolute right-0 top-8 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-20 w-40">
+              <div className="fixed inset-0 z-10" onClick={(e) => { e.stopPropagation(); setShowMenu(false); }} />
+              <div className="absolute right-0 top-8 bg-card rounded-xl shadow-2xl border border-border py-1.5 z-20 w-44 animate-fade-up">
                 <a
                   href={bookmark.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                  onClick={() => setShowMenu(false)}
+                  className="flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-foreground hover:bg-muted transition"
+                  onClick={(e) => { e.stopPropagation(); setShowMenu(false); }}
                 >
-                  <ExternalLink className="w-4 h-4" />
+                  <ExternalLink className="w-3.5 h-3.5 text-muted-foreground" />
                   Open original
                 </a>
                 <button
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation();
                     onToggleFavorite(bookmark.id);
                     setShowMenu(false);
                   }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                  className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-foreground hover:bg-muted transition"
                 >
-                  <Star className={`w-4 h-4 ${bookmark.isFavorite ? 'fill-amber-400 text-amber-400' : ''}`} />
+                  <Star className={`w-3.5 h-3.5 ${bookmark.isFavorite ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground'}`} />
                   {bookmark.isFavorite ? 'Unfavorite' : 'Add to favorites'}
                 </button>
+                <div className="h-px bg-border my-1" />
                 <button
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation();
                     onDelete(bookmark.id);
                     setShowMenu(false);
                   }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
+                  className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-destructive hover:bg-destructive/10 transition"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 className="w-3.5 h-3.5" />
                   Delete
                 </button>
               </div>
@@ -211,160 +224,126 @@ export default function BookmarkCard({ bookmark, onToggleFavorite, onDelete }: B
         </div>
       </div>
 
-      {/* Content */}
       <div className="mb-4">
         {bookmark.type === 'article' && bookmark.title && (
-          <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">{bookmark.title}</h3>
+          <h3 className="font-bold text-foreground mb-2 line-clamp-2 text-sm leading-snug">{bookmark.title}</h3>
         )}
-        <p className="text-gray-800 text-[15px] leading-relaxed whitespace-pre-wrap">
+        <p className="text-foreground/70 text-[14px] leading-relaxed whitespace-pre-wrap font-medium">
           {displayContent}
           {isLongContent && !showMore && '...'}
         </p>
         {isLongContent && (
           <button
-            onClick={() => setShowMore(!showMore)}
-            className="text-indigo-600 text-sm font-medium mt-1 hover:underline"
+            onClick={(e) => { e.stopPropagation(); setShowMore(!showMore); }}
+            className="text-primary text-xs font-bold mt-2 hover:underline decoration-2 underline-offset-4"
           >
-            {showMore ? 'Show less' : 'Show more'}
+            {showMore ? 'Show less' : 'Read more'}
           </button>
         )}
       </div>
 
-      {/* Media Grid for tweets/linkedin */}
       {validMedia.length > 0 && (
-        <a
-          href={bookmark.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block mb-4 rounded-xl overflow-hidden border border-gray-100"
-        >
+        <div className="block mb-5 rounded-xl overflow-hidden border border-border bg-muted/20">
           {validMedia.length === 1 ? (
-            // Single image
-            <div className="relative">
+            <div className="relative group/media">
               <img
                 src={validMedia[0].url || validMedia[0].poster || ''}
                 alt={validMedia[0].alt || ''}
-                className="w-full h-48 object-cover hover:opacity-95 transition"
+                className="w-full h-48 object-cover hover:scale-105 transition-transform duration-500"
                 onError={() => handleImageError(validMedia[0].url || validMedia[0].poster || '')}
               />
               {(validMedia[0].type === 'video' || validMedia[0].type === 'gif') && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                  <div className="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center">
-                    <Play className="w-6 h-6 text-gray-800 ml-1" fill="currentColor" />
+                <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover/media:bg-black/40 transition-colors">
+                  <div className="w-12 h-12 bg-white/95 rounded-full flex items-center justify-center shadow-xl transform group-hover/media:scale-110 transition-transform">
+                    <Play className="w-5 h-5 text-slate-900 ml-0.5 fill-current" />
                   </div>
                 </div>
               )}
             </div>
-          ) : validMedia.length === 2 ? (
-            // Two images side by side
-            <div className="grid grid-cols-2 gap-0.5">
-              {validMedia.slice(0, 2).map((item, idx) => (
-                <div key={idx} className="relative">
-                  <img
-                    src={item.url || item.poster || ''}
-                    alt={item.alt || ''}
-                    className="w-full h-32 object-cover hover:opacity-95 transition"
-                    onError={() => handleImageError(item.url || item.poster || '')}
-                  />
-                  {(item.type === 'video' || item.type === 'gif') && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                      <Play className="w-8 h-8 text-white" fill="currentColor" />
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          ) : validMedia.length === 3 ? (
-            // Three images - one large, two small
-            <div className="grid grid-cols-2 gap-0.5">
-              <div className="row-span-2 relative">
-                <img
-                  src={validMedia[0].url || validMedia[0].poster || ''}
-                  alt={validMedia[0].alt || ''}
-                  className="w-full h-full object-cover hover:opacity-95 transition"
-                  style={{ minHeight: '160px' }}
-                  onError={() => handleImageError(validMedia[0].url || validMedia[0].poster || '')}
-                />
-              </div>
-              {validMedia.slice(1, 3).map((item, idx) => (
-                <div key={idx} className="relative">
-                  <img
-                    src={item.url || item.poster || ''}
-                    alt={item.alt || ''}
-                    className="w-full h-20 object-cover hover:opacity-95 transition"
-                    onError={() => handleImageError(item.url || item.poster || '')}
-                  />
-                </div>
-              ))}
-            </div>
-          ) : validMedia.length >= 4 ? (
-            // Four images grid
-            <div className="grid grid-cols-2 gap-0.5">
+          ) : (
+            <div className={`grid ${validMedia.length === 2 ? 'grid-cols-2' : 'grid-cols-2 grid-rows-2'} gap-0.5 h-48`}>
               {validMedia.slice(0, 4).map((item, idx) => (
-                <div key={idx} className="relative">
+                <div key={idx} className="relative h-full overflow-hidden">
                   <img
                     src={item.url || item.poster || ''}
                     alt={item.alt || ''}
-                    className="w-full h-24 object-cover hover:opacity-95 transition"
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                     onError={() => handleImageError(item.url || item.poster || '')}
                   />
                   {idx === 3 && validMedia.length > 4 && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-                      <span className="text-white font-semibold text-lg">+{validMedia.length - 4}</span>
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+                      <span className="text-white font-black text-sm">+{validMedia.length - 4}</span>
                     </div>
                   )}
                 </div>
               ))}
             </div>
-          ) : null}
-        </a>
+          )}
+        </div>
       )}
 
-      {/* Thumbnail for articles (fallback) */}
-      {bookmark.type === 'article' && bookmark.thumbnail && validMedia.length === 0 && (
-        <a
-          href={bookmark.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block mb-4 rounded-xl overflow-hidden border border-gray-100"
-        >
-          <img
-            src={bookmark.thumbnail}
-            alt={bookmark.title}
-            className="w-full h-40 object-cover hover:opacity-95 transition"
-          />
-        </a>
-      )}
-
-      {/* Engagement Stats */}
       {stats && (
-        <div className="flex items-center gap-6 mb-4 text-gray-500 text-sm">
-          <span className="flex items-center gap-1.5">
-            <MessageCircle className="w-4 h-4" />
+        <div className="flex items-center gap-5 mb-5 text-muted-foreground text-[12px] font-bold">
+          <span className="flex items-center gap-1.5 hover:text-foreground transition cursor-pointer">
+            <MessageCircle className="w-3.5 h-3.5" />
             {stats.comments}
           </span>
-          <span className="flex items-center gap-1.5">
-            <Repeat2 className="w-4 h-4" />
+          <span className="flex items-center gap-1.5 hover:text-emerald-500 transition cursor-pointer">
+            <Repeat2 className="w-3.5 h-3.5" />
             {stats.reposts}
           </span>
-          <span className="flex items-center gap-1.5">
-            <Heart className="w-4 h-4" />
+          <span className="flex items-center gap-1.5 hover:text-rose-500 transition cursor-pointer">
+            <Heart className="w-3.5 h-3.5" />
             {stats.likes}
           </span>
         </div>
       )}
 
-      {/* Footer */}
-      <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-        <div className="flex items-center gap-2 text-sm text-gray-500">
-          <span>{source.icon}</span>
-          <span>{source.text}</span>
+      <div className="flex items-center justify-between pt-4 border-t border-border">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className={`px-2 py-1 rounded text-[9px] font-black uppercase tracking-wider ${typeInfo.color} shadow-sm border border-transparent`}>
+            {typeInfo.label}
+          </div>
+
+          {/* Cluster Tags */}
+          {bookmark.tags?.map(tag => {
+            const cluster = clusters.find(c => c.name === tag);
+            if (!cluster) return null;
+            return (
+              <button
+                key={cluster.id}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const next = new URLSearchParams(searchParams);
+                  next.set('type', cluster.name);
+                  setSearchParams(next);
+                }}
+                className={`flex items-center gap-1.5 px-2 py-1 rounded-md text-[9px] font-bold border border-transparent hover:border-border transition-all group/tag ${cluster.color.replace('bg-', 'bg-opacity-10 text-').replace('500', '600')} dark:${cluster.color.replace('bg-', 'bg-opacity-20 text-').replace('500', '400')} bg-current/10`}
+              >
+                <div className={`w-1.5 h-1.5 rounded-full ${cluster.color}`} />
+                {cluster.name}
+              </button>
+            );
+          })}
+
+          <span className="text-[10px] text-muted-foreground font-bold">{timeAgo} ago</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-400">{timeAgo} ago</span>
-          {bookmark.isFavorite && (
-            <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-          )}
+          <button
+            onClick={(e) => { e.stopPropagation(); onToggleFavorite(bookmark.id); }}
+            className={`p-1.5 rounded-lg hover:bg-muted transition-colors ${bookmark.isFavorite ? 'text-amber-400' : 'text-muted-foreground hover:text-foreground'}`}
+          >
+            <Star className={`w-3.5 h-3.5 ${bookmark.isFavorite ? 'fill-current' : ''}`} />
+          </button>
+          <a
+            href={bookmark.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <ExternalLink className="w-3.5 h-3.5" />
+          </a>
         </div>
       </div>
     </div>

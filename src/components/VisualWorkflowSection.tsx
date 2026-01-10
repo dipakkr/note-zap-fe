@@ -1,4 +1,4 @@
-import { Chrome, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 export default function VisualWorkflowSection() {
     return (
@@ -25,8 +25,8 @@ export default function VisualWorkflowSection() {
                         <div className="max-w-3xl mx-auto">
                             <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
                                 <div className="flex items-center gap-4 mb-4">
-                                    <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center">
-                                        <Chrome className="w-8 h-8 text-white" />
+                                    <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center p-3">
+                                        <img src="/chrome.svg" alt="Chrome" className="w-full h-full" />
                                     </div>
                                     <div className="flex-1">
                                         <h4 className="font-semibold text-gray-900 text-lg">PostZaper Extension</h4>

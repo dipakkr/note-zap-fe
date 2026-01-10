@@ -11,6 +11,9 @@ import TermsPage from './pages/TermsPage';
 import AboutPage from './pages/AboutPage';
 import BlogPage from './pages/BlogPage';
 import BlogDetailPage from './pages/BlogDetailPage';
+import ProfileDetailPage from './pages/ProfileDetailPage';
+import ToolsHubPage from './pages/ToolsHubPage';
+import ToolDetailPage from './pages/ToolDetailPage';
 
 
 const queryClient = new QueryClient({
@@ -88,6 +91,16 @@ function AppRoutes() {
       <Route path="/about" element={<AboutPage />} />
       <Route path="/blog" element={<BlogPage />} />
       <Route path="/blog/:id" element={<BlogDetailPage />} />
+      <Route path="/tools" element={<ToolsHubPage />} />
+      <Route path="/tools/:slug" element={<ToolDetailPage />} />
+      <Route
+        path="/profile/:id"
+        element={
+          <ProtectedRoute>
+            <ProfileDetailPage />
+          </ProtectedRoute>
+        }
+      />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

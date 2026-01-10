@@ -1,9 +1,121 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth, googleProvider } from '../lib/firebase';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Quote } from 'lucide-react';
 import { toast } from 'sonner';
 import Logo from '../components/Logo';
+
+// Animated Testimonials Component
+const testimonials = [
+  {
+    quote: "PostZaper completely changed how I save content. Now I never lose that important tweet or thread again!",
+    author: "Sarah Chen",
+    role: "Content Creator",
+    avatar: "https://i.pravatar.cc/100?img=1"
+  },
+  {
+    quote: "The one-click save from LinkedIn is a game changer. My research workflow is 10x faster now.",
+    author: "Alex Johnson",
+    role: "Marketing Manager",
+    avatar: "https://i.pravatar.cc/100?img=3"
+  },
+  {
+    quote: "Finally, a tool that understands creators. I can find any saved post in seconds.",
+    author: "Michael Park",
+    role: "Entrepreneur",
+    avatar: "https://i.pravatar.cc/100?img=5"
+  },
+  {
+    quote: "Best investment for my personal brand. The bookmark organization is incredible.",
+    author: "Emma Williams",
+    role: "Freelancer",
+    avatar: "https://i.pravatar.cc/100?img=9"
+  }
+];
+
+function AnimatedTestimonials() {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isVisible, setIsVisible] = useState(true);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIsVisible(false);
+      setTimeout(() => {
+        setCurrentIndex((prev) => (prev + 1) % testimonials.length);
+        setIsVisible(true);
+      }, 500);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const current = testimonials[currentIndex];
+
+  return (
+    <div className="max-w-lg">
+      {/* Quote Icon */}
+      <Quote className="w-10 h-10 text-purple-400/60 mb-6" />
+
+      {/* Testimonial Content */}
+      <div className={`transition-all duration-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+        <blockquote className="text-2xl font-medium text-white leading-relaxed mb-8">
+          "{current.quote}"
+        </blockquote>
+
+        <div className="flex items-center gap-4">
+          <img
+            src={current.avatar}
+            alt={current.author}
+            className="w-12 h-12 rounded-full border-2 border-white/20"
+          />
+          <div>
+            <div className="text-white font-semibold">{current.author}</div>
+            <div className="text-zinc-400 text-sm">{current.role}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Progress Dots */}
+      <div className="flex gap-2 mt-8">
+        {testimonials.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => {
+              setIsVisible(false);
+              setTimeout(() => {
+                setCurrentIndex(index);
+                setIsVisible(true);
+              }, 300);
+            }}
+            className={`h-1.5 rounded-full transition-all duration-300 ${index === currentIndex
+              ? 'w-8 bg-purple-400'
+              : 'w-2 bg-white/30 hover:bg-white/50'
+              }`}
+          />
+        ))}
+      </div>
+
+      {/* Social Proof */}
+      <div className="flex items-center gap-4 mt-10 pt-8 border-t border-white/10">
+        <div className="flex -space-x-3">
+          {[11, 12, 13, 14].map((i) => (
+            <img
+              key={i}
+              src={`https://i.pravatar.cc/100?img=${i}`}
+              alt="User"
+              className="w-8 h-8 rounded-full border-2 border-zinc-900"
+            />
+          ))}
+        </div>
+        <div className="text-zinc-400 text-sm">
+          <span className="text-white font-semibold">Join 25,000+ creators</span>
+          <br />organizing their content.
+        </div>
+      </div>
+    </div>
+  );
+}
+
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -81,29 +193,15 @@ export default function LoginPage() {
         <div className="relative z-10 text-white">
           <div className="flex items-center gap-2 font-bold text-xl tracking-tight">
             <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center border border-white/20">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="text-white">
-                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-              </svg>
+              <img src="/logo-icon.svg" alt="App Icon" className="w-5 h-5" />
             </div>
             <span>PostZaper</span>
           </div>
         </div>
 
-        {/* Middle: Content */}
-        <div className="relative z-10 max-w-lg">
-          <h1 className="text-4xl font-bold text-white tracking-tight leading-tight mb-6">
-            "The second brain for your social life. Capture everything, find anything."
-          </h1>
-          <div className="flex items-center gap-4">
-            <div className="flex -space-x-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="w-10 h-10 rounded-full border-2 border-zinc-900 bg-zinc-800 bg-cover bg-center" style={{ backgroundImage: `url(https://i.pravatar.cc/100?img=${i + 10})` }} />
-              ))}
-            </div>
-            <div className="text-zinc-400 text-sm">
-              <span className="text-white font-semibold">Join 25,000+ creators</span> <br /> organizing their content.
-            </div>
-          </div>
+        {/* Middle: Animated Testimonials */}
+        <div className="relative z-10 flex-1 flex flex-col justify-center">
+          <AnimatedTestimonials />
         </div>
 
         {/* Bottom: Footer */}
@@ -142,20 +240,8 @@ export default function LoginPage() {
                 <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
                 <>
-                  {/* Chrome ISO Logo */}
-                  <svg width="20" height="20" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M24 0C10.7452 0 0 10.7452 0 24C0 37.2548 10.7452 48 24 48C37.2548 48 48 37.2548 48 24C48 10.7452 37.2548 0 24 0Z" fill="#F0F0F0" fillOpacity="0.01" />
-                    <path d="M24 22L44 26L24 46L4 26L24 22Z" fill="#2196F3" />
-                    <path d="M24 22L36 6H12L24 22Z" fill="#D32F2F" />
-                    <path d="M24 22L12 38H36L24 22Z" fill="#FBC02D" />
-                    <circle cx="24" cy="24" r="10" fill="white" />
-                    <path d="M23.9999 44C35.0456 44 43.9999 35.0457 43.9999 24C43.9999 12.9543 35.0456 4 23.9999 4C12.9542 4 3.99991 12.9543 3.99991 24C3.99991 35.0457 12.9542 44 23.9999 44Z" fill="white" fillOpacity="0.01" />
-                    <path d="M41.2727 24C41.2727 34.1205 32.5936 42.4308 22.2155 43.1491L13.5654 28.1666L23.9999 10.1111L34.4345 28.1666H17.1327" fill="#4CAF50" />
-                    <path d="M23.9999 10.1111L13.5654 28.1666L4.91537 13.1841C10.8988 2.82283 23.9999 2.10093 23.9999 10.1111Z" fill="#D32F2F" />
-                    <path d="M41.2727 24H23.9999L15.35 9.01755C26.7909 9.01755 37.4087 14.2882 41.2727 24Z" fill="#FBC02D" />
-                    <circle cx="24" cy="24" r="9" fill="white" />
-                    <circle cx="24" cy="24" r="7.5" fill="#4285F4" />
-                  </svg>
+                  {/* Google Logo */}
+                  <img src="/google.svg" alt="Google" className="w-5 h-5" />
                   <span className="font-medium text-gray-700 group-hover:text-gray-900">Continue with Google</span>
                 </>
               )}

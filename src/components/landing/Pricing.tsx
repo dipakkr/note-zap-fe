@@ -21,11 +21,12 @@ const Pricing = () => {
       name: "Pro",
       badge: "Most Popular",
       description: "Everything you need to save smarter",
-      price: "$29",
-      priceLabel: "one-time payment",
+      price: "$39",
+      priceLabel: "per year",
       highlighted: true,
       features: [
         "Everything in Free, plus:",
+        "Unlimited bookmarks",
         "Chrome extension (one-click save)",
         "Auto-save from Twitter, LinkedIn & blogs",
         "Advanced search (filters, date ranges)",
@@ -33,22 +34,6 @@ const Pricing = () => {
         "Bulk import browser bookmarks",
         "Export to CSV/JSON",
         "Priority support (24hr response)",
-        "Lifetime access",
-      ],
-    },
-    {
-      name: "Team",
-      description: "For teams and power users",
-      price: "$79",
-      priceLabel: "one-time, up to 5 users",
-      features: [
-        "Everything in Pro, plus:",
-        "5 team member seats",
-        "Shared collections",
-        "Team analytics dashboard",
-        "Admin controls",
-        "SSO integration",
-        "Dedicated support",
       ],
     },
   ];
@@ -62,22 +47,22 @@ const Pricing = () => {
             <div className="flex h-5 w-5 items-center justify-center rounded bg-foreground">
               <Zap className="h-3 w-3 text-background" />
             </div>
-            <span className="font-medium">Flexible Pricing</span>
+            <span className="font-medium">Simple Pricing</span>
           </div>
 
           <h2 className="mt-6 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
-            Invest in <span className="italic text-primary">Growth</span>,
+            Invest in <span className="italic text-primary">Productivity</span>,
             <br />
-            Not Just Tools
+            Not Complexity
           </h2>
 
           <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
-            Pay once, use forever. No subscriptions, no hidden fees.
+            Simple, transparent pricing. Cancel anytime.
           </p>
         </div>
 
         {/* Pricing Cards */}
-        <div className="mx-auto mt-12 grid max-w-5xl gap-6 lg:grid-cols-3">
+        <div className="mx-auto mt-12 grid max-w-4xl gap-6 lg:grid-cols-2">
           {plans.map((plan) => (
             <div
               key={plan.name}
@@ -112,7 +97,7 @@ const Pricing = () => {
                 className={`mt-auto w-full rounded-full ${plan.highlighted ? "bg-primary" : "bg-foreground"
                   }`}
               >
-                {plan.price === "$0" ? "Get Started Free" : "Get Lifetime Access"}
+                {plan.price === "$0" ? "Get Started Free" : "Start Free Trial"}
               </Button>
             </div>
           ))}

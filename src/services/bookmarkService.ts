@@ -33,6 +33,17 @@ export interface LinkedInProfileData {
   website?: string;
 }
 
+export interface Cluster {
+  id: string;
+  _id?: string;
+  userId: string;
+  workspaceId: string;
+  name: string;
+  color: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Bookmark {
   id: string;
   _id?: string; // MongoDB ID
@@ -139,7 +150,7 @@ export const bookmarkService = {
   }) => {
     const response = await apiClient.post<{ bookmark: Bookmark }>('/api/bookmarks', {
       ...data,
-      appId: 'bookmarky-app'
+      appId: 'postzaper-app'
     }, {
       headers: {
         'X-App-Id': 'bookmarky'
@@ -158,4 +169,22 @@ export const bookmarkService = {
 
   toggleFavorite: (id: string) =>
     apiClient.patch(`/api/bookmarks/${id}/favorite`, {}),
+};
+
+/**
+ * Clusters
+ */
+export const clusterService = {
+  getClusters: async (workspaceId: string) => {
+    const response = await apiClient.get<Cluster[]>(`/api/clusters/workspace/${workspaceId}`);
+    return response.map(c => ({ ...c, id: c._id || c.id }));
+  },
+
+  createCluster: async (data: { workspaceId: string; name: string; color?: string }) => {
+    const response = await apiClient.post<Cluster>('/api/clusters', data);
+    return { ...response, id: response._id || response.id };
+  },
+
+  deleteCluster: (id: string) =>
+    apiClient.delete(`/api/clusters/${id}`),
 };

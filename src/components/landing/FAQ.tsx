@@ -27,8 +27,7 @@ const FAQ = () => {
     },
     {
       question: "Is there a long-term commitment or cancellation fee?",
-      answer:
-        "No long-term commitment required. Cancel anytime with no fees. We also offer a 30-day money-back guarantee.",
+      answer: "No long-term commitment required. Cancel anytime with no fees.",
     },
     {
       question: "How does PostZaper's pricing work?",
@@ -97,9 +96,8 @@ const FAQ = () => {
                   >
                     <span className="font-medium">{faq.question}</span>
                     <ChevronDown
-                      className={`h-5 w-5 text-muted-foreground transition-transform ${
-                        isOpen ? "rotate-180" : ""
-                      }`}
+                      className={`h-5 w-5 text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""
+                        }`}
                     />
                   </button>
                   {isOpen && (
@@ -128,9 +126,8 @@ const FAQ = () => {
                   >
                     <span className="font-medium">{faq.question}</span>
                     <ChevronDown
-                      className={`h-5 w-5 text-muted-foreground transition-transform ${
-                        isOpen ? "rotate-180" : ""
-                      }`}
+                      className={`h-5 w-5 text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""
+                        }`}
                     />
                   </button>
                   {isOpen && (

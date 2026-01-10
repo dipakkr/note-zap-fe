@@ -58,14 +58,14 @@ const Comparison = () => {
         </div>
 
         {/* Comparison Cards - Desktop */}
-        <div className="hidden lg:block mx-auto max-w-5xl">
-          <div className="rounded-2xl border bg-card overflow-hidden shadow-lg">
+        <div className="hidden lg:block mx-auto max-w-5xl pt-4">
+          <div className="rounded-2xl border bg-card shadow-lg relative">
             {/* Header Row */}
-            <div className="grid grid-cols-5 border-b bg-muted/50">
-              <div className="p-5 font-semibold text-muted-foreground">Features</div>
+            <div className="grid grid-cols-5 border-b bg-muted/50 rounded-t-2xl">
+              <div className="p-5 font-semibold text-muted-foreground rounded-tl-2xl">Features</div>
               <div className="p-5 text-center border-l border-r-2 border-r-primary/20 bg-primary/5 relative">
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-full">
+                  <span className="bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
                     RECOMMENDED
                   </span>
                 </div>
@@ -76,14 +76,16 @@ const Comparison = () => {
                   <span className="font-bold text-foreground">PostZaper</span>
                 </div>
               </div>
-              {competitors.map((comp) => (
-                <div key={comp.key} className="p-5 text-center border-l">
-                  <span className="font-medium text-muted-foreground">{comp.name}</span>
-                  {comp.subtitle && (
-                    <span className="block text-xs text-muted-foreground/70">{comp.subtitle}</span>
-                  )}
-                </div>
-              ))}
+              <div className="p-5 text-center border-l">
+                <span className="font-medium text-muted-foreground">Browser</span>
+                <span className="block text-xs text-muted-foreground/70">Bookmarks</span>
+              </div>
+              <div className="p-5 text-center border-l">
+                <span className="font-medium text-muted-foreground">Notion</span>
+              </div>
+              <div className="p-5 text-center border-l rounded-tr-2xl">
+                <span className="font-medium text-muted-foreground">Pocket</span>
+              </div>
             </div>
 
             {/* Feature Rows */}
@@ -109,11 +111,11 @@ const Comparison = () => {
             ))}
 
             {/* Pricing Row */}
-            <div className="grid grid-cols-5 border-t-2 bg-muted/30">
-              <div className="p-5 font-semibold flex items-center">Pricing</div>
+            <div className="grid grid-cols-5 border-t-2 bg-muted/30 rounded-b-2xl">
+              <div className="p-5 font-semibold flex items-center rounded-bl-2xl">Pricing</div>
               <div className="p-5 text-center border-l border-r-2 border-r-primary/20 bg-primary/10">
-                <div className="text-2xl font-bold text-primary">$29</div>
-                <div className="text-xs text-muted-foreground">one-time payment</div>
+                <div className="text-2xl font-bold text-primary">$39</div>
+                <div className="text-xs text-muted-foreground">per year</div>
               </div>
               <div className="p-5 text-center border-l">
                 <div className="text-lg font-semibold text-muted-foreground">Free</div>
@@ -123,7 +125,7 @@ const Comparison = () => {
                 <div className="text-lg font-semibold text-muted-foreground">$10/mo</div>
                 <div className="text-xs text-muted-foreground">per user</div>
               </div>
-              <div className="p-5 text-center border-l">
+              <div className="p-5 text-center border-l rounded-br-2xl">
                 <div className="text-lg font-semibold text-muted-foreground">$5/mo</div>
                 <div className="text-xs text-muted-foreground">premium tier</div>
               </div>
@@ -146,7 +148,7 @@ const Comparison = () => {
               </div>
               <div>
                 <div className="font-bold text-lg">PostZaper</div>
-                <div className="text-2xl font-bold text-primary">$29 <span className="text-sm font-normal text-muted-foreground">one-time</span></div>
+                <div className="text-2xl font-bold text-primary">$39 <span className="text-sm font-normal text-muted-foreground">/year</span></div>
               </div>
             </div>
             <div className="space-y-2">
@@ -191,7 +193,7 @@ const Comparison = () => {
         {/* Bottom Note */}
         <div className="mt-10 text-center">
           <p className="text-sm text-muted-foreground">
-            ✨ Pay once, use forever. No subscriptions, no hidden fees.
+            ✨ Simple, transparent pricing. Cancel anytime.
           </p>
         </div>
       </div>

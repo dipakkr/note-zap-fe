@@ -1,4 +1,3 @@
-import { Zap } from "lucide-react";
 
 const Footer = () => {
   const columns = [
@@ -58,10 +57,7 @@ const Footer = () => {
           {/* Brand Column */}
           <div className="lg:col-span-1">
             <a href="/" className="flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-foreground">
-                <Zap className="h-5 w-5 text-background" />
-              </div>
-              <span className="text-xl font-bold tracking-tight">PostZaper</span>
+              <img src="/logo.svg" alt="PostZaper" className="h-10" />
             </a>
             <p className="mt-4 text-sm text-muted-foreground">
               Plan, publish, and analyze across every platform.

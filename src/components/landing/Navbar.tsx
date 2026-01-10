@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Menu, X, Zap, ArrowRight } from "lucide-react";
+import { Menu, X, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,6 +11,7 @@ const Navbar = () => {
 
   const navLinks = [
     { label: "Features", href: "#features" },
+    { label: "Free Tools", href: "/tools" },
     { label: "Pricing", href: "#pricing" },
     { label: "FAQ", href: "#faq" },
   ];
@@ -23,10 +24,7 @@ const Navbar = () => {
       <nav className="container-tight flex h-16 items-center justify-between">
         {/* Logo */}
         <a href="/" className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-foreground">
-            <Zap className="h-5 w-5 text-background" />
-          </div>
-          <span className="text-xl font-bold tracking-tight">PostZaper</span>
+          <img src="/logo.svg" alt="PostZaper" className="h-10" />
         </a>
 
         {/* Desktop Navigation */}

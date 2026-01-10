@@ -95,9 +95,8 @@ const UseCases = () => {
                       return (
                         <div
                           key={i}
-                          className={`aspect-square rounded-lg p-1 text-xs ${
-                            isCurrentMonth ? "" : "text-muted-foreground/30"
-                          }`}
+                          className={`aspect-square rounded-lg p-1 text-xs ${isCurrentMonth ? "" : "text-muted-foreground/30"
+                            }`}
                         >
                           <div className="text-right">{isCurrentMonth ? day : ""}</div>
                           {hasContent && isCurrentMonth && (
@@ -115,103 +114,6 @@ const UseCases = () => {
             </div>
           </div>
 
-          {/* Two Column Cards */}
-          <div className="grid gap-6 lg:grid-cols-2">
-            {/* Engage & Respond Card */}
-            <div className="rounded-2xl border bg-card p-8">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-foreground">
-                <Zap className="h-5 w-5 text-background" />
-              </div>
-
-              <h3 className="mt-6 text-xl font-bold">Engage & Respond</h3>
-
-              <p className="mt-3 text-sm text-muted-foreground">
-                Manage comments and messages from all platforms in one unified inbox.
-                Never miss an opportunity to connect with your audience.
-              </p>
-
-              {/* Demo UI */}
-              <div className="mt-6 rounded-xl border bg-background p-4">
-                <div className="space-y-3">
-                  {[
-                    { name: "Sarah M.", message: "Love this content! 🔥", time: "2m ago" },
-                    { name: "Alex K.", message: "How do I get started?", time: "5m ago" },
-                    { name: "Jordan L.", message: "This is exactly what I needed", time: "12m ago" },
-                  ].map((comment, i) => (
-                    <div
-                      key={i}
-                      className="flex items-start gap-3 rounded-lg bg-muted/50 p-3"
-                    >
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/20 text-xs font-medium text-primary">
-                        {comment.name.charAt(0)}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium">{comment.name}</span>
-                          <span className="text-xs text-muted-foreground">{comment.time}</span>
-                        </div>
-                        <p className="mt-0.5 text-sm text-muted-foreground truncate">
-                          {comment.message}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Analyze & Grow Card */}
-            <div className="rounded-2xl border bg-card p-8">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-foreground">
-                <Zap className="h-5 w-5 text-background" />
-              </div>
-
-              <h3 className="mt-6 text-xl font-bold">Analyze & Grow</h3>
-
-              <p className="mt-3 text-sm text-muted-foreground">
-                Track performance across all your platforms. Get insights that help
-                you understand what works and optimize your content strategy.
-              </p>
-
-              {/* Demo Chart */}
-              <div className="mt-6 rounded-xl border bg-background p-4">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="font-medium">Engagement Overview</span>
-                  <span className="text-xs text-muted-foreground">Last 7 days</span>
-                </div>
-
-                {/* Bar Chart Placeholder */}
-                <div className="mt-4 flex items-end justify-between gap-2 h-24">
-                  {[40, 65, 45, 80, 55, 90, 70].map((height, i) => (
-                    <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                      <div
-                        className="w-full rounded-t-sm bg-gradient-to-t from-primary/80 to-primary/40"
-                        style={{ height: `${height}%` }}
-                      />
-                      <span className="text-xs text-muted-foreground">
-                        {["M", "T", "W", "T", "F", "S", "S"][i]}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Stats Row */}
-                <div className="mt-4 grid grid-cols-3 gap-4 border-t pt-4">
-                  {[
-                    { label: "Impressions", value: "24.5K", change: "+12%" },
-                    { label: "Engagement", value: "3.2K", change: "+8%" },
-                    { label: "Followers", value: "+847", change: "+15%" },
-                  ].map((stat) => (
-                    <div key={stat.label} className="text-center">
-                      <div className="text-lg font-bold">{stat.value}</div>
-                      <div className="text-xs text-muted-foreground">{stat.label}</div>
-                      <div className="text-xs text-green-500">{stat.change}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
 
           {/* See It In Action - Video Section */}
           <div className="rounded-2xl border bg-card p-8 lg:p-10">

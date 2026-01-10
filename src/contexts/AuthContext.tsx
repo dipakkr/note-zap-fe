@@ -21,6 +21,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [workspaceId, setWorkspaceId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const [extensionAvailable, setExtensionAvailable] = useState(false);
 
   const syncWithBackend = async (fbUser: User) => {
     // Prevent concurrent auth attempts
@@ -84,11 +85,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // The auth-bridge.js content script listens for this event and relays to extension
     if (typeof window !== 'undefined') {
       console.log('[Bookmark Manager] Dispatching auth sync event for extension');
-      
-      // Check if extension is available (content script sets this flag)
-      const extensionAvailable = (window as Window & { __BOOKMARK_MANAGER_EXTENSION__?: boolean }).__BOOKMARK_MANAGER_EXTENSION__;
-      
-      if (extensionAvailable) {
+
+      // Use state if available, otherwise check window
+      const isExtAvailable = extensionAvailable || (window as any).__BOOKMARK_MANAGER_EXTENSION__;
+
+      if (isExtAvailable) {
         // Listen for the result
         const handleResult = (event: Event) => {
           const customEvent = event as CustomEvent<{ success: boolean; error?: string }>;
@@ -100,13 +101,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         };
         window.addEventListener('bookmark-manager-auth-sync-result', handleResult);
-        
+
         // Set timeout to clean up listener
         setTimeout(() => {
           window.removeEventListener('bookmark-manager-auth-sync-result', handleResult);
         }, 5000);
       }
-      
+
       window.dispatchEvent(new CustomEvent('bookmark-manager-auth-sync', {
         detail: {
           user: response.user,
@@ -114,9 +115,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           idToken: token
         }
       }));
-      
+
       // Show info toast if extension not detected
-      if (!extensionAvailable) {
+      if (!isExtAvailable) {
         // Check if user came from extension
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('source') === 'extension') {
@@ -146,7 +147,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    // Handle extension events
+    const handleExtensionReady = () => setExtensionAvailable(true);
+    const handleExtensionLogout = () => {
+      console.log('[Bookmark Manager] Received logout event from extension');
+      signOut();
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('bookmark-manager-extension-ready', handleExtensionReady);
+      window.addEventListener('bookmark-manager-extension-logout', handleExtensionLogout);
+
+      // Check initial state
+      if ((window as any).__BOOKMARK_MANAGER_EXTENSION__) {
+        setExtensionAvailable(true);
+      }
+    }
+
+    return () => {
+      unsubscribe();
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('bookmark-manager-extension-ready', handleExtensionReady);
+        window.removeEventListener('bookmark-manager-extension-logout', handleExtensionLogout);
+      }
+    };
   }, []);
 
   const signOut = async () => {

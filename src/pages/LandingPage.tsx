@@ -1,5 +1,6 @@
 import Navbar from "@/components/landing/Navbar";
 import Hero from "@/components/landing/Hero";
+import TrustedBy from "@/components/landing/TrustedBy";
 import Problem from "@/components/landing/Problem";
 import HowItWorks from "@/components/landing/HowItWorks";
 import Features from "@/components/landing/Features";
@@ -9,6 +10,7 @@ import Testimonials from "@/components/landing/Testimonials";
 import Comparison from "@/components/landing/Comparison";
 import Pricing from "@/components/landing/Pricing";
 import FAQ from "@/components/landing/FAQ";
+import FreeTools from "@/components/landing/FreeTools";
 import FinalCTA from "@/components/landing/FinalCTA";
 import Footer from "@/components/landing/Footer";
 
@@ -18,6 +20,7 @@ const LandingPage = () => {
       <Navbar />
       <main>
         <Hero />
+        <TrustedBy />
         <Problem />
         <HowItWorks />
         <Features />
@@ -26,6 +29,7 @@ const LandingPage = () => {
         <Testimonials />
         <Comparison />
         <Pricing />
+        <FreeTools />
         <FAQ />
         <FinalCTA />
       </main>
