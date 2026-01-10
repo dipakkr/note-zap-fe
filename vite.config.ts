@@ -33,9 +33,14 @@ export default defineConfig({
             if (id.includes("firebase")) {
               return "firebase";
             }
-            // React core - always needed
-            if (id.includes("react-dom")) {
-              return "react-dom";
+            // React core - MUST keep react, react-dom, and scheduler together
+            // to avoid initialization order issues with React 19
+            if (
+              id.includes("react-dom") ||
+              id.includes("scheduler") ||
+              id.includes("/react/")
+            ) {
+              return "react-vendor";
             }
             if (id.includes("react-router")) {
               return "react-router";
