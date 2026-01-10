@@ -9,7 +9,7 @@ interface ContainerProps {
 
 export function Container({ children, className, fullWidth = false }: ContainerProps) {
   const isMobile = useIsMobile();
-  
+
   return (
     <div
       className={cn(

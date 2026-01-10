@@ -68,124 +68,167 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center px-4">
-      <div className="max-w-md w-full">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center mb-6">
-            <div className="h-12 text-blue-600">
-              <Logo className="h-12" />
+    <div className="min-h-screen flex w-full">
+
+      {/* LEFT SIDE: Visual & Branding */}
+      <div className="hidden lg:flex w-1/2 bg-zinc-900 p-12 flex-col justify-between relative overflow-hidden">
+        {/* Background Effects */}
+        <div className="absolute top-0 left-0 w-full h-full bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none"></div>
+        <div className="absolute -top-24 -left-24 w-96 h-96 bg-purple-500/30 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 right-0 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl"></div>
+
+        {/* Top: Logo */}
+        <div className="relative z-10 text-white">
+          <div className="flex items-center gap-2 font-bold text-xl tracking-tight">
+            <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center border border-white/20">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="text-white">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+              </svg>
             </div>
+            <span>PostZaper</span>
           </div>
-          <p className="text-gray-600">{isSignUp ? 'Create your account' : 'Welcome back'}</p>
         </div>
 
-        {/* Sign in card */}
-        <div className="bg-white rounded-lg shadow-lg p-8">
-          {/* Google Sign In */}
-          <button
-            onClick={handleGoogleSignIn}
-            disabled={loading}
-            className="w-full flex items-center justify-center gap-3 px-4 py-3 border-2 border-gray-300 rounded-lg hover:border-gray-400 transition disabled:opacity-50 disabled:cursor-not-allowed mb-6"
-          >
-            {loading ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              <>
-                <svg className="w-5 h-5" viewBox="0 0 24 24">
-                  <path
-                    fill="#4285F4"
-                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                  />
-                  <path
-                    fill="#34A853"
-                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                  />
-                  <path
-                    fill="#FBBC05"
-                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                  />
-                  <path
-                    fill="#EA4335"
-                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                  />
-                </svg>
-                <span className="font-medium">Continue with Google</span>
-              </>
-            )}
-          </button>
-
-          {/* Divider */}
-          <div className="relative mb-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300"></div>
+        {/* Middle: Content */}
+        <div className="relative z-10 max-w-lg">
+          <h1 className="text-4xl font-bold text-white tracking-tight leading-tight mb-6">
+            "The second brain for your social life. Capture everything, find anything."
+          </h1>
+          <div className="flex items-center gap-4">
+            <div className="flex -space-x-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="w-10 h-10 rounded-full border-2 border-zinc-900 bg-zinc-800 bg-cover bg-center" style={{ backgroundImage: `url(https://i.pravatar.cc/100?img=${i + 10})` }} />
+              ))}
             </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">Or continue with email</span>
+            <div className="text-zinc-400 text-sm">
+              <span className="text-white font-semibold">Join 25,000+ creators</span> <br /> organizing their content.
             </div>
           </div>
+        </div>
 
-          {/* Email Form */}
-          <form onSubmit={handleEmailAuth} className="space-y-4">
-            {isSignUp && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="John Doe"
-                  required={isSignUp}
-                />
-              </div>
-            )}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="you@example.com"
-                required
-              />
+        {/* Bottom: Footer */}
+        <div className="relative z-10 text-zinc-500 text-sm">
+          © 2024 PostZaper Inc.
+        </div>
+      </div>
+
+      {/* RIGHT SIDE: Auth Form */}
+      <div className="flex-1 flex items-center justify-center bg-white p-4 sm:p-12 lg:p-24">
+        <div className="w-full max-w-md space-y-8">
+
+          {/* Mobile Header */}
+          <div className="text-center lg:text-left">
+            <div className="lg:hidden flex justify-center mb-6">
+              <Logo className="h-10" />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="••••••••"
-                required
-              />
-            </div>
+            <h2 className="text-3xl font-bold tracking-tight text-gray-900">
+              {isSignUp ? 'Create an account' : 'Welcome back'}
+            </h2>
+            <p className="mt-2 text-sm text-gray-600">
+              {isSignUp ? 'Enter your details below to create your account' : 'Enter your email below to login to your account'}
+            </p>
+          </div>
+
+          {/* Auth Actions */}
+          <div className="space-y-6">
+
+            {/* Google Button */}
             <button
-              type="submit"
+              onClick={handleGoogleSignIn}
               disabled={loading}
-              className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed group"
             >
               {loading ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  <span>{isSignUp ? 'Creating account...' : 'Signing in...'}</span>
-                </>
+                <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
-                <span>{isSignUp ? 'Sign Up' : 'Sign In'}</span>
+                <>
+                  {/* Chrome ISO Logo */}
+                  <svg width="20" height="20" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M24 0C10.7452 0 0 10.7452 0 24C0 37.2548 10.7452 48 24 48C37.2548 48 48 37.2548 48 24C48 10.7452 37.2548 0 24 0Z" fill="#F0F0F0" fillOpacity="0.01" />
+                    <path d="M24 22L44 26L24 46L4 26L24 22Z" fill="#2196F3" />
+                    <path d="M24 22L36 6H12L24 22Z" fill="#D32F2F" />
+                    <path d="M24 22L12 38H36L24 22Z" fill="#FBC02D" />
+                    <circle cx="24" cy="24" r="10" fill="white" />
+                    <path d="M23.9999 44C35.0456 44 43.9999 35.0457 43.9999 24C43.9999 12.9543 35.0456 4 23.9999 4C12.9542 4 3.99991 12.9543 3.99991 24C3.99991 35.0457 12.9542 44 23.9999 44Z" fill="white" fillOpacity="0.01" />
+                    <path d="M41.2727 24C41.2727 34.1205 32.5936 42.4308 22.2155 43.1491L13.5654 28.1666L23.9999 10.1111L34.4345 28.1666H17.1327" fill="#4CAF50" />
+                    <path d="M23.9999 10.1111L13.5654 28.1666L4.91537 13.1841C10.8988 2.82283 23.9999 2.10093 23.9999 10.1111Z" fill="#D32F2F" />
+                    <path d="M41.2727 24H23.9999L15.35 9.01755C26.7909 9.01755 37.4087 14.2882 41.2727 24Z" fill="#FBC02D" />
+                    <circle cx="24" cy="24" r="9" fill="white" />
+                    <circle cx="24" cy="24" r="7.5" fill="#4285F4" />
+                  </svg>
+                  <span className="font-medium text-gray-700 group-hover:text-gray-900">Continue with Google</span>
+                </>
               )}
             </button>
-          </form>
 
-          {/* Toggle Sign Up / Sign In */}
-          <div className="mt-6 text-center text-sm">
-            <button
-              onClick={() => setIsSignUp(!isSignUp)}
-              className="text-blue-600 hover:text-blue-700 font-medium"
-            >
-              {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
-            </button>
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-gray-200" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-white px-2 text-gray-400">Or continue with</span>
+              </div>
+            </div>
+
+            <form onSubmit={handleEmailAuth} className="space-y-4">
+              {isSignUp && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-900">Full Name</label>
+                  <input
+                    type="text"
+                    placeholder="John Doe"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required={isSignUp}
+                    className="flex h-11 w-full rounded-lg border border-gray-300 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  />
+                </div>
+              )}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-900">Email</label>
+                <input
+                  type="email"
+                  placeholder="m@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="flex h-11 w-full rounded-lg border border-gray-300 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                />
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium text-gray-900">Password</label>
+                  {!isSignUp && <a href="#" className="text-sm font-medium text-blue-600 hover:text-blue-500">Forgot password?</a>}
+                </div>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="flex h-11 w-full rounded-lg border border-gray-300 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full h-11 bg-black text-white rounded-lg hover:bg-gray-800 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 font-medium text-sm"
+              >
+                {loading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : (isSignUp ? 'Create account' : 'Sign In')}
+              </button>
+            </form>
+
+            <div className="text-center text-sm text-gray-500">
+              {isSignUp ? 'Already have an account? ' : "Don't have an account? "}
+              <button onClick={() => setIsSignUp(!isSignUp)} className="font-semibold text-blue-600 hover:text-blue-500 underline underline-offset-4">
+                {isSignUp ? 'Sign in' : 'Sign up'}
+              </button>
+            </div>
+
+            <p className="px-8 text-center text-xs text-gray-400">
+              By clicking continue, you agree to our <a href="#" className="underline hover:text-gray-500">Terms of Service</a> and <a href="#" className="underline hover:text-gray-500">Privacy Policy</a>.
+            </p>
+
           </div>
         </div>
       </div>

@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Star, Trash2, ExternalLink, MessageCircle, Repeat2, Heart, MoreHorizontal, Play } from 'lucide-react';
 import type { Bookmark } from '../services/bookmarkService';
 import { formatDistanceToNow } from 'date-fns';
-import { useTheme } from '../contexts/ThemeContext';
 
 interface MediaItem {
   type: 'image' | 'video' | 'gif';
@@ -20,7 +19,6 @@ interface BookmarkCardProps {
 }
 
 export default function BookmarkCard({ bookmark, onToggleFavorite, onDelete }: BookmarkCardProps) {
-  const { theme } = useTheme();
   const [showMore, setShowMore] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [imageError, setImageError] = useState<Set<string>>(new Set());
@@ -100,11 +98,11 @@ export default function BookmarkCard({ bookmark, onToggleFavorite, onDelete }: B
       // Prefer images array, fall back to media array
       const images = bookmark.tweetData.images || [];
       const media = bookmark.tweetData.media || [];
-
+      
       // Combine and deduplicate
       const allMedia: MediaItem[] = [];
       const seenUrls = new Set<string>();
-
+      
       [...images, ...media].forEach((item: MediaItem) => {
         const url = item.url || item.poster || '';
         if (url && !seenUrls.has(url) && !url.startsWith('blob:')) {
@@ -112,14 +110,14 @@ export default function BookmarkCard({ bookmark, onToggleFavorite, onDelete }: B
           allMedia.push(item);
         }
       });
-
+      
       return allMedia;
     }
-
+    
     if (bookmark.type === 'linkedin' && bookmark.linkedinData?.media) {
       return bookmark.linkedinData.media;
     }
-
+    
     return [];
   };
 
@@ -136,12 +134,12 @@ export default function BookmarkCard({ bookmark, onToggleFavorite, onDelete }: B
 
   const isLongContent = content && content.length > 280;
   const displayContent = showMore ? content : content?.slice(0, 280);
-
+  
   // Filter out images that failed to load
   const validMedia = media.filter(m => !imageError.has(m.url || m.poster || ''));
 
   return (
-    <div className={`rounded-xl p-5 transition-all duration-200 group ${theme === 'dark' ? 'bg-gray-800/50 ring-1 ring-gray-700/30 hover:ring-gray-600/50 hover:shadow-xl hover:shadow-black/20' : 'bg-white border border-gray-100 hover:border-gray-200 hover:shadow-lg'}`}>
+    <div className="bg-white rounded-xl border border-gray-100 p-5 hover:shadow-lg hover:border-gray-200 transition-all duration-200 group">
       {/* Author Header */}
       <div className="flex items-start gap-3 mb-3">
         <div className="w-11 h-11 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white font-medium overflow-hidden flex-shrink-0">
@@ -153,7 +151,7 @@ export default function BookmarkCard({ bookmark, onToggleFavorite, onDelete }: B
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className={`font-semibold truncate ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{author.name}</span>
+            <span className="font-semibold text-gray-900 truncate">{author.name}</span>
             {bookmark.type === 'tweet' && (
               <span className="text-blue-500">
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
@@ -162,26 +160,26 @@ export default function BookmarkCard({ bookmark, onToggleFavorite, onDelete }: B
               </span>
             )}
           </div>
-          <p className={`text-sm truncate ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>{author.handle}</p>
+          <p className="text-sm text-gray-500 truncate">{author.handle}</p>
         </div>
 
         {/* Menu */}
         <div className="relative">
           <button
             onClick={() => setShowMenu(!showMenu)}
-            className={`p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition ${theme === 'dark' ? 'text-gray-500 hover:text-gray-300 hover:bg-gray-700' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`}
+            className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg opacity-0 group-hover:opacity-100 transition"
           >
             <MoreHorizontal className="w-5 h-5" />
           </button>
           {showMenu && (
             <>
               <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
-              <div className={`absolute right-0 top-8 rounded-lg shadow-lg py-1 z-20 w-40 ${theme === 'dark' ? 'bg-gray-800 ring-1 ring-gray-700/30' : 'bg-white border border-gray-100'}`}>
+              <div className="absolute right-0 top-8 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-20 w-40">
                 <a
                   href={bookmark.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`flex items-center gap-2 px-3 py-2 text-sm ${theme === 'dark' ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-50'}`}
+                  className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
                   onClick={() => setShowMenu(false)}
                 >
                   <ExternalLink className="w-4 h-4" />
@@ -192,7 +190,7 @@ export default function BookmarkCard({ bookmark, onToggleFavorite, onDelete }: B
                     onToggleFavorite(bookmark.id);
                     setShowMenu(false);
                   }}
-                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm ${theme === 'dark' ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-50'}`}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
                 >
                   <Star className={`w-4 h-4 ${bookmark.isFavorite ? 'fill-amber-400 text-amber-400' : ''}`} />
                   {bookmark.isFavorite ? 'Unfavorite' : 'Add to favorites'}
@@ -202,7 +200,7 @@ export default function BookmarkCard({ bookmark, onToggleFavorite, onDelete }: B
                     onDelete(bookmark.id);
                     setShowMenu(false);
                   }}
-                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm ${theme === 'dark' ? 'text-red-400 hover:bg-red-900/30' : 'text-red-600 hover:bg-red-50'}`}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
                 >
                   <Trash2 className="w-4 h-4" />
                   Delete
@@ -216,16 +214,16 @@ export default function BookmarkCard({ bookmark, onToggleFavorite, onDelete }: B
       {/* Content */}
       <div className="mb-4">
         {bookmark.type === 'article' && bookmark.title && (
-          <h3 className={`font-semibold mb-2 line-clamp-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{bookmark.title}</h3>
+          <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">{bookmark.title}</h3>
         )}
-        <p className={`text-[15px] leading-relaxed whitespace-pre-wrap ${theme === 'dark' ? 'text-gray-300' : 'text-gray-800'}`}>
+        <p className="text-gray-800 text-[15px] leading-relaxed whitespace-pre-wrap">
           {displayContent}
           {isLongContent && !showMore && '...'}
         </p>
         {isLongContent && (
           <button
             onClick={() => setShowMore(!showMore)}
-            className="text-indigo-500 text-sm font-medium mt-1 hover:underline"
+            className="text-indigo-600 text-sm font-medium mt-1 hover:underline"
           >
             {showMore ? 'Show less' : 'Show more'}
           </button>
@@ -238,7 +236,7 @@ export default function BookmarkCard({ bookmark, onToggleFavorite, onDelete }: B
           href={bookmark.url}
           target="_blank"
           rel="noopener noreferrer"
-          className={`block mb-4 rounded-xl overflow-hidden ${theme === 'dark' ? 'bg-gray-900 ring-1 ring-gray-700/30' : 'border border-gray-100'}`}
+          className="block mb-4 rounded-xl overflow-hidden border border-gray-100"
         >
           {validMedia.length === 1 ? (
             // Single image
@@ -328,7 +326,7 @@ export default function BookmarkCard({ bookmark, onToggleFavorite, onDelete }: B
           href={bookmark.url}
           target="_blank"
           rel="noopener noreferrer"
-          className={`block mb-4 rounded-xl overflow-hidden ${theme === 'dark' ? 'bg-gray-900 ring-1 ring-gray-700/30' : 'border border-gray-100'}`}
+          className="block mb-4 rounded-xl overflow-hidden border border-gray-100"
         >
           <img
             src={bookmark.thumbnail}
@@ -340,7 +338,7 @@ export default function BookmarkCard({ bookmark, onToggleFavorite, onDelete }: B
 
       {/* Engagement Stats */}
       {stats && (
-        <div className={`flex items-center gap-6 mb-4 text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+        <div className="flex items-center gap-6 mb-4 text-gray-500 text-sm">
           <span className="flex items-center gap-1.5">
             <MessageCircle className="w-4 h-4" />
             {stats.comments}
@@ -357,13 +355,13 @@ export default function BookmarkCard({ bookmark, onToggleFavorite, onDelete }: B
       )}
 
       {/* Footer */}
-      <div className={`flex items-center justify-between pt-3 border-t ${theme === 'dark' ? 'border-gray-700/30' : 'border-gray-100'}`}>
-        <div className={`flex items-center gap-2 text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+      <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+        <div className="flex items-center gap-2 text-sm text-gray-500">
           <span>{source.icon}</span>
           <span>{source.text}</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className={`text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>{timeAgo} ago</span>
+          <span className="text-xs text-gray-400">{timeAgo} ago</span>
           {bookmark.isFavorite && (
             <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
           )}

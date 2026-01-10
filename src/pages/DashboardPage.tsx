@@ -1,24 +1,24 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { useTheme } from '../contexts/ThemeContext';
-import { LogOut, Star, Search, RefreshCw, Settings, ChevronDown, Sun, Moon } from 'lucide-react';
+import { LogOut, Star, Search, RefreshCw, Settings, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { bookmarkService, type Bookmark } from '../services/bookmarkService';
 import BookmarkCard from '../components/BookmarkCard';
+import ProfilesTable from '../components/ProfilesTable';
 import AddBookmarkDialog from '../components/AddBookmarkDialog';
-import Logo from '../components/Logo';
-
+import { ConfirmDialog } from '../components/ui/confirm-dialog';
 
 export default function DashboardPage() {
   const { user, workspaceId, signOut } = useAuth();
-  const { theme, toggleTheme } = useTheme();
   const [activeFilter, setActiveFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletingBookmarkId, setDeletingBookmarkId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleSignOut = async () => {
     try {
@@ -37,8 +37,12 @@ export default function DashboardPage() {
       const options: { type?: string; folder?: string } = {};
 
       // Apply type filter
-      if (activeFilter === 'tweet' || activeFilter === 'linkedin' || activeFilter === 'article') {
-        options.type = activeFilter;
+      if (activeFilter === 'tweet') {
+        options.type = 'tweet';
+      } else if (activeFilter === 'linkedin' || activeFilter === 'profiles') {
+        options.type = 'linkedin';
+      } else if (activeFilter === 'article') {
+        options.type = 'article';
       } else if (activeFilter === 'favorites') {
         options.folder = 'favorites';
       }
@@ -74,16 +78,33 @@ export default function DashboardPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this bookmark?')) return;
+  const handleDeleteClick = (id: string) => {
+    setDeletingBookmarkId(id);
+    setDeleteDialogOpen(true);
+  };
 
+  const handleDeleteConfirm = async () => {
+    if (!deletingBookmarkId) return;
+
+    setIsDeleting(true);
     try {
-      await bookmarkService.deleteBookmark(id);
-      setBookmarks(prev => prev.filter(b => b.id !== id));
+      await bookmarkService.deleteBookmark(deletingBookmarkId);
+      setBookmarks(prev => prev.filter(b => b.id !== deletingBookmarkId));
       toast.success('Bookmark deleted');
+      setDeleteDialogOpen(false);
     } catch (error) {
       toast.error('Failed to delete bookmark');
+    } finally {
+      setIsDeleting(false);
+      setDeletingBookmarkId(null);
     }
+  };
+
+  // Helper to check if bookmark is a profile
+  const isProfile = (b: Bookmark) => {
+    return b.tags?.includes('profile') ||
+      b.linkedinData?.isProfile === true ||
+      b.linkedinProfileData !== undefined;
   };
 
   const filteredBookmarks = bookmarks.filter(bookmark => {
@@ -98,13 +119,20 @@ export default function DashboardPage() {
     );
   });
 
-  // Filter for favorites
-  const displayBookmarks = activeFilter === 'favorites'
-    ? filteredBookmarks.filter(b => b.isFavorite)
-    : filteredBookmarks;
+  // Filter for favorites and profiles
+  let displayBookmarks = filteredBookmarks;
+  if (activeFilter === 'favorites') {
+    displayBookmarks = filteredBookmarks.filter(b => b.isFavorite);
+  } else if (activeFilter === 'profiles') {
+    displayBookmarks = filteredBookmarks.filter(isProfile);
+  } else if (activeFilter === 'linkedin') {
+    // Exclude profiles from LinkedIn posts view
+    displayBookmarks = filteredBookmarks.filter(b => !isProfile(b));
+  }
 
   const filters = [
     { id: 'all', label: 'All Items', icon: null },
+    { id: 'profiles', label: 'Profiles', icon: '👤' },
     { id: 'linkedin', label: 'LinkedIn', icon: '🔗' },
     { id: 'tweet', label: 'Twitter / X', icon: '𝕏' },
     { id: 'favorites', label: 'Favorites', icon: '⭐' },
@@ -112,76 +140,65 @@ export default function DashboardPage() {
 
   return (
 
-    <div className={`min-h-screen flex flex-col font-sans transition-colors duration-200 ${theme === 'dark' ? 'bg-gray-950 text-gray-100' : 'bg-white text-slate-900'}`}>
+    <div className="min-h-screen bg-white flex flex-col font-sans text-slate-900">
       {/* Minimal Navbar */}
-      <nav className={`backdrop-blur-md  sticky top-0 z-50 ${theme === 'dark' ? 'bg-gray-950/90 border-gray-900' : 'bg-white/80 border-gray-100'}`}>
+      <nav className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
           <div className="flex items-center justify-between">
             {/* Logo */}
             <a href="/" className="flex items-center gap-2.5 group cursor-pointer">
-              <div className="h-8">
-                <Logo className={`h-8 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`} />
+              <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform duration-200">
+                <span className="text-white text-sm">📌</span>
               </div>
+              <span className="text-lg font-bold text-slate-900 tracking-tight">PostZaper</span>
             </a>
 
-            {/* Right Side Actions */}
-            <div className="flex items-center gap-3">
-              {/* Theme Toggle */}
+            {/* User Menu */}
+            <div className="relative">
               <button
-                onClick={toggleTheme}
-                className={`p-2 rounded-lg transition-colors ${theme === 'dark' ? 'hover:bg-gray-800 text-gray-400 hover:text-white' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-900'}`}
-                title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className="flex items-center gap-2 px-2 py-1.5 rounded-full hover:bg-gray-50 transition border border-transparent hover:border-gray-100"
               >
-                {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                {user?.picture ? (
+                  <img src={user.picture || ''} alt="" className="w-8 h-8 rounded-full border border-gray-100" />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 text-sm font-semibold border border-gray-200">
+                    {user?.name?.charAt(0) || user?.email?.charAt(0) || 'U'}
+                  </div>
+                )}
+                <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
               </button>
 
-              {/* User Menu */}
-              <div className="relative">
-                <button
-                  onClick={() => setShowUserMenu(!showUserMenu)}
-                  className={`flex items-center gap-2 px-2 py-1.5 rounded-full transition border ${theme === 'dark' ? 'hover:bg-gray-800 border-transparent hover:border-gray-700' : 'hover:bg-gray-50 border-transparent hover:border-gray-100'}`}
-                >
-                  {user?.picture ? (
-                    <img src={user.picture || ''} alt="" className={`w-8 h-8 rounded-full border ${theme === 'dark' ? 'border-gray-700' : 'border-gray-100'}`} />
-                  ) : (
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold border ${theme === 'dark' ? 'bg-gray-800 text-gray-300 border-gray-700' : 'bg-slate-100 text-slate-600 border-gray-200'}`}>
-                      {user?.name?.charAt(0) || user?.email?.charAt(0) || 'U'}
+              {showUserMenu && (
+                <>
+                  <div className="fixed inset-0" onClick={() => setShowUserMenu(false)} />
+                  <div className="absolute right-0 mt-2 w-60 bg-white rounded-xl shadow-xl shadow-gray-200/50 border border-gray-100 py-1.5 z-50">
+                    <div className="px-4 py-3 border-b border-gray-50 mb-1">
+                      <p className="font-medium text-slate-900 truncate">{user?.name || 'User'}</p>
+                      <p className="text-xs text-gray-500 truncate mt-0.5">{user?.email}</p>
+                      {user?.subscription === 'pro' && (
+                        <span className="inline-block mt-2 px-2 py-0.5 bg-slate-900 text-white text-[10px] rounded-full font-semibold tracking-wide">
+                          PRO
+                        </span>
+                      )}
                     </div>
-                  )}
-                  <ChevronDown className={`w-3.5 h-3.5 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`} />
-                </button>
-
-                {showUserMenu && (
-                  <>
-                    <div className="fixed inset-0" onClick={() => setShowUserMenu(false)} />
-                    <div className={`absolute right-0 mt-2 w-60 rounded-xl shadow-xl py-1.5 z-50 ${theme === 'dark' ? 'bg-gray-800 border border-gray-700/50 shadow-black/20' : 'bg-white border border-gray-100 shadow-gray-200/50'}`}>
-                      <div className={`px-4 py-3 border-b mb-1 ${theme === 'dark' ? 'border-gray-700' : 'border-gray-50'}`}>
-                        <p className={`font-medium truncate ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{user?.name || 'User'}</p>
-                        <p className={`text-xs truncate mt-0.5 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>{user?.email}</p>
-                        {user?.subscription === 'pro' && (
-                          <span className={`inline-block mt-2 px-2 py-0.5 text-[10px] rounded-full font-semibold tracking-wide ${theme === 'dark' ? 'bg-white text-gray-900' : 'bg-slate-900 text-white'}`}>
-                            PRO
-                          </span>
-                        )}
-                      </div>
-                      <button
-                        onClick={() => { }}
-                        className={`w-full flex items-center gap-2.5 px-4 py-2 text-sm transition ${theme === 'dark' ? 'text-gray-300 hover:bg-gray-700 hover:text-white' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
-                      >
-                        <Settings className="w-4 h-4" />
-                        Settings
-                      </button>
-                      <button
-                        onClick={handleSignOut}
-                        className={`w-full flex items-center gap-2.5 px-4 py-2 text-sm transition ${theme === 'dark' ? 'text-red-400 hover:bg-red-900/30' : 'text-red-600 hover:bg-red-50'}`}
-                      >
-                        <LogOut className="w-4 h-4" />
-                        Sign Out
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
+                    <button
+                      onClick={() => { }}
+                      className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition"
+                    >
+                      <Settings className="w-4 h-4" />
+                      Settings
+                    </button>
+                    <button
+                      onClick={handleSignOut}
+                      className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Sign Out
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -191,42 +208,33 @@ export default function DashboardPage() {
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
           <div>
-            <h1 className={`text-3xl md:text-4xl font-extrabold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>My Feed</h1>
-            <p className={`mt-2 text-lg ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>{displayBookmarks.length} saved items to read.</p>
+            <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">My Feed</h1>
+            <p className="text-gray-500 mt-2 text-lg">{displayBookmarks.length} saved items to read.</p>
           </div>
 
           {/* Search & Actions */}
           <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
             <div className="relative flex-1 sm:flex-initial">
-              <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`} />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search feed..."
-                className={`w-full sm:w-64 pl-10 pr-4 py-2.5 border rounded-xl text-sm focus:ring-2 transition-all ${theme === 'dark'
-                  ? 'bg-gray-900 border-gray-700 text-white placeholder:text-gray-500 focus:ring-gray-700 focus:border-gray-600'
-                  : 'bg-gray-50/50 border-gray-200 text-gray-900 placeholder:text-gray-400 focus:ring-black/5 focus:border-gray-300 focus:bg-white'
-                  }`}
+                className="w-full sm:w-64 pl-10 pr-4 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-black/5 focus:border-gray-300 focus:bg-white transition-all placeholder:text-gray-400"
               />
             </div>
             <div className="flex gap-2">
               <button
                 onClick={loadBookmarks}
-                className={`p-2.5 rounded-xl transition border ${theme === 'dark'
-                  ? 'text-gray-400 hover:text-white hover:bg-gray-800 border-gray-700 hover:border-gray-600'
-                  : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100 border-transparent hover:border-gray-200'
-                  }`}
+                className="p-2.5 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition border border-transparent hover:border-gray-200"
                 title="Refresh"
               >
                 <RefreshCw className="w-5 h-5" />
               </button>
               <button
                 onClick={() => setIsAddDialogOpen(true)}
-                className={`flex-1 sm:flex-initial px-5 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95 ${theme === 'dark'
-                  ? 'bg-blue-600 text-white hover:bg-blue-500'
-                  : 'bg-slate-900 text-white hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/10'
-                  }`}
+                className="flex-1 sm:flex-initial px-5 py-2.5 bg-slate-900 text-white border border-transparent rounded-xl text-sm font-semibold hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/10 transition-all active:scale-95"
               >
                 + New Bookmark
               </button>
@@ -235,16 +243,14 @@ export default function DashboardPage() {
         </div>
 
         {/* Filter Tabs */}
-        <div className={`flex items-center gap-1 mb-8  overflow-x-auto no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0 ${theme === 'dark' ? 'border-gray-900' : 'border-gray-200'}`}>
+        <div className="flex items-center gap-1 mb-8 border-b border-gray-200 overflow-x-auto no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
           {filters.map((filter) => (
             <button
               key={filter.id}
               onClick={() => setActiveFilter(filter.id)}
-              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-all whitespace-nowrap ${activeFilter === filter.id
-                ? 'border-b-2 border-blue-500 text-blue-500'
-                : theme === 'dark'
-                  ? 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/50 rounded-lg'
-                  : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50 rounded-lg'
+              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-all border-b-2 -mb-px whitespace-nowrap ${activeFilter === filter.id
+                ? 'border-blue-600 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-900'
                 }`}
             >
               {filter.icon && <span className="text-base">{filter.icon}</span>}
@@ -255,33 +261,19 @@ export default function DashboardPage() {
 
         {/* Bookmarks Grid */}
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className={`rounded-xl p-5 ${theme === 'dark' ? 'bg-gray-900/30 border-gray-900' : 'bg-white border-gray-200'}`}>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className={`w-10 h-10 rounded-full animate-pulse ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-100'}`} />
-                  <div className="space-y-2 flex-1">
-                    <div className={`h-4 w-24 rounded animate-pulse ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-100'}`} />
-                    <div className={`h-3 w-16 rounded animate-pulse ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-100'}`} />
-                  </div>
-                </div>
-                <div className="space-y-3 mb-6">
-                  <div className={`h-4 w-full rounded animate-pulse ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-100'}`} />
-                  <div className={`h-4 w-[90%] rounded animate-pulse ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-100'}`} />
-                  <div className={`h-4 w-[60%] rounded animate-pulse ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-100'}`} />
-                </div>
-              </div>
-            ))}
+          <div className="flex flex-col items-center justify-center py-32 text-center">
+            <div className="w-8 h-8 border-2 border-gray-200 border-t-black rounded-full animate-spin mb-4" />
+            <p className="text-gray-500 font-medium">Loading your feed...</p>
           </div>
         ) : displayBookmarks.length === 0 ? (
-          <div className={`flex flex-col items-center justify-center py-32 text-center rounded-3xl ${theme === 'dark' ? 'bg-gray-900/30 ring-1 ring-dashed ring-gray-700/30' : 'bg-gray-50/50 border border-dashed border-gray-200'}`}>
-            <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-6 ${theme === 'dark' ? 'bg-gray-800/50' : 'bg-white shadow-sm border border-gray-100'}`}>
-              <Star className={`w-8 h-8 ${theme === 'dark' ? 'text-gray-600' : 'text-gray-300'}`} />
+          <div className="flex flex-col items-center justify-center py-32 text-center bg-gray-50/50 rounded-3xl border border-dashed border-gray-200">
+            <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-gray-100">
+              <Star className="w-8 h-8 text-gray-300" />
             </div>
-            <h3 className={`text-xl font-bold mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">
               {searchQuery ? 'No results found' : 'Your feed is empty'}
             </h3>
-            <p className={`max-w-sm mb-8 leading-relaxed ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+            <p className="text-gray-500 max-w-sm mb-8 leading-relaxed">
               {searchQuery
                 ? 'We couldn\'t find anything matching your search. Try a different term.'
                 : 'Start saving content from Twitter, LinkedIn, and the web using our browser extension.'}
@@ -289,12 +281,18 @@ export default function DashboardPage() {
             {!searchQuery && (
               <button
                 onClick={() => setIsAddDialogOpen(true)}
-                className={`px-6 py-3 rounded-xl font-semibold transition ${theme === 'dark' ? 'bg-gray-800/50 ring-1 ring-gray-700/30 text-white hover:bg-gray-700/50' : 'bg-white border border-gray-200 text-gray-900 hover:bg-gray-50 hover:border-gray-300 shadow-sm'}`}
+                className="px-6 py-3 bg-white border border-gray-200 text-gray-900 rounded-xl font-semibold hover:bg-gray-50 hover:border-gray-300 transition shadow-sm"
               >
                 Add Your First Bookmark
               </button>
             )}
           </div>
+        ) : activeFilter === 'profiles' ? (
+          <ProfilesTable
+            profiles={displayBookmarks}
+            onToggleFavorite={handleToggleFavorite}
+            onDelete={handleDeleteClick}
+          />
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {displayBookmarks.map((bookmark) => (
@@ -302,7 +300,7 @@ export default function DashboardPage() {
                 key={bookmark.id}
                 bookmark={bookmark}
                 onToggleFavorite={handleToggleFavorite}
-                onDelete={handleDelete}
+                onDelete={handleDeleteClick}
               />
             ))}
           </div>
@@ -310,19 +308,19 @@ export default function DashboardPage() {
       </div>
 
       {/* Footer */}
-      <footer className={`border-t mt-auto ${theme === 'dark' ? 'border-gray-900 bg-gray-900/20' : 'border-gray-100 bg-gray-50/50'}`}>
+      <footer className="border-t border-gray-100 mt-auto bg-gray-50/50">
         <div className="max-w-7xl mx-auto px-6 py-12">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="flex items-center gap-2">
-              <span className={`text-sm font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>PostZaper</span>
+              <span className="text-sm font-semibold text-gray-900">PostZaper</span>
               <span className="text-sm text-gray-400">© 2024</span>
             </div>
 
             <div className="flex flex-wrap justify-center gap-x-8 gap-y-2">
-              <Link to="/privacy" className={`text-sm transition-colors ${theme === 'dark' ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-900'}`}>Privacy Policy</Link>
-              <Link to="/terms" className={`text-sm transition-colors ${theme === 'dark' ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-900'}`}>Terms of Service</Link>
-              <Link to="/blog" className={`text-sm transition-colors ${theme === 'dark' ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-900'}`}>Blog</Link>
-              <Link to="/about" className={`text-sm transition-colors ${theme === 'dark' ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-900'}`}>About</Link>
+              <a href="#" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Privacy Policy</a>
+              <a href="#" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Terms of Service</a>
+              <a href="#" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Blog</a>
+              <a href="#" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">About</a>
             </div>
 
             <div className="flex gap-4">
@@ -345,6 +343,19 @@ export default function DashboardPage() {
           workspaceId={workspaceId || ''}
         />
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Delete bookmark"
+        description="This action cannot be undone. The bookmark will be permanently removed from your collection."
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        onConfirm={handleDeleteConfirm}
+        variant="destructive"
+        loading={isDeleting}
+      />
     </div>
   );
 }

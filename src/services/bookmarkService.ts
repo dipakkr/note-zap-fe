@@ -17,6 +17,22 @@ export interface BookmarkUser {
   lastLogin?: string;
 }
 
+export interface LinkedInProfileData {
+  name: string;
+  headline: string;
+  location?: string;
+  currentCompany?: string;
+  currentPosition?: string;
+  profilePhoto?: string;
+  coverPhoto?: string;
+  about?: string;
+  profileUrl: string;
+  connectionDegree?: string;
+  connectionsCount?: string;
+  followersCount?: string;
+  website?: string;
+}
+
 export interface Bookmark {
   id: string;
   _id?: string; // MongoDB ID
@@ -29,12 +45,13 @@ export interface Bookmark {
   tags: string[];
   isFavorite: boolean;
   isRead: boolean;
-  type: 'link' | 'tweet' | 'linkedin' | 'article';
+  type: 'link' | 'tweet' | 'linkedin' | 'linkedin-profile' | 'article';
   source: 'web' | 'extension';
   createdAt: string;
   updatedAt: string;
   tweetData?: any;
   linkedinData?: any;
+  linkedinProfileData?: LinkedInProfileData;
   articleData?: any;
 }
 
