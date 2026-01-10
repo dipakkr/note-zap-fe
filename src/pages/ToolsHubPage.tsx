@@ -1,91 +1,78 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
-    Search
+    Search,
+    Check,
+    ArrowRight
 } from "lucide-react";
-import Navbar from "@/components/landing/Navbar";
-import Footer from "@/components/landing/Footer";
-import { toolsData } from "@/data/tools";
 import { Input } from "@/components/ui/input";
+import { toolsData } from "@/data/tools";
+import SEO from "@/components/SEO";
 
 import ToolCard from "@/components/tools/ToolCard";
 
 const ToolsHubPage = () => {
     const [searchQuery, setSearchQuery] = useState("");
-    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-
     const categories = Array.from(new Set(toolsData.map(t => t.category)));
 
     const filteredTools = toolsData.filter(tool => {
         const matchesSearch = tool.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
             tool.shortDescription.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesCategory = selectedCategory ? tool.category === selectedCategory : true;
-        return matchesSearch && matchesCategory;
+        return matchesSearch;
     });
 
     return (
-        <div className="min-h-screen bg-background">
-            <Navbar />
+        <>
+            <SEO
+                title="100+ Free Social Media Tools - Downloaders, Generators & More"
+                description="Professional-grade marketing tools for content creators. Download videos, generate UTM links, create hashtags, and more - all completely free. No registration required."
+                keywords="free social media tools, youtube downloader, instagram downloader, hashtag generator, utm builder, tiktok downloader, twitter tools"
+            />
 
             {/* Hero Section */}
-            <section className="relative overflow-hidden pt-20 pb-16 md:pt-32 md:pb-24">
+            <section className="relative overflow-hidden pt-16 pb-12 md:pt-24 md:pb-16">
                 <div className="container-tight px-4">
                     <div className="mx-auto max-w-3xl text-center">
-                        <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl">
+                        <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl mb-6">
                             100+ Free Social Media Tools
                         </h1>
-                        <p className="mt-6 text-xl text-muted-foreground">
-                            A complete suite of free tools to create, edit, convert, and optimize<br className="hidden sm:block" /> your social media content.
+                        <p className="text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto mb-8">
+                            Professional-grade marketing tools for content creators, marketers, and businesses.
+                            Download videos, generate UTM links, optimize content, and more - all completely free.
                         </p>
 
+                        <div className="flex flex-wrap justify-center gap-4 mb-12">
+                            <span className="inline-flex items-center gap-1.5 rounded-full border bg-background px-4 py-1.5 text-sm font-medium text-muted-foreground shadow-sm">
+                                <Check className="h-3.5 w-3.5 text-green-500" /> No registration required
+                            </span>
+                            <span className="inline-flex items-center gap-1.5 rounded-full border bg-background px-4 py-1.5 text-sm font-medium text-muted-foreground shadow-sm">
+                                <Check className="h-3.5 w-3.5 text-green-500" /> Always free
+                            </span>
+                        </div>
+
                         {/* Search Bar */}
-                        <div className="mx-auto mt-10 max-w-xl relative">
+                        <div className="mx-auto max-w-xl relative">
                             <div className="relative">
                                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                                 <Input
                                     type="text"
                                     placeholder="Search for a tool..."
-                                    className="h-14 w-full rounded-2xl border-2 border-muted bg-card pl-12 pr-4 text-lg shadow-sm transition-all focus:border-primary"
+                                    className="h-12 w-full rounded-xl border-2 border-muted bg-card pl-12 pr-4 text-base shadow-sm transition-all focus:border-primary"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                 />
                             </div>
-                        </div>
-
-                        {/* Category Pills */}
-                        <div className="mt-8 flex flex-wrap justify-center gap-2">
-                            <button
-                                onClick={() => setSelectedCategory(null)}
-                                className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${selectedCategory === null
-                                    ? "bg-primary text-primary-foreground"
-                                    : "bg-muted text-muted-foreground hover:bg-muted/80"
-                                    }`}
-                            >
-                                All Tools
-                            </button>
-                            {categories.map(cat => (
-                                <button
-                                    key={cat}
-                                    onClick={() => setSelectedCategory(cat)}
-                                    className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${selectedCategory === cat
-                                        ? "bg-primary text-primary-foreground"
-                                        : "bg-muted text-muted-foreground hover:bg-muted/80"
-                                        }`}
-                                >
-                                    {cat}
-                                </button>
-                            ))}
                         </div>
                     </div>
                 </div>
             </section>
 
             {/* Tools Grid Section */}
-            <section className="bg-muted/30 py-16 md:py-24">
+            <section className="bg-muted/30 py-16">
                 <div className="container-tight px-4">
 
                     {searchQuery ? (
-                        // Search Results View (Flat Grid)
+                        // Search Results View
                         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                             {filteredTools.length > 0 ? (
                                 filteredTools.map((tool) => (
@@ -104,26 +91,92 @@ const ToolsHubPage = () => {
                             )}
                         </div>
                     ) : (
-                        // Categorized View (SEO Optimized)
-                        <div className="space-y-20">
-                            {categories.map(category => {
-                                const categoryTools = toolsData.filter(t => t.category === category);
-                                if (categoryTools.length === 0) return null;
+                        // Standard View
+                        <div className="space-y-24">
+                            {/* Most Popular Tools */}
+                            <div>
+                                <h2 className="text-2xl font-bold tracking-tight text-center mb-10">Most Popular Tools</h2>
+                                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                                    {toolsData.filter(t => ['youtube-downloader', 'instagram-downloader', 'tiktok-downloader'].includes(t.id)).map((tool) => (
+                                        <ToolCard key={tool.id} tool={tool} />
+                                    ))}
+                                </div>
+                            </div>
 
-                                return (
-                                    <div key={category} id={category.toLowerCase()}>
-                                        <div className="flex items-center gap-4 mb-8">
-                                            <h2 className="text-2xl font-bold tracking-tight">{category}s</h2>
-                                            <div className="h-px bg-border flex-grow"></div>
+                            {/* Categories */}
+                            <div className="space-y-20">
+                                {categories.map(category => {
+                                    const categoryTools = toolsData.filter(t => t.category === category);
+                                    if (categoryTools.length === 0) return null;
+
+                                    // Special Layout for Downloaders
+                                    if (category === "Downloader") {
+                                        return (
+                                            <div key={category} id="downloaders">
+                                                <div className="flex items-center gap-4 mb-8">
+                                                    <div className="h-8 w-1.5 bg-primary rounded-full"></div>
+                                                    <h2 className="text-2xl font-bold tracking-tight">Video Downloaders</h2>
+                                                    <span className="bg-primary/10 text-primary text-xs font-bold px-2 py-1 rounded-md">40+ Platforms</span>
+                                                </div>
+
+                                                {/* Featured Downloader Card */}
+                                                <div className="mb-8 rounded-2xl bg-gradient-to-r from-purple-50 to-indigo-50 border p-8 relative overflow-hidden group">
+                                                    <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                                                        <div className="space-y-4 max-w-2xl">
+                                                            <h3 className="text-2xl font-bold text-foreground">All-in-One Social Media Downloader</h3>
+                                                            <p className="text-muted-foreground text-lg">
+                                                                Download videos and photos from any social media platform with a single tool. Supports YouTube, TikTok, Instagram, Facebook, and 40+ more platforms.
+                                                            </p>
+                                                            <div className="flex flex-wrap gap-2 pt-2">
+                                                                {['YouTube', 'TikTok', 'Instagram', '+40 More'].map(platform => (
+                                                                    <span key={platform} className="bg-background/80 backdrop-blur text-sm font-medium px-4 py-1.5 rounded-full border shadow-sm">
+                                                                        {platform}
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                        <div className="shrink-0">
+                                                            <Link to="/tools/social-media-photo-video-downloader" className="inline-flex h-12 items-center justify-center rounded-full bg-primary px-8 text-sm font-bold text-primary-foreground shadow transition-transform hover:scale-105 active:scale-95">
+                                                                Try Now <ArrowRight className="ml-2 h-4 w-4" />
+                                                            </Link>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                                                    {categoryTools.map((tool) => (
+                                                        <ToolCard key={tool.id} tool={tool} />
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        );
+                                    }
+
+                                    const categoryTitles: Record<string, string> = {
+                                        "Downloader": "Video Downloaders",
+                                        "Generator": "Generators",
+                                        "Utility": "Utilities",
+                                        "AI": "AI Tools",
+                                        "Formatter": "Text Formatters",
+                                        "Analytics": "Analytics"
+                                    };
+
+                                    return (
+                                        <div key={category} id={category.toLowerCase()}>
+                                            <div className="flex items-center gap-4 mb-8">
+                                                <div className="h-8 w-1.5 bg-primary rounded-full"></div>
+                                                <h2 className="text-2xl font-bold tracking-tight">{categoryTitles[category] || `${category}s`}</h2>
+                                                <div className="h-px bg-border flex-grow mt-1 opacity-50"></div>
+                                            </div>
+                                            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                                                {categoryTools.map((tool) => (
+                                                    <ToolCard key={tool.id} tool={tool} />
+                                                ))}
+                                            </div>
                                         </div>
-                                        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                                            {categoryTools.map((tool) => (
-                                                <ToolCard key={tool.id} tool={tool} />
-                                            ))}
-                                        </div>
-                                    </div>
-                                );
-                            })}
+                                    );
+                                })}
+                            </div>
                         </div>
                     )}
 
@@ -163,8 +216,7 @@ const ToolsHubPage = () => {
                 </div>
             </section>
 
-            <Footer />
-        </div>
+        </>
     );
 };
 

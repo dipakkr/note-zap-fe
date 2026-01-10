@@ -11,9 +11,9 @@ const Navbar = () => {
 
   const navLinks = [
     { label: "Features", href: "#features" },
-    { label: "Free Tools", href: "/tools" },
     { label: "Pricing", href: "#pricing" },
     { label: "FAQ", href: "#faq" },
+    { label: "Free Tools", href: "/tools" },
   ];
 
   const handleLogin = () => navigate('/login');

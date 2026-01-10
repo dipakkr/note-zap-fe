@@ -1,4 +1,3 @@
-import Navbar from "@/components/landing/Navbar";
 import Hero from "@/components/landing/Hero";
 import TrustedBy from "@/components/landing/TrustedBy";
 import Problem from "@/components/landing/Problem";
@@ -10,31 +9,30 @@ import Testimonials from "@/components/landing/Testimonials";
 import Comparison from "@/components/landing/Comparison";
 import Pricing from "@/components/landing/Pricing";
 import FAQ from "@/components/landing/FAQ";
-import FreeTools from "@/components/landing/FreeTools";
 import FinalCTA from "@/components/landing/FinalCTA";
-import Footer from "@/components/landing/Footer";
+import SEO from "@/components/SEO";
 
 const LandingPage = () => {
   return (
-    <div className="min-h-screen">
-      <Navbar />
-      <main>
-        <Hero />
-        <TrustedBy />
-        <Problem />
-        <HowItWorks />
-        <Features />
-        <FeatureShowcase />
-        <UseCases />
-        <Testimonials />
-        <Comparison />
-        <Pricing />
-        <FreeTools />
-        <FAQ />
-        <FinalCTA />
-      </main>
-      <Footer />
-    </div>
+    <>
+      <SEO
+        title="PostZaper - Save & Organize Your Twitter & LinkedIn Bookmarks"
+        description="Never lose valuable content again. PostZaper helps you save, organize, and revisit your favorite posts from Twitter and LinkedIn with our powerful Chrome extension."
+        keywords="bookmark manager, twitter bookmarks, linkedin bookmarks, save tweets, social media organizer, content curation, chrome extension"
+      />
+      <Hero />
+      <TrustedBy />
+      <Problem />
+      <HowItWorks />
+      <Features />
+      <FeatureShowcase />
+      <UseCases />
+      <Testimonials />
+      <Comparison />
+      <Pricing />
+      <FAQ />
+      <FinalCTA />
+    </>
   );
 };
 

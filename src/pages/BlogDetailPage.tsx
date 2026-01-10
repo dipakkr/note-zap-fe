@@ -1,11 +1,13 @@
 import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, Clock, Calendar, Share2, Twitter, Linkedin } from 'lucide-react';
 import { useEffect } from 'react';
-import Logo from '../components/Logo';
+import SEO from '@/components/SEO';
+
 
 const BLOG_CONTENT: Record<string, any> = {
     'stop-hoarding-bookmarks': {
         title: "Stop Hoarding, Start Curating: The Anti-Collector's Guide",
+        excerpt: "Why having 5,000 unread bookmarks is actually hurting your productivity, and how to fix it.",
         date: "Jan 5, 2026",
         readTime: "5 min read",
         author: "Deepak Kumar",
@@ -38,6 +40,7 @@ const BLOG_CONTENT: Record<string, any> = {
     },
     'knowledge-management-creators': {
         title: "The Second Brain for Content Creators",
+        excerpt: "How top creators use systems like PostZaper to never run out of content ideas.",
         date: "Dec 28, 2025",
         readTime: "7 min read",
         author: "Deepak Kumar",
@@ -55,6 +58,7 @@ const BLOG_CONTENT: Record<string, any> = {
     },
     'why-we-chose-one-time-payment': {
         title: "Why We Chose a One-Time Payment Model",
+        excerpt: "In a world of subscriptions, we decided to zig when everyone else zagged. Here's why.",
         date: "Dec 15, 2025",
         readTime: "4 min read",
         author: "Deepak Kumar",
@@ -93,20 +97,20 @@ export default function BlogDetailPage() {
     }
 
     return (
-        <div className="min-h-screen bg-white font-sans text-gray-900">
-            <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
-                <div className="max-w-3xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+        <>
+            <SEO
+                title={post.title}
+                description={post.excerpt || post.title}
+                ogType="article"
+                ogImage={post.image}
+            />
+            <article className="max-w-3xl mx-auto px-4 sm:px-6 py-12">
+                <div className="mb-8">
                     <Link to="/blog" className="flex items-center gap-2 font-semibold text-gray-900 hover:text-blue-600 transition-colors">
                         <ArrowLeft className="w-4 h-4" />
                         Back to Blog
                     </Link>
-                    <div className="h-6">
-                        <Logo className="h-6 text-gray-900" />
-                    </div>
                 </div>
-            </nav>
-
-            <article className="max-w-3xl mx-auto px-4 sm:px-6 py-12">
                 <header className="mb-12">
                     <div className="flex flex-wrap gap-4 text-sm text-gray-500 mb-6">
                         <span className="flex items-center gap-1.5">
@@ -167,6 +171,6 @@ export default function BlogDetailPage() {
                     </Link>
                 </div>
             </article>
-        </div>
+        </>
     );
 }

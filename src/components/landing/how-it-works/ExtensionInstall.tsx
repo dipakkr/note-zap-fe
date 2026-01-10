@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MousePointer2, Check, Zap } from 'lucide-react';
+import { MousePointer2, Check } from 'lucide-react';
 
 const ExtensionInstall = () => {
     const [isHovering, setIsHovering] = useState(false);
@@ -39,8 +39,8 @@ const ExtensionInstall = () => {
                 <div className="flex-1 p-4 flex flex-col relative">
                     {/* Chrome Web Store Header simulation */}
                     <div className="flex items-start gap-3 mb-4">
-                        <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center text-white shrink-0">
-                            <Zap size={20} />
+                        <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center text-white shrink-0 overflow-hidden">
+                            <img src="/logo-icon.svg" alt="PostZaper Logo" className="w-full h-full object-cover p-2" />
                         </div>
                         <div className="flex-1">
                             <h3 className="text-sm font-bold text-gray-800">PostZaper</h3>

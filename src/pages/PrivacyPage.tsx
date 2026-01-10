@@ -1,23 +1,14 @@
-import { Link } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
-import Logo from '../components/Logo';
+import SEO from '@/components/SEO';
 
 export default function PrivacyPage() {
     return (
-        <div className="min-h-screen bg-gray-50 font-sans text-gray-900">
-            <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
-                <div className="max-w-3xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-                    <Link to="/" className="flex items-center gap-2 font-semibold text-gray-900 hover:text-blue-600 transition-colors">
-                        <ArrowLeft className="w-4 h-4" />
-                        Back to Home
-                    </Link>
-                    <div className="h-6">
-                        <Logo className="h-6 text-gray-900" />
-                    </div>
-                </div>
-            </nav>
-
-            <main className="max-w-3xl mx-auto px-4 sm:px-6 py-12 lg:py-16">
+        <>
+            <SEO
+                title="Privacy Policy - PostZaper"
+                description="Your privacy is non-negotiable. Learn how PostZaper protects your data, what we collect, and your rights as a user."
+                keywords="postzaper privacy policy, data protection, bookmark privacy, user data rights"
+            />
+            <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12 lg:py-16">
                 <h1 className="text-4xl md:text-5xl font-bold mb-8">Privacy Policy</h1>
                 <div className="prose prose-lg prose-blue max-w-none text-gray-600">
                     <p className="lead text-xl text-gray-500 mb-8">
@@ -63,7 +54,7 @@ export default function PrivacyPage() {
                         Last updated: January 6, 2026
                     </p>
                 </div>
-            </main>
-        </div>
+            </div>
+        </>
     );
 }

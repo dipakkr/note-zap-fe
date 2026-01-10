@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Clock, ChevronRight } from 'lucide-react';
-import Logo from '../components/Logo';
+import { Clock, ChevronRight } from 'lucide-react';
+import SEO from '@/components/SEO';
 
 const BLOG_POSTS = [
     {
@@ -34,23 +34,13 @@ const BLOG_POSTS = [
 
 export default function BlogPage() {
     return (
-        <div className="min-h-screen bg-gray-50 font-sans text-gray-900">
-            <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
-                <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-                    <Link to="/" className="flex items-center gap-2 font-semibold text-gray-900 hover:text-blue-600 transition-colors">
-                        <ArrowLeft className="w-4 h-4" />
-                        Back to Home
-                    </Link>
-                    <div className="flex items-center gap-2">
-                        <div className="h-6">
-                            <Logo className="h-6 text-gray-900" />
-                        </div>
-                        <span className="font-bold text-lg">Blog</span>
-                    </div>
-                </div>
-            </nav>
-
-            <main className="max-w-6xl mx-auto px-4 sm:px-6 py-12 lg:py-20">
+        <>
+            <SEO
+                title="Blog - Productivity, Curation & Building Software"
+                description="Thoughts on productivity, content curation, and building software. Learn how to manage the information flood and never lose your best ideas."
+                keywords="productivity blog, bookmark tips, content curation, knowledge management, creator resources"
+            />
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12 lg:py-20">
                 <div className="text-center max-w-2xl mx-auto mb-16">
                     <h1 className="text-4xl md:text-5xl font-bold mb-6">Thoughts on productivity, curation, and building software.</h1>
                     <p className="text-xl text-gray-600">
@@ -100,7 +90,7 @@ export default function BlogPage() {
                         </Link>
                     ))}
                 </div>
-            </main>
-        </div>
+            </div>
+        </>
     );
 }

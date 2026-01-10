@@ -2,8 +2,6 @@ const TrustedBy = () => {
     const brands = [
         { name: "Notion", logo: "https://img.icons8.com/color/96/notion--v1.png" },
         { name: "Figma", logo: "https://img.icons8.com/color/96/figma--v1.png" },
-        { name: "Slack", logo: "https://img.icons8.com/color/96/slack-new.png" },
-        { name: "Trello", logo: "https://img.icons8.com/color/96/trello.png" },
         { name: "Dropbox", logo: "https://img.icons8.com/color/96/dropbox.png" },
         { name: "Monday", logo: "https://img.icons8.com/color/96/monday.png" },
         { name: "Zoom", logo: "https://img.icons8.com/color/96/zoom.png" },
@@ -12,6 +10,9 @@ const TrustedBy = () => {
         { name: "Spotify", logo: "https://img.icons8.com/color/96/spotify--v1.png" },
         { name: "GitHub", logo: "https://img.icons8.com/color/96/github--v1.png" },
         { name: "Shopify", logo: "https://img.icons8.com/color/96/shopify.png" },
+        { name: "Google", logo: "https://img.icons8.com/color/96/google.png" },
+        { name: "Paytm", logo: "https://img.icons8.com/color/96/paytm.png" },
+
     ];
 
     return (

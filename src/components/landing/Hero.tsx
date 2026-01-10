@@ -1,11 +1,8 @@
 import { Star, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
 import HeroAnimation from "./HeroAnimation";
 
 const Hero = () => {
-  const navigate = useNavigate();
-
   return (
     <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden bg-gradient-to-b from-purple-50/50 via-white to-white pt-6 pb-16">
 
@@ -25,9 +22,9 @@ const Hero = () => {
         />
 
         {/* Decorative floating shapes */}
-        <div className="absolute top-[15%] left-[15%] w-4 h-4 rounded-full bg-purple-300/40 animate-pulse" />
-        <div className="absolute top-[25%] right-[25%] w-3 h-3 rounded-full bg-blue-300/40 animate-pulse animation-delay-200" />
-        <div className="absolute bottom-[30%] left-[20%] w-2 h-2 rounded-full bg-orange-300/40 animate-pulse animation-delay-400" />
+        <div className="absolute top-[15%] left-[15%] w-4 h-4 rounded-full bg-purple-300/40" />
+        <div className="absolute top-[25%] right-[25%] w-3 h-3 rounded-full bg-blue-300/40" />
+        <div className="absolute bottom-[30%] left-[20%] w-2 h-2 rounded-full bg-orange-300/40" />
       </div>
 
       <div className="container-tight z-10 flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
@@ -36,12 +33,12 @@ const Hero = () => {
         <div className="flex-1 text-left space-y-6 max-w-xl">
 
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 border border-orange-100 text-orange-700 text-[10px] font-bold uppercase tracking-wide shadow-sm animate-fade-in w-fit">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 border border-orange-100 text-orange-700 text-[10px] font-bold uppercase tracking-wide shadow-sm w-fit">
             <span>🏆</span> Product Hunt #1 Product of the Day
           </div>
 
           {/* Headline */}
-          <div className="space-y-4 animate-fade-up animation-delay-100">
+          <div className="space-y-4">
             <h1 className="text-4xl lg:text-6xl font-bold tracking-tight text-gray-900 leading-[1.1]">
               Save Once.<br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600">Find Forever.</span>
@@ -52,7 +49,7 @@ const Hero = () => {
           </div>
 
           {/* Feature Checks - Minimal "Required" Content */}
-          <div className="flex flex-col gap-2 text-gray-600 animate-fade-up animation-delay-200 text-sm">
+          <div className="flex flex-col gap-2 text-gray-600 text-sm">
             <div className="flex items-center gap-2">
               <CheckCircle2 size={14} className="text-green-500" />
               <span>One-click save from LinkedIn & Twitter</span>
@@ -64,7 +61,7 @@ const Hero = () => {
           </div>
 
           {/* CTAs */}
-          <div className="flex flex-col sm:flex-row gap-3 pt-2 animate-fade-up animation-delay-300">
+          <div className="flex flex-col sm:flex-row gap-3 pt-2">
             <Button
               size="lg"
               className="bg-gray-900 text-white hover:bg-gray-800 h-12 px-6 rounded-full text-base shadow-xl shadow-gray-200/50 transition-all hover:scale-105 active:scale-95 flex items-center gap-2"
@@ -74,18 +71,10 @@ const Hero = () => {
               <img src="/chrome.svg" alt="Chrome" className="w-5 h-5" />
               Add to Chrome
             </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              className="h-12 px-6 rounded-full text-base border-2 border-gray-100 hover:bg-gray-50 hover:border-gray-200 transition-all text-gray-700"
-              onClick={() => navigate('/auth')}
-            >
-              Open Dashboard
-            </Button>
           </div>
 
           {/* Social Proof */}
-          <div className="flex items-center gap-3 pt-4 text-sm text-gray-500 animate-fade-up animation-delay-400">
+          <div className="flex items-center gap-3 pt-4 text-sm text-gray-500">
             <div className="flex -space-x-3">
               {[1, 2, 3, 4].map((i) => (
                 <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-gray-100 overflow-hidden shadow-sm">
@@ -103,7 +92,7 @@ const Hero = () => {
         </div>
 
         {/* RIGHT COLUMN: Animation */}
-        <div className="flex-1 w-full relative h-[400px] lg:h-[550px] flex items-center justify-center animate-fade-in lg:-mr-20 scale-90">
+        <div className="flex-1 w-full relative h-[400px] lg:h-[550px] flex items-center justify-center lg:-mr-20 scale-90">
           <HeroAnimation />
         </div>
 

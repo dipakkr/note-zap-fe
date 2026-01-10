@@ -1,13 +1,14 @@
-import { ExternalLink, Trash2, Star, MapPin, Briefcase, Users, Globe, UserCheck } from 'lucide-react';
+import { ExternalLink, Trash2, Star, MapPin, Briefcase, Users, Globe, UserCheck, StickyNote } from 'lucide-react';
 import type { Bookmark } from '../services/bookmarkService';
 
 interface ProfilesTableProps {
   profiles: Bookmark[];
   onToggleFavorite: (id: string) => void;
   onDelete: (id: string) => void;
+  onProfileClick: (id: string) => void;
 }
 
-export default function ProfilesTable({ profiles, onToggleFavorite, onDelete }: ProfilesTableProps) {
+export default function ProfilesTable({ profiles, onToggleFavorite, onDelete, onProfileClick }: ProfilesTableProps) {
   const getProfileData = (bookmark: Bookmark) => {
     // 1. Try legacy or specific field
     if (bookmark.linkedinProfileData) return bookmark.linkedinProfileData;
@@ -69,6 +70,7 @@ export default function ProfilesTable({ profiles, onToggleFavorite, onDelete }: 
             <th className="px-6 py-4 hidden md:table-cell">Headline</th>
             <th className="px-6 py-4 hidden lg:table-cell">Location</th>
             <th className="px-6 py-4 hidden xl:table-cell">Network</th>
+            <th className="px-6 py-4 hidden 2xl:table-cell">Notes</th>
             <th className="px-6 py-4 text-center">Actions</th>
           </tr>
         </thead>
@@ -81,6 +83,7 @@ export default function ProfilesTable({ profiles, onToggleFavorite, onDelete }: 
               <tr
                 key={bookmark.id}
                 className="transition-colors hover:bg-muted/30 group/row cursor-pointer"
+                onClick={() => onProfileClick(bookmark.id)}
               >
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-4">
@@ -102,6 +105,7 @@ export default function ProfilesTable({ profiles, onToggleFavorite, onDelete }: 
                           target="_blank"
                           rel="noopener noreferrer"
                           className="font-bold text-sm text-foreground hover:text-primary transition-colors truncate max-w-[160px]"
+                          onClick={(e) => e.stopPropagation()}
                         >
                           {profile.name}
                         </a>
@@ -118,6 +122,7 @@ export default function ProfilesTable({ profiles, onToggleFavorite, onDelete }: 
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-[11px] flex items-center gap-1 mt-1 text-primary hover:underline font-bold"
+                          onClick={(e) => e.stopPropagation()}
                         >
                           <Globe className="w-2.5 h-2.5" />
                           <span className="truncate max-w-[120px]">
@@ -169,10 +174,30 @@ export default function ProfilesTable({ profiles, onToggleFavorite, onDelete }: 
                   </div>
                 </td>
 
+                <td className="px-6 py-4 hidden 2xl:table-cell">
+                  {bookmark.notes ? (
+                    <div className="flex items-start gap-2 max-w-[200px]" onClick={(e) => { e.stopPropagation(); onProfileClick(bookmark.id); }}>
+                      <StickyNote className="w-3.5 h-3.5 text-yellow-500 mt-0.5 shrink-0" />
+                      <p className="text-[11px] text-foreground/80 truncate font-medium">{bookmark.notes}</p>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); onProfileClick(bookmark.id); }}
+                      className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-bold text-muted-foreground hover:bg-muted transition-colors border border-transparent hover:border-border opacity-0 group-hover/row:opacity-100"
+                    >
+                      <StickyNote className="w-3 h-3" />
+                      Add Note
+                    </button>
+                  )}
+                </td>
+
                 <td className="px-6 py-4">
                   <div className="flex items-center justify-center gap-1 opacity-0 group-hover/row:opacity-100 transition-opacity">
                     <button
-                      onClick={() => onToggleFavorite(bookmark.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onToggleFavorite(bookmark.id);
+                      }}
                       className={`p-2 rounded-lg transition-all active:scale-95 ${bookmark.isFavorite
                         ? 'text-amber-400 bg-amber-400/10'
                         : 'text-muted-foreground hover:text-amber-400 hover:bg-amber-400/10'
@@ -181,7 +206,10 @@ export default function ProfilesTable({ profiles, onToggleFavorite, onDelete }: 
                       <Star className={`w-4 h-4 ${bookmark.isFavorite ? 'fill-current' : ''}`} />
                     </button>
                     <button
-                      onClick={() => onDelete(bookmark.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDelete(bookmark.id);
+                      }}
                       className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all active:scale-95"
                     >
                       <Trash2 className="w-4 h-4" />

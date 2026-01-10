@@ -13,6 +13,17 @@ export interface Tool {
 
 export const toolsData: Tool[] = [
     {
+        id: "all-in-one-social-media-downloader",
+        slug: "social-media-photo-video-downloader",
+        title: "All-in-One Social Media Downloader",
+        shortDescription: "Download videos and photos from Instagram, YouTube, TikTok, Twitter, and 40+ other platforms.",
+        category: "Downloader",
+        iconName: "Download",
+        seoTitle: "Free Social Media Downloader - Video, Photo, Story Saver",
+        seoDescription: "The best free tool to download videos, photos, stories, and reels from Instagram, TikTok, YouTube, Twitter, Facebook, and more. No watermark, high quality.",
+        faqs: []
+    },
+    {
         id: "youtube-downloader",
         slug: "youtube-video-downloader",
         title: "YouTube Video Downloader",

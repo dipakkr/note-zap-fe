@@ -1,6 +1,6 @@
 import { Dialog, DialogContent } from './ui/dialog';
 import type { Bookmark } from '../services/bookmarkService';
-import { MessageCircle, Repeat2, Heart, ExternalLink, X, Wand2, Share2 } from 'lucide-react';
+import { MessageCircle, Repeat2, Heart, X, Wand2, Share2 } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface PostDetailDialogProps {

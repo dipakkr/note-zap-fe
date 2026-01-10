@@ -96,8 +96,13 @@ const Pricing = () => {
               <Button
                 className={`mt-auto w-full rounded-full ${plan.highlighted ? "bg-primary" : "bg-foreground"
                   }`}
+                onClick={() => {
+                  if (plan.name === "Pro") {
+                    window.location.href = "https://buy.stripe.com/8x2bJ0c9X7Ey39Y9Ry2ZO08";
+                  }
+                }}
               >
-                {plan.price === "$0" ? "Get Started Free" : "Start Free Trial"}
+                {plan.price === "$0" ? "Get Started Free" : "Upgrade Now"}
               </Button>
             </div>
           ))}

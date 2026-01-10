@@ -1,4 +1,4 @@
-import { Zap, Calendar, Play } from "lucide-react";
+import { Zap, Play } from "lucide-react";
 
 const UseCases = () => {
   return (

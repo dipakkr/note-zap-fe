@@ -64,6 +64,7 @@ export interface Bookmark {
   linkedinData?: any;
   linkedinProfileData?: LinkedInProfileData;
   articleData?: any;
+  notes?: string;
 }
 
 export interface AuthResponse {

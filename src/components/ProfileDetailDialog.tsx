@@ -1,15 +1,43 @@
-import { Dialog, DialogContent } from './ui/dialog';
-import type { Bookmark, LinkedInProfileData } from '../services/bookmarkService';
-import { MapPin, Briefcase, Sparkles, Wand2, X } from 'lucide-react';
+import { MapPin, Briefcase, Sparkles, Wand2, X, StickyNote, Save, Loader2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { bookmarkService, type Bookmark, type LinkedInProfileData } from '../services/bookmarkService';
+import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { Dialog, DialogContent } from './ui/dialog';
 
 interface ProfileDetailDialogProps {
     isOpen: boolean;
     onClose: () => void;
     bookmark: Bookmark | null;
+    onUpdate?: (bookmark: Bookmark) => void;
 }
 
-export default function ProfileDetailDialog({ isOpen, onClose, bookmark }: ProfileDetailDialogProps) {
+export default function ProfileDetailDialog({ isOpen, onClose, bookmark, onUpdate }: ProfileDetailDialogProps) {
+    const [notes, setNotes] = useState('');
+    const [isSaving, setIsSaving] = useState(false);
+    const [hasChanges, setHasChanges] = useState(false);
+
+    useEffect(() => {
+        if (bookmark) {
+            setNotes(bookmark.notes || '');
+            setHasChanges(false);
+        }
+    }, [bookmark]);
+
+    const handleSaveNotes = async () => {
+        if (!bookmark) return;
+        setIsSaving(true);
+        try {
+            const { bookmark: updated } = await bookmarkService.updateBookmark(bookmark.id, { notes });
+            setHasChanges(false);
+            if (onUpdate) onUpdate(updated);
+            toast.success('Notes saved');
+        } catch (error) {
+            toast.error('Failed to save notes');
+        } finally {
+            setIsSaving(false);
+        }
+    };
     const getProfileData = (b: Bookmark): LinkedInProfileData & { connectionDegree?: string, skills?: string[] } => {
         if (b.linkedinProfileData) return { ...b.linkedinProfileData, skills: [] };
         const li = b.linkedinData || {};
@@ -164,6 +192,34 @@ export default function ProfileDetailDialog({ isOpen, onClose, bookmark }: Profi
                         </div>
 
                         <div className="space-y-4">
+                            {/* Notes Section */}
+                            <section className="bg-yellow-50/50 dark:bg-yellow-900/10 p-4 rounded-xl border border-yellow-200/50 dark:border-yellow-700/30">
+                                <div className="flex items-center justify-between mb-3">
+                                    <h3 className="text-[13px] font-bold text-yellow-800 dark:text-yellow-500 flex items-center gap-2">
+                                        <StickyNote className="w-3.5 h-3.5" />
+                                        Private Notes
+                                    </h3>
+                                    {hasChanges && (
+                                        <button
+                                            onClick={handleSaveNotes}
+                                            disabled={isSaving}
+                                            className="flex items-center gap-1.5 px-3 py-1 bg-yellow-500 text-white text-[10px] font-bold rounded-lg hover:bg-yellow-600 transition-all shadow-sm disabled:opacity-50"
+                                        >
+                                            {isSaving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
+                                            Save
+                                        </button>
+                                    )}
+                                </div>
+                                <textarea
+                                    value={notes}
+                                    onChange={(e) => {
+                                        setNotes(e.target.value);
+                                        setHasChanges(true);
+                                    }}
+                                    placeholder="Add private notes about this profile..."
+                                    className="w-full bg-transparent border-none p-0 text-[12px] text-foreground/80 placeholder:text-muted-foreground/50 focus:ring-0 resize-none min-h-[60px] leading-relaxed font-medium"
+                                />
+                            </section>
                             <section className="bg-muted/5 p-4 rounded-xl border border-border">
                                 <h3 className="text-[13px] font-bold mb-2 text-foreground">About</h3>
                                 <p className="text-[12px] leading-relaxed text-foreground/80 whitespace-pre-wrap font-medium">

@@ -40,53 +40,53 @@ const Features = () => {
               <svg className="absolute inset-0 w-full h-full pointer-events-none z-0" xmlns="http://www.w3.org/2000/svg">
                 <defs>
                   <linearGradient id="lineGradient1" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#a855f7" stopOpacity="0.3" />
-                    <stop offset="100%" stopColor="#a855f7" stopOpacity="0.6" />
+                    <stop offset="0%" stopColor="#a855f7" stopOpacity="0.4" />
+                    <stop offset="100%" stopColor="#a855f7" stopOpacity="0.8" />
                   </linearGradient>
                 </defs>
 
                 {/* Top-left to center */}
-                <line x1="15%" y1="18%" x2="50%" y2="50%" stroke="url(#lineGradient1)" strokeWidth="2" strokeDasharray="6 6" className="opacity-50" />
-                <circle r="4" fill="#a855f7" className="animate-pulse">
+                <line x1="15%" y1="18%" x2="50%" y2="50%" stroke="url(#lineGradient1)" strokeWidth="3" strokeDasharray="6 6" className="opacity-70" />
+                <circle r="5" fill="#a855f7" className="animate-pulse">
                   <animateMotion dur="2s" repeatCount="indefinite" path="M 0,0 L 100,100" />
                 </circle>
 
                 {/* Top-right to center */}
-                <line x1="85%" y1="18%" x2="50%" y2="50%" stroke="url(#lineGradient1)" strokeWidth="2" strokeDasharray="6 6" className="opacity-50" />
+                <line x1="85%" y1="18%" x2="50%" y2="50%" stroke="url(#lineGradient1)" strokeWidth="3" strokeDasharray="6 6" className="opacity-70" />
 
                 {/* Bottom-left to center */}
-                <line x1="15%" y1="70%" x2="50%" y2="50%" stroke="url(#lineGradient1)" strokeWidth="2" strokeDasharray="6 6" className="opacity-50" />
+                <line x1="15%" y1="70%" x2="50%" y2="50%" stroke="url(#lineGradient1)" strokeWidth="3" strokeDasharray="6 6" className="opacity-70" />
 
                 {/* Bottom-right to center */}
-                <line x1="85%" y1="70%" x2="50%" y2="50%" stroke="url(#lineGradient1)" strokeWidth="2" strokeDasharray="6 6" className="opacity-50" />
+                <line x1="85%" y1="70%" x2="50%" y2="50%" stroke="url(#lineGradient1)" strokeWidth="3" strokeDasharray="6 6" className="opacity-70" />
 
                 {/* Animated dots on each line */}
-                <circle r="3" fill="#a855f7" opacity="0.8">
-                  <animate attributeName="opacity" values="0.3;1;0.3" dur="1.5s" repeatCount="indefinite" />
+                <circle r="5" fill="#a855f7" opacity="1">
+                  <animate attributeName="opacity" values="0.7;1;0.7" dur="1.5s" repeatCount="indefinite" />
                   <animateMotion dur="3s" repeatCount="indefinite">
                     <mpath href="#path1" />
                   </animateMotion>
                 </circle>
                 <path id="path1" d="M 60 72 L 200 200" fill="none" className="hidden" />
 
-                <circle r="3" fill="#a855f7" opacity="0.8">
-                  <animate attributeName="opacity" values="0.3;1;0.3" dur="1.5s" repeatCount="indefinite" begin="0.5s" />
+                <circle r="5" fill="#a855f7" opacity="1">
+                  <animate attributeName="opacity" values="0.7;1;0.7" dur="1.5s" repeatCount="indefinite" begin="0.5s" />
                   <animateMotion dur="3s" repeatCount="indefinite" begin="0.5s">
                     <mpath href="#path2" />
                   </animateMotion>
                 </circle>
                 <path id="path2" d="M 340 72 L 200 200" fill="none" className="hidden" />
 
-                <circle r="3" fill="#a855f7" opacity="0.8">
-                  <animate attributeName="opacity" values="0.3;1;0.3" dur="1.5s" repeatCount="indefinite" begin="1s" />
+                <circle r="5" fill="#a855f7" opacity="1">
+                  <animate attributeName="opacity" values="0.7;1;0.7" dur="1.5s" repeatCount="indefinite" begin="1s" />
                   <animateMotion dur="3s" repeatCount="indefinite" begin="1s">
                     <mpath href="#path3" />
                   </animateMotion>
                 </circle>
                 <path id="path3" d="M 60 280 L 200 200" fill="none" className="hidden" />
 
-                <circle r="3" fill="#a855f7" opacity="0.8">
-                  <animate attributeName="opacity" values="0.3;1;0.3" dur="1.5s" repeatCount="indefinite" begin="1.5s" />
+                <circle r="5" fill="#a855f7" opacity="1">
+                  <animate attributeName="opacity" values="0.7;1;0.7" dur="1.5s" repeatCount="indefinite" begin="1.5s" />
                   <animateMotion dur="3s" repeatCount="indefinite" begin="1.5s">
                     <mpath href="#path4" />
                   </animateMotion>

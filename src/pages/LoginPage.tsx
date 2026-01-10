@@ -4,6 +4,7 @@ import { auth, googleProvider } from '../lib/firebase';
 import { Loader2, Quote } from 'lucide-react';
 import { toast } from 'sonner';
 import Logo from '../components/Logo';
+import SEO from '@/components/SEO';
 
 // Animated Testimonials Component
 const testimonials = [
@@ -180,144 +181,151 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex w-full">
+    <>
+      <SEO
+        title="Login - PostZaper"
+        description="Sign in to your PostZaper account to access your saved bookmarks, organized content, and more."
+        noIndex={true}
+      />
+      <div className="min-h-screen flex w-full">
 
-      {/* LEFT SIDE: Visual & Branding */}
-      <div className="hidden lg:flex w-1/2 bg-zinc-900 p-12 flex-col justify-between relative overflow-hidden">
-        {/* Background Effects */}
-        <div className="absolute top-0 left-0 w-full h-full bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none"></div>
-        <div className="absolute -top-24 -left-24 w-96 h-96 bg-purple-500/30 rounded-full blur-3xl"></div>
-        <div className="absolute top-1/2 right-0 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl"></div>
+        {/* LEFT SIDE: Visual & Branding */}
+        <div className="hidden lg:flex w-1/2 bg-zinc-900 p-12 flex-col justify-between relative overflow-hidden">
+          {/* Background Effects */}
+          <div className="absolute top-0 left-0 w-full h-full bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none"></div>
+          <div className="absolute -top-24 -left-24 w-96 h-96 bg-purple-500/30 rounded-full blur-3xl"></div>
+          <div className="absolute top-1/2 right-0 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl"></div>
 
-        {/* Top: Logo */}
-        <div className="relative z-10 text-white">
-          <div className="flex items-center gap-2 font-bold text-xl tracking-tight">
-            <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center border border-white/20">
-              <img src="/logo-icon.svg" alt="App Icon" className="w-5 h-5" />
+          {/* Top: Logo */}
+          <div className="relative z-10 text-white">
+            <div className="flex items-center gap-2 font-bold text-xl tracking-tight">
+              <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center border border-white/20">
+                <img src="/logo-icon.svg" alt="App Icon" className="w-5 h-5" />
+              </div>
+              <span>PostZaper</span>
             </div>
-            <span>PostZaper</span>
+          </div>
+
+          {/* Middle: Animated Testimonials */}
+          <div className="relative z-10 flex-1 flex flex-col justify-center">
+            <AnimatedTestimonials />
+          </div>
+
+          {/* Bottom: Footer */}
+          <div className="relative z-10 text-zinc-500 text-sm">
+            © 2024 PostZaper Inc.
           </div>
         </div>
 
-        {/* Middle: Animated Testimonials */}
-        <div className="relative z-10 flex-1 flex flex-col justify-center">
-          <AnimatedTestimonials />
-        </div>
+        {/* RIGHT SIDE: Auth Form */}
+        <div className="flex-1 flex items-center justify-center bg-white p-4 sm:p-12 lg:p-24">
+          <div className="w-full max-w-md space-y-8">
 
-        {/* Bottom: Footer */}
-        <div className="relative z-10 text-zinc-500 text-sm">
-          © 2024 PostZaper Inc.
-        </div>
-      </div>
-
-      {/* RIGHT SIDE: Auth Form */}
-      <div className="flex-1 flex items-center justify-center bg-white p-4 sm:p-12 lg:p-24">
-        <div className="w-full max-w-md space-y-8">
-
-          {/* Mobile Header */}
-          <div className="text-center lg:text-left">
-            <div className="lg:hidden flex justify-center mb-6">
-              <Logo className="h-10" />
-            </div>
-            <h2 className="text-3xl font-bold tracking-tight text-gray-900">
-              {isSignUp ? 'Create an account' : 'Welcome back'}
-            </h2>
-            <p className="mt-2 text-sm text-gray-600">
-              {isSignUp ? 'Enter your details below to create your account' : 'Enter your email below to login to your account'}
-            </p>
-          </div>
-
-          {/* Auth Actions */}
-          <div className="space-y-6">
-
-            {/* Google Button */}
-            <button
-              onClick={handleGoogleSignIn}
-              disabled={loading}
-              className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed group"
-            >
-              {loading ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                <>
-                  {/* Google Logo */}
-                  <img src="/google.svg" alt="Google" className="w-5 h-5" />
-                  <span className="font-medium text-gray-700 group-hover:text-gray-900">Continue with Google</span>
-                </>
-              )}
-            </button>
-
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-gray-200" />
+            {/* Mobile Header */}
+            <div className="text-center lg:text-left">
+              <div className="lg:hidden flex justify-center mb-6">
+                <Logo className="h-10" />
               </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-2 text-gray-400">Or continue with</span>
-              </div>
+              <h2 className="text-3xl font-bold tracking-tight text-gray-900">
+                {isSignUp ? 'Create an account' : 'Welcome back'}
+              </h2>
+              <p className="mt-2 text-sm text-gray-600">
+                {isSignUp ? 'Enter your details below to create your account' : 'Enter your email below to login to your account'}
+              </p>
             </div>
 
-            <form onSubmit={handleEmailAuth} className="space-y-4">
-              {isSignUp && (
+            {/* Auth Actions */}
+            <div className="space-y-6">
+
+              {/* Google Button */}
+              <button
+                onClick={handleGoogleSignIn}
+                disabled={loading}
+                className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed group"
+              >
+                {loading ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <>
+                    {/* Google Logo */}
+                    <img src="/google.svg" alt="Google" className="w-5 h-5" />
+                    <span className="font-medium text-gray-700 group-hover:text-gray-900">Continue with Google</span>
+                  </>
+                )}
+              </button>
+
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-gray-200" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-white px-2 text-gray-400">Or continue with</span>
+                </div>
+              </div>
+
+              <form onSubmit={handleEmailAuth} className="space-y-4">
+                {isSignUp && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-900">Full Name</label>
+                    <input
+                      type="text"
+                      placeholder="John Doe"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      required={isSignUp}
+                      className="flex h-11 w-full rounded-lg border border-gray-300 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    />
+                  </div>
+                )}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-900">Full Name</label>
+                  <label className="text-sm font-medium text-gray-900">Email</label>
                   <input
-                    type="text"
-                    placeholder="John Doe"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required={isSignUp}
+                    type="email"
+                    placeholder="m@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
                     className="flex h-11 w-full rounded-lg border border-gray-300 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   />
                 </div>
-              )}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-900">Email</label>
-                <input
-                  type="email"
-                  placeholder="m@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="flex h-11 w-full rounded-lg border border-gray-300 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                />
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-gray-900">Password</label>
-                  {!isSignUp && <a href="#" className="text-sm font-medium text-blue-600 hover:text-blue-500">Forgot password?</a>}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium text-gray-900">Password</label>
+                    {!isSignUp && <a href="#" className="text-sm font-medium text-blue-600 hover:text-blue-500">Forgot password?</a>}
+                  </div>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="flex h-11 w-full rounded-lg border border-gray-300 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  />
                 </div>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="flex h-11 w-full rounded-lg border border-gray-300 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                />
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full h-11 bg-black text-white rounded-lg hover:bg-gray-800 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 font-medium text-sm"
+                >
+                  {loading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : (isSignUp ? 'Create account' : 'Sign In')}
+                </button>
+              </form>
+
+              <div className="text-center text-sm text-gray-500">
+                {isSignUp ? 'Already have an account? ' : "Don't have an account? "}
+                <button onClick={() => setIsSignUp(!isSignUp)} className="font-semibold text-blue-600 hover:text-blue-500 underline underline-offset-4">
+                  {isSignUp ? 'Sign in' : 'Sign up'}
+                </button>
               </div>
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full h-11 bg-black text-white rounded-lg hover:bg-gray-800 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 font-medium text-sm"
-              >
-                {loading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : (isSignUp ? 'Create account' : 'Sign In')}
-              </button>
-            </form>
+              <p className="px-8 text-center text-xs text-gray-400">
+                By clicking continue, you agree to our <a href="#" className="underline hover:text-gray-500">Terms of Service</a> and <a href="#" className="underline hover:text-gray-500">Privacy Policy</a>.
+              </p>
 
-            <div className="text-center text-sm text-gray-500">
-              {isSignUp ? 'Already have an account? ' : "Don't have an account? "}
-              <button onClick={() => setIsSignUp(!isSignUp)} className="font-semibold text-blue-600 hover:text-blue-500 underline underline-offset-4">
-                {isSignUp ? 'Sign in' : 'Sign up'}
-              </button>
             </div>
-
-            <p className="px-8 text-center text-xs text-gray-400">
-              By clicking continue, you agree to our <a href="#" className="underline hover:text-gray-500">Terms of Service</a> and <a href="#" className="underline hover:text-gray-500">Privacy Policy</a>.
-            </p>
-
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

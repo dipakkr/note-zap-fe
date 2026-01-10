@@ -1,23 +1,15 @@
 import { Link } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
-import Logo from '../components/Logo';
+import SEO from '@/components/SEO';
 
 export default function AboutPage() {
     return (
-        <div className="min-h-screen bg-white font-sans text-gray-900">
-            <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
-                <div className="max-w-4xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-                    <Link to="/" className="flex items-center gap-2 font-semibold text-gray-900 hover:text-blue-600 transition-colors">
-                        <ArrowLeft className="w-4 h-4" />
-                        Back to Home
-                    </Link>
-                    <div className="h-6">
-                        <Logo className="h-6 text-gray-900" />
-                    </div>
-                </div>
-            </nav>
-
-            <main className="max-w-3xl mx-auto px-4 sm:px-6 py-16 lg:py-24">
+        <>
+            <SEO
+                title="About PostZaper - The Anti-Hoarding Bookmark Tool"
+                description="We built PostZaper because we were tired of 'Read Later' becoming 'Read Never'. Learn about our mission to help you organize your digital life."
+                keywords="about postzaper, bookmark manager company, content curation tool, startup story"
+            />
+            <div className="max-w-3xl mx-auto px-4 sm:px-6 py-16 lg:py-24">
                 <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight mb-8">
                     The Anti-Hoarding Tool.
                 </h1>
@@ -68,7 +60,7 @@ export default function AboutPage() {
                         </Link>
                     </div>
                 </div>
-            </main>
-        </div>
+            </div>
+        </>
     );
 }
