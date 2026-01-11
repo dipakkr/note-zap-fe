@@ -56,7 +56,7 @@ export interface Bookmark {
   tags: string[];
   isFavorite: boolean;
   isRead: boolean;
-  type: 'link' | 'tweet' | 'linkedin' | 'linkedin-profile' | 'article';
+  type: 'link' | 'tweet' | 'linkedin' | 'linkedin-profile' | 'article' | 'thread';
   source: 'web' | 'extension';
   createdAt: string;
   updatedAt: string;
@@ -64,6 +64,7 @@ export interface Bookmark {
   linkedinData?: any;
   linkedinProfileData?: LinkedInProfileData;
   articleData?: any;
+  threadData?: any;
   notes?: string;
 }
 

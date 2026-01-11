@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Star, Trash2, ExternalLink, MessageCircle, Repeat2, Heart, MoreHorizontal, Play } from 'lucide-react';
+import { Star, Trash2, ExternalLink, MessageCircle, Repeat2, Heart, MoreHorizontal, Play, List } from 'lucide-react';
 import type { Bookmark } from '../services/bookmarkService';
 import { formatDistanceToNow } from 'date-fns';
 import { useSearchParams } from 'react-router-dom';
@@ -47,6 +47,13 @@ export default function BookmarkCard({ bookmark, clusters = [], onToggleFavorite
         avatar: bookmark.linkedinData.author.avatar,
       };
     }
+    if (bookmark.type === 'thread' && bookmark.threadData?.author) {
+      return {
+        name: bookmark.threadData.author.name || 'Unknown',
+        handle: bookmark.threadData.author.username ? `@${bookmark.threadData.author.username}` : '',
+        avatar: bookmark.threadData.author.avatar,
+      };
+    }
     try {
       const url = new URL(bookmark.url);
       return {
@@ -66,6 +73,9 @@ export default function BookmarkCard({ bookmark, clusters = [], onToggleFavorite
     if (bookmark.type === 'linkedin' && bookmark.linkedinData?.content) {
       return bookmark.linkedinData.content;
     }
+    if (bookmark.type === 'thread' && bookmark.threadData?.content) {
+      return bookmark.threadData.content;
+    }
     return bookmark.description || bookmark.title;
   };
 
@@ -84,6 +94,13 @@ export default function BookmarkCard({ bookmark, clusters = [], onToggleFavorite
         likes: bookmark.linkedinData.stats.likes || 0,
       };
     }
+    if (bookmark.type === 'thread' && bookmark.threadData?.stats) {
+      return {
+        comments: bookmark.threadData.stats.replies || 0,
+        reposts: bookmark.threadData.stats.retweets || 0,
+        likes: bookmark.threadData.stats.likes || 0,
+      };
+    }
     return null;
   };
 
@@ -91,6 +108,21 @@ export default function BookmarkCard({ bookmark, clusters = [], onToggleFavorite
     if (bookmark.type === 'tweet' && bookmark.tweetData) {
       const images = bookmark.tweetData.images || [];
       const media = bookmark.tweetData.media || [];
+      const allMedia: MediaItem[] = [];
+      const seenUrls = new Set<string>();
+
+      [...images, ...media].forEach((item: MediaItem) => {
+        const url = item.url || item.poster || '';
+        if (url && !seenUrls.has(url) && !url.startsWith('blob:')) {
+          seenUrls.add(url);
+          allMedia.push(item);
+        }
+      });
+      return allMedia;
+    }
+    if (bookmark.type === 'thread' && bookmark.threadData) {
+      const images = bookmark.threadData.images || [];
+      const media = bookmark.threadData.media || [];
       const allMedia: MediaItem[] = [];
       const seenUrls = new Set<string>();
 
@@ -128,6 +160,7 @@ export default function BookmarkCard({ bookmark, clusters = [], onToggleFavorite
     if (bookmark.type === 'tweet') return { label: 'Tweet', color: 'bg-blue-500/10 text-blue-500' };
     if (bookmark.type === 'linkedin') return { label: 'LinkedIn Post', color: 'bg-indigo-500/10 text-indigo-500' };
     if (bookmark.type === 'article') return { label: 'Web Article', color: 'bg-emerald-500/10 text-emerald-500' };
+    if (bookmark.type === 'thread') return { label: 'Thread', color: 'bg-purple-500/10 text-purple-500' };
     return { label: 'Website', color: 'bg-amber-500/10 text-amber-500' };
   };
 
@@ -138,7 +171,7 @@ export default function BookmarkCard({ bookmark, clusters = [], onToggleFavorite
       return;
     }
 
-    if (isProfileType() || bookmark.type === 'tweet' || bookmark.type === 'linkedin') {
+    if (isProfileType() || bookmark.type === 'tweet' || bookmark.type === 'linkedin' || bookmark.type === 'thread') {
       const next = new URLSearchParams(searchParams);
       next.set('detailId', bookmark.id);
       setSearchParams(next);
@@ -170,6 +203,11 @@ export default function BookmarkCard({ bookmark, clusters = [], onToggleFavorite
                 </svg>
               </span>
             )}
+            {bookmark.type === 'thread' && (
+              <span className="text-purple-500">
+                <List className="w-3.5 h-3.5" />
+              </span>
+            )}
           </div>
           <p className="text-[11px] text-muted-foreground truncate font-medium">{author.handle}</p>
         </div>
@@ -184,7 +222,7 @@ export default function BookmarkCard({ bookmark, clusters = [], onToggleFavorite
           {showMenu && (
             <>
               <div className="fixed inset-0 z-10" onClick={(e) => { e.stopPropagation(); setShowMenu(false); }} />
-              <div className="absolute right-0 top-8 bg-card rounded-xl shadow-2xl border border-border py-1.5 z-20 w-44 animate-fade-up">
+              <div className="absolute right-0 top-8 bg-card rounded-xl shadow-2xl border border-border py-1.5 z-20 w-44">
                 <a
                   href={bookmark.url}
                   target="_blank"
@@ -334,6 +372,13 @@ export default function BookmarkCard({ bookmark, clusters = [], onToggleFavorite
             className={`p-1.5 rounded-lg hover:bg-muted transition-colors ${bookmark.isFavorite ? 'text-amber-400' : 'text-muted-foreground hover:text-foreground'}`}
           >
             <Star className={`w-3.5 h-3.5 ${bookmark.isFavorite ? 'fill-current' : ''}`} />
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); onDelete(bookmark.id); }}
+            className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-destructive transition-colors"
+            title="Delete bookmark"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
           </button>
           <a
             href={bookmark.url}

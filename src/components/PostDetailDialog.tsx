@@ -81,7 +81,7 @@ export default function PostDetailDialog({ isOpen, onClose, bookmark }: PostDeta
                 <div className="flex flex-col h-full max-h-[90vh]">
                     {/* Native Header */}
                     <div className="flex items-center justify-between px-4 py-3 border-b border-border sticky top-0 bg-card/80 backdrop-blur-md z-10">
-                        <h3 className="font-bold text-[15px]">{bookmark.type === 'tweet' ? 'Tweet' : 'Post'}</h3>
+                        <h3 className="font-bold text-[15px]">{bookmark.type === 'thread' ? 'Thread' : (bookmark.type === 'tweet' ? 'Tweet' : 'Post')}</h3>
                         <button
                             onClick={onClose}
                             className="p-2 hover:bg-muted rounded-full transition-colors"
@@ -91,104 +91,189 @@ export default function PostDetailDialog({ isOpen, onClose, bookmark }: PostDeta
                     </div>
 
                     <div className="flex-1 overflow-y-auto p-4 sm:p-5 scroll-smooth no-scrollbar">
-                        {/* Author Section */}
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="w-11 h-11 rounded-full overflow-hidden bg-muted flex-shrink-0">
-                                {author.avatar ? (
-                                    <img src={author.avatar} alt={author.name} className="w-full h-full object-cover" />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center font-bold text-primary bg-primary/10">
-                                        {author.name.charAt(0)}
+                        {bookmark.type === 'thread' && bookmark.threadData?.tweets ? (
+                            <div className="space-y-8 pb-8">
+                                {bookmark.threadData.tweets.map((tweet: any, idx: number) => (
+                                    <div key={idx} className="relative group">
+                                        {/* Connecting Line */}
+                                        {idx !== (bookmark.threadData.tweets.length - 1) && (
+                                            <div className="absolute left-[20px] top-[48px] bottom-[-32px] w-[2px] bg-border/50 -z-10 group-hover:bg-primary/20 transition-colors" />
+                                        )}
+
+                                        <div className="flex gap-4">
+                                            <div className="flex-shrink-0">
+                                                <div className="w-10 h-10 rounded-full overflow-hidden border border-border bg-muted">
+                                                    <img
+                                                        src={tweet.author?.avatar}
+                                                        alt={tweet.author?.name}
+                                                        className="w-full h-full object-cover"
+                                                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                                    />
+                                                    {/* Fallback avatar if img fails/missing handled by bg-muted, or could add icon */}
+                                                </div>
+                                            </div>
+                                            <div className="flex-1 min-w-0 pt-0.5">
+                                                <div className="flex items-center justify-between mb-1">
+                                                    <div className="flex items-center gap-2 overflow-hidden">
+                                                        <span className="font-bold text-[14px] truncate">{tweet.author?.name}</span>
+                                                        <span className="text-[13px] text-muted-foreground truncate">@{tweet.author?.username || tweet.author?.handle}</span>
+                                                    </div>
+                                                    <span className="text-[12px] text-muted-foreground whitespace-nowrap ml-2">
+                                                        {tweet.timestamp ? format(new Date(tweet.timestamp), 'MMM d') : ''}
+                                                    </span>
+                                                </div>
+
+                                                <p className="text-[15px] leading-relaxed whitespace-pre-wrap text-foreground mb-3 font-normal">
+                                                    {tweet.content}
+                                                </p>
+
+                                                {/* Media */}
+                                                {(tweet.media?.length > 0 || tweet.images?.length > 0) && (
+                                                    <div className="rounded-xl overflow-hidden border border-border mb-3 inline-block w-full">
+                                                        {[...(tweet.media || []), ...(tweet.images || [])].filter((m: any) => m.url || m.poster).map((m: any, i: number) => (
+                                                            <img
+                                                                key={i}
+                                                                src={m.url || m.poster}
+                                                                className="w-full h-auto max-h-[400px] object-cover border-b last:border-0 border-border"
+                                                                alt=""
+                                                            />
+                                                        ))}
+                                                    </div>
+                                                )}
+
+                                                {/* Stats Line */}
+                                                <div className="flex items-center gap-6 text-muted-foreground text-xs mt-1">
+                                                    <div className="flex items-center gap-1.5 hover:text-primary transition-colors cursor-pointer">
+                                                        <MessageCircle className="w-4 h-4" />
+                                                        <span>{tweet.stats?.replies || 0}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-1.5 hover:text-emerald-500 transition-colors cursor-pointer">
+                                                        <Repeat2 className="w-4 h-4" />
+                                                        <span>{tweet.stats?.retweets || 0}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-1.5 hover:text-rose-500 transition-colors cursor-pointer">
+                                                        <Heart className="w-4 h-4" />
+                                                        <span>{tweet.stats?.likes || 0}</span>
+                                                    </div>
+                                                    {/* View original link for specific tweet if possible, or just the main one */}
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-                                )}
-                            </div>
-                            <div className="min-w-0">
-                                <h4 className="font-bold text-[14px] text-foreground truncate leading-tight">{author.name}</h4>
-                                <p className="text-[13px] text-muted-foreground truncate leading-tight font-normal">{author.handle}</p>
-                            </div>
-                        </div>
+                                ))}
 
-                        {/* Content Section */}
-                        <div className="space-y-4">
-                            <p className="text-[15px] leading-[1.6] font-normal text-foreground whitespace-pre-wrap">
-                                {content}
-                            </p>
-
-                            {media.length > 0 && (
-                                <div className="rounded-xl overflow-hidden border border-border">
-                                    {media.map((item: any, idx: number) => (
-                                        <img
-                                            key={idx}
-                                            src={item.url || item.poster || item.src}
-                                            alt=""
-                                            className="w-full h-auto object-cover border-b last:border-b-0 border-border"
-                                        />
-                                    ))}
+                                <div className="flex items-center justify-center pt-4">
+                                    <button
+                                        onClick={() => window.open(bookmark.url, '_blank')}
+                                        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-muted text-muted-foreground text-xs font-bold hover:bg-muted/80 transition-colors"
+                                    >
+                                        <ExternalLink className="w-4 h-4" />
+                                        View full thread on X
+                                    </button>
                                 </div>
-                            )}
-
-                            {/* Timestamp */}
-                            <div className="py-4 border-b border-border">
-                                <span className="text-[14px] text-muted-foreground font-normal">
-                                    {formattedDate}
-                                </span>
                             </div>
-
-                            {/* Engagement Stats Row */}
-                            {stats && (
-                                <div className="py-3 border-b border-border flex items-center gap-5">
-                                    <div className="flex items-center gap-1.5 text-[14px] hover:underline cursor-pointer">
-                                        <span className="font-bold text-foreground">{stats.retweets}</span>
-                                        <span className="text-muted-foreground font-normal">{bookmark.type === 'tweet' ? 'Retweets' : 'Reposts'}</span>
+                        ) : (
+                            <>
+                                {/* Author Section */}
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="w-11 h-11 rounded-full overflow-hidden bg-muted flex-shrink-0">
+                                        {author.avatar ? (
+                                            <img src={author.avatar} alt={author.name} className="w-full h-full object-cover" />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center font-bold text-primary bg-primary/10">
+                                                {author.name.charAt(0)}
+                                            </div>
+                                        )}
                                     </div>
-                                    <div className="flex items-center gap-1.5 text-[14px] hover:underline cursor-pointer">
-                                        <span className="font-bold text-foreground">{stats.likes}</span>
-                                        <span className="text-muted-foreground font-normal">Likes</span>
+                                    <div className="min-w-0">
+                                        <h4 className="font-bold text-[14px] text-foreground truncate leading-tight">{author.name}</h4>
+                                        <p className="text-[13px] text-muted-foreground truncate leading-tight font-normal">{author.handle}</p>
                                     </div>
                                 </div>
-                            )}
 
-                            {/* Icon Action Row */}
-                            <div className="py-3 flex items-center justify-between px-6 text-muted-foreground border-t border-border mt-2">
-                                <button className="group flex items-center gap-1.5 hover:text-primary transition-colors">
-                                    <div className="p-2 rounded-full group-hover:bg-primary/10 transition-colors">
-                                        <MessageCircle className="w-5 h-5" />
-                                    </div>
-                                    <span className="text-xs font-medium">{stats?.replies || 0}</span>
-                                </button>
-                                <button className="group flex items-center gap-1.5 hover:text-emerald-500 transition-colors">
-                                    <div className="p-2 rounded-full group-hover:bg-emerald-500/10 transition-colors">
-                                        <Repeat2 className="w-5 h-5" />
-                                    </div>
-                                    <span className="text-xs font-medium">{stats?.retweets || 0}</span>
-                                </button>
-                                <button className="group flex items-center gap-1.5 hover:text-rose-500 transition-colors">
-                                    <div className="p-2 rounded-full group-hover:bg-rose-500/10 transition-colors">
-                                        <Heart className="w-5 h-5" />
-                                    </div>
-                                    <span className="text-xs font-medium">{stats?.likes || 0}</span>
-                                </button>
+                                {/* Content Section */}
+                                <div className="space-y-4">
+                                    <p className="text-[15px] leading-[1.6] font-normal text-foreground whitespace-pre-wrap">
+                                        {content}
+                                    </p>
 
-                                {/* Remix Button - Centered Vertical Alignment */}
-                                <button
-                                    onClick={() => setShowCreatorUpgrade(true)}
-                                    className="p-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-lg shadow-primary/25 hover:scale-110"
-                                    title="Remix with AI"
-                                >
-                                    <Zap className="w-5 h-5 fill-current" />
-                                </button>
+                                    {media.length > 0 && (
+                                        <div className="rounded-xl overflow-hidden border border-border">
+                                            {media.map((item: any, idx: number) => (
+                                                <img
+                                                    key={idx}
+                                                    src={item.url || item.poster || item.src}
+                                                    alt=""
+                                                    className="w-full h-auto object-cover border-b last:border-b-0 border-border"
+                                                />
+                                            ))}
+                                        </div>
+                                    )}
 
-                                <a
-                                    href={bookmark.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="p-2 rounded-full hover:bg-primary/10 hover:text-primary transition-colors"
-                                    title="View Original"
-                                >
-                                    <ExternalLink className="w-5 h-5" />
-                                </a>
-                            </div>
-                        </div>
+                                    {/* Timestamp */}
+                                    <div className="py-4 border-b border-border">
+                                        <span className="text-[14px] text-muted-foreground font-normal">
+                                            {formattedDate}
+                                        </span>
+                                    </div>
+
+                                    {/* Engagement Stats Row */}
+                                    {stats && (
+                                        <div className="py-3 border-b border-border flex items-center gap-5">
+                                            <div className="flex items-center gap-1.5 text-[14px] hover:underline cursor-pointer">
+                                                <span className="font-bold text-foreground">{stats.retweets}</span>
+                                                <span className="text-muted-foreground font-normal">{bookmark.type === 'tweet' ? 'Retweets' : 'Reposts'}</span>
+                                            </div>
+                                            <div className="flex items-center gap-1.5 text-[14px] hover:underline cursor-pointer">
+                                                <span className="font-bold text-foreground">{stats.likes}</span>
+                                                <span className="text-muted-foreground font-normal">Likes</span>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Icon Action Row */}
+                                    <div className="py-3 flex items-center justify-between px-6 text-muted-foreground border-t border-border mt-2">
+                                        <button className="group flex items-center gap-1.5 hover:text-primary transition-colors">
+                                            <div className="p-2 rounded-full group-hover:bg-primary/10 transition-colors">
+                                                <MessageCircle className="w-5 h-5" />
+                                            </div>
+                                            <span className="text-xs font-medium">{stats?.replies || 0}</span>
+                                        </button>
+                                        <button className="group flex items-center gap-1.5 hover:text-emerald-500 transition-colors">
+                                            <div className="p-2 rounded-full group-hover:bg-emerald-500/10 transition-colors">
+                                                <Repeat2 className="w-5 h-5" />
+                                            </div>
+                                            <span className="text-xs font-medium">{stats?.retweets || 0}</span>
+                                        </button>
+                                        <button className="group flex items-center gap-1.5 hover:text-rose-500 transition-colors">
+                                            <div className="p-2 rounded-full group-hover:bg-rose-500/10 transition-colors">
+                                                <Heart className="w-5 h-5" />
+                                            </div>
+                                            <span className="text-xs font-medium">{stats?.likes || 0}</span>
+                                        </button>
+
+                                        {/* Remix Button - Centered Vertical Alignment */}
+                                        <button
+                                            onClick={() => setShowCreatorUpgrade(true)}
+                                            className="p-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-lg shadow-primary/25 hover:scale-110"
+                                            title="Remix with AI"
+                                        >
+                                            <Zap className="w-5 h-5 fill-current" />
+                                        </button>
+
+                                        <a
+                                            href={bookmark.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="p-2 rounded-full hover:bg-primary/10 hover:text-primary transition-colors"
+                                            title="View Original"
+                                        >
+                                            <ExternalLink className="w-5 h-5" />
+                                        </a>
+                                    </div>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
             </DialogContent>
