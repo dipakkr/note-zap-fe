@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Zap, Layout, FileText, User, Globe } from "lucide-react";
+import { Zap, Layout, FileText, User, Globe, MousePointer2, Bookmark, Check } from "lucide-react";
 
 const ANIMATION_Cycle = [
     {
@@ -94,7 +94,7 @@ const HeroAnimation = () => {
             </svg>
 
             {/* --- ZONE 1: Source (Left Side) --- */}
-            <div className="hidden lg:flex flex-col w-[260px] h-[500px] relative z-10 scale-90 origin-center [transform:perspective(800px)_rotateY(15deg)_rotateX(5deg)]" style={{ transformStyle: 'preserve-3d' }}>
+            <div className="hidden lg:flex flex-col w-[320px] h-[500px] relative z-10 scale-90 origin-center [transform:perspective(800px)_rotateY(15deg)_rotateX(5deg)]" style={{ transformStyle: 'preserve-3d' }}>
                 <div className="absolute w-full h-full">
                     {[-1, 0, 1, 2, 3].map((offset) => {
                         const virtualIndex = cycleIndex + offset;
@@ -210,21 +210,79 @@ const HeroAnimation = () => {
     );
 };
 
-// Component for the Source Card (Left side)
-const SourceCard = ({ item, isActive }: { item: typeof ANIMATION_Cycle[0], isActive: boolean }) => (
-    <div className={`w-full bg-white/80 backdrop-blur-md rounded-xl p-4 border transition-colors duration-300
-        ${isActive ? 'border-purple-300 shadow-lg shadow-purple-500/10 scale-100' : 'border-white/40 shadow-sm'}
-    `}>
-        <div className="flex items-center justify-between mb-2">
-            <div className={`flex items-center gap-2 px-2 py-1 rounded-full text-xs font-semibold text-white ${item.platformIcon}`}>
-                {item.icon}
-                <span>{item.action}</span>
+// Component for the Source Card (Left side) WITH CLICK ANIMATION
+const SourceCard = ({ item, isActive }: { item: typeof ANIMATION_Cycle[0], isActive: boolean }) => {
+    // Animation states: 'idle' | 'moving' | 'clicked' | 'saved'
+    const [animState, setAnimState] = useState<'idle' | 'moving' | 'clicked' | 'saved'>('idle');
+
+    useEffect(() => {
+        if (isActive) {
+            // Sequence of loading
+            setAnimState('idle');
+            const t1 = setTimeout(() => setAnimState('moving'), 500); // 0.5s: Start moving cursor
+            const t2 = setTimeout(() => setAnimState('clicked'), 1200); // 1.2s: Click button
+            const t3 = setTimeout(() => setAnimState('saved'), 1400); // 1.4s: Saved state
+            return () => {
+                clearTimeout(t1);
+                clearTimeout(t2);
+                clearTimeout(t3);
+            };
+        } else {
+            setAnimState('idle');
+        }
+    }, [isActive]);
+
+    return (
+        <div className={`
+            w-full bg-white/90 backdrop-blur-md rounded-2xl p-5 border shadow-sm transition-all duration-300 relative overflow-hidden
+            ${isActive ? 'border-purple-300 shadow-xl shadow-purple-500/10 scale-100' : 'border-white/50 opacity-80 scale-95'}
+        `}>
+            {/* Header: Badge & Save Button */}
+            <div className="flex items-center justify-between mb-3 relative z-10">
+                <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold text-white shadow-sm ${item.platformIcon}`}>
+                    {item.icon}
+                    <span>{item.action}</span>
+                </div>
+
+                {/* Save Button */}
+                <div className={`
+                    w-8 h-8 rounded-full flex items-center justify-center border transition-all duration-300 relative
+                    ${animState === 'saved' ? 'bg-purple-600 border-purple-600 text-white' : 'bg-gray-50 border-gray-200 text-gray-400'}
+                    ${animState === 'clicked' ? 'scale-90 bg-gray-100' : ''}
+                `}>
+                    {animState === 'saved' ? <Check size={14} strokeWidth={3} /> : <Bookmark size={14} />}
+
+                    {/* Ripple effect on save */}
+                    {animState === 'saved' && (
+                        <div className="absolute inset-0 rounded-full border border-purple-500 animate-ping opacity-75" />
+                    )}
+                </div>
             </div>
-            <div className="w-2 h-2 rounded-full bg-green-400" />
+
+            {/* Content */}
+            <div className="text-base font-bold text-gray-900 mb-1">{item.source}</div>
+            <div className="text-sm text-gray-500 truncate leading-relaxed">{item.content}</div>
+
+            {/* Simulated Cursor */}
+            <div
+                className="absolute z-50 pointer-events-none transition-all duration-[700ms] ease-out"
+                style={{
+                    // Calculate positions based on percentage to be responsive
+                    // Start (idle): below/center. Target (moving/clicked): top-right over button
+                    top: animState === 'idle' ? '120%' : '18px',
+                    left: animState === 'idle' ? '50%' : '88%',
+                    opacity: animState === 'idle' ? 0 : (animState === 'saved' ? 0 : 1), // Fade out after save
+                    transform: animState === 'clicked' ? 'scale(0.8)' : 'scale(1)'
+                }}
+            >
+                <MousePointer2
+                    size={24}
+                    className="text-gray-900 fill-black drop-shadow-xl"
+                    strokeWidth={1}
+                />
+            </div>
         </div>
-        <div className="text-sm font-semibold text-gray-800">{item.source}</div>
-        <div className="text-xs text-gray-500 truncate mt-1">{item.content}</div>
-    </div>
-);
+    );
+};
 
 export default HeroAnimation;

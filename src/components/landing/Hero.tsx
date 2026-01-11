@@ -27,10 +27,10 @@ const Hero = () => {
         <div className="absolute bottom-[30%] left-[20%] w-2 h-2 rounded-full bg-orange-300/40" />
       </div>
 
-      <div className="container-tight z-10 flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
+      <div className="container-tight z-10 flex flex-col lg:flex-row items-center gap-8 lg:gap-20">
 
         {/* LEFT COLUMN: Concise & Impactful Content */}
-        <div className="flex-1 text-left space-y-6 max-w-xl">
+        <div className="flex-1 text-left space-y-6 max-w-lg lg:min-w-[480px]">
 
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 border border-orange-100 text-orange-700 text-[10px] font-bold uppercase tracking-wide shadow-sm w-fit">
@@ -43,7 +43,7 @@ const Hero = () => {
               Save Once.<br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600">Find Forever.</span>
             </h1>
-            <p className="text-md text-gray-600 leading-relaxed max-w-lg">
+            <p className="text-md text-gray-600 leading-relaxed max-w-md">
               Capture posts, threads, and profiles from LinkedIn & X with one click.
             </p>
           </div>
@@ -92,7 +92,7 @@ const Hero = () => {
         </div>
 
         {/* RIGHT COLUMN: Animation - Hidden on mobile, visible on desktop */}
-        <div className="hidden lg:flex flex-1 w-full relative h-[400px] lg:h-[550px] items-center justify-center lg:-mr-20 scale-90">
+        <div className="hidden lg:flex flex-1 w-full relative h-[400px] lg:h-[550px] items-center justify-center lg:-mr-10 scale-90">
           <HeroAnimation />
         </div>
 
