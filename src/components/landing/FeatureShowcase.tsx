@@ -27,7 +27,7 @@ const FeatureShowcase = () => {
   ];
 
   const generatedContent = {
-    content: "The real secret to explosive growth? It's not about the hustle—it's about the system. Here's my 5-step framework that took me from 0 to 50K followers in 90 days...",
+    content: "The real secret to explosive growth? It's not about the hustle, it's about the system. Here's my 5-step framework that took me from 0 to 50K followers in 90 days...",
     viralScore: 94,
     predictedLikes: "15K-25K",
     bestTime: "9:00 AM EST"
@@ -53,7 +53,7 @@ const FeatureShowcase = () => {
             <br />your own viral content
           </h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-            Save posts that go viral. Our AI learns the patterns, hooks, and structures—then
+            Save posts that go viral. Our AI learns the patterns, hooks, and structures, then
             creates original content with higher chances of going viral.
           </p>
         </div>
@@ -172,7 +172,7 @@ const FeatureShowcase = () => {
         <div className="mt-16 text-center">
           <Button size="lg" className="gap-2 rounded-full bg-amber-600 hover:bg-amber-700 text-white font-semibold" disabled>
             <Sparkles className="h-4 w-4" />
-            Coming Soon — Join Waitlist
+            Coming Soon - Join Waitlist
           </Button>
           <p className="mt-3 text-sm text-muted-foreground">Be the first to know when this feature launches</p>
         </div>

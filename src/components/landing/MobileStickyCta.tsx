@@ -1,5 +1,6 @@
 import { X } from "lucide-react";
 import { useState, useEffect } from "react";
+import { STRIPE_LINKS } from "@/lib/constants";
 
 const MobileStickyCta = () => {
     const [isVisible, setIsVisible] = useState(true);
@@ -19,7 +20,7 @@ const MobileStickyCta = () => {
 
     const handleClick = () => {
         // Redirect to Stripe payment link
-        window.location.href = "https://buy.stripe.com/8x2bJ0c9X7Ey39Y9Ry2ZO08";
+        window.location.href = STRIPE_LINKS.PRO_YEARLY;
     };
 
     return (

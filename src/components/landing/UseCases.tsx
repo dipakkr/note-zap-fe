@@ -43,7 +43,7 @@ const UseCases = () => {
                 </h3>
 
                 <p className="mt-4 text-muted-foreground">
-                  Pick the content templates that resonate with you—threads, hooks,
+                  Pick the content templates that resonate with you, like threads, hooks,
                   storytelling formats, or viral frameworks. Our AI generates fresh
                   ideas tailored to your niche, so you always know what to post.
                 </p>
@@ -117,7 +117,7 @@ const UseCases = () => {
 
               <p className="mx-auto mt-3 max-w-lg text-muted-foreground">
                 Watch how creators use templates to generate viral content
-                ideas in seconds—no more staring at a blank screen.
+                ideas in seconds. No more staring at a blank screen.
               </p>
             </div>
 

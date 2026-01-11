@@ -1,5 +1,6 @@
 import { Dialog, DialogContent } from './ui/dialog';
 import { Check, ShieldCheck, Crown, Star } from 'lucide-react';
+import { STRIPE_LINKS } from '@/lib/constants';
 
 interface UpgradeDialogProps {
     isOpen: boolean;
@@ -16,7 +17,7 @@ const FEATURES = [
 
 export default function UpgradeDialog({ isOpen, onClose }: UpgradeDialogProps) {
     const handleUpgrade = () => {
-        window.location.href = 'https://buy.stripe.com/8x2bJ0c9X7Ey39Y9Ry2ZO08';
+        window.location.href = STRIPE_LINKS.PRO_YEARLY;
     };
 
     return (
@@ -43,7 +44,7 @@ export default function UpgradeDialog({ isOpen, onClose }: UpgradeDialogProps) {
                                 Yearly
                             </span>
                             <div className="flex items-baseline gap-1">
-                                <span className="text-xl font-black text-foreground">$39</span>
+                                <span className="text-xl font-black text-foreground">$29</span>
                                 <span className="text-xs font-semibold text-muted-foreground mr-1">/ year</span>
                             </div>
                             <span className="text-[10px] font-bold text-green-600 bg-green-500/10 px-2 py-0.5 rounded-full">

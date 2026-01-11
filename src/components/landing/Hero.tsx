@@ -48,15 +48,18 @@ const Hero = () => {
             </p>
           </div>
 
-          {/* Feature Checks - Minimal "Required" Content */}
           <div className="flex flex-col gap-2 text-gray-600 text-sm">
             <div className="flex items-center gap-2">
               <CheckCircle2 size={14} className="text-green-500" />
-              <span>One-click save from LinkedIn & Twitter</span>
+              <span>One-click capture from X & LinkedIn</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle2 size={14} className="text-green-500" />
-              <span>Visualize your knowledge graph</span>
+              <span>Turn bookmarks into a Knowledge Graph</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle2 size={14} className="text-green-500" />
+              <span>AI-powered auto-organization</span>
             </div>
           </div>
 
@@ -86,7 +89,7 @@ const Hero = () => {
               <div className="flex text-yellow-500 gap-0.5">
                 {[1, 2, 3, 4, 5].map((i) => <Star key={i} size={12} fill="currentColor" />)}
               </div>
-              <span className="font-medium text-gray-900 text-xs">Loved by 25k+ creators</span>
+              <span className="font-medium text-gray-900 text-xs">Loved by 1k+ creators</span>
             </div>
           </div>
         </div>

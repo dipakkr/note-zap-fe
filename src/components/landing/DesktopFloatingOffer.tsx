@@ -1,9 +1,24 @@
 import { X, Sparkles } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useAuth } from "../../contexts/AuthContext";
+import { STRIPE_LINKS } from "@/lib/constants";
 
 const DesktopFloatingOffer = () => {
-    const [isVisible, setIsVisible] = useState(true);
+    const { user, loading } = useAuth();
+    const [isVisible, setIsVisible] = useState(false); // Default to false to prevent flash
     const [hasScrolled, setHasScrolled] = useState(false);
+
+    useEffect(() => {
+        // Check local storage for dismissal
+        const isDismissed = localStorage.getItem("hide_launch_offer");
+
+        // Show only if not dismissed and NOT Pro
+        // We check 'user' existence? Actually seeing the offer might be useful for free users logged in.
+        // So we strictly check if subscription is 'pro'.
+        if (!isDismissed && user?.subscription !== 'pro') {
+            setIsVisible(true);
+        }
+    }, [user]);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -15,11 +30,23 @@ const DesktopFloatingOffer = () => {
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 
-    if (!isVisible || !hasScrolled) return null;
+    const handleDismiss = () => {
+        setIsVisible(false);
+        localStorage.setItem("hide_launch_offer", "true");
+    };
+
+    // Don't render if:
+    // 1. Loading auth state (optional, but prevents flash)
+    // 2. Not visible (dismissed or PRO)
+    // 3. Haven't scrolled enough
+    if (loading || !isVisible || !hasScrolled) return null;
+
+    // Double check specific PRO condition just in case state updates lagged
+    if (user?.subscription === 'pro') return null;
 
     const handleClick = () => {
         // Redirect to Stripe payment link
-        window.location.href = "https://buy.stripe.com/8x2bJ0c9X7Ey39Y9Ry2ZO08";
+        window.location.href = STRIPE_LINKS.PRO_YEARLY;
     };
 
     return (
@@ -27,7 +54,7 @@ const DesktopFloatingOffer = () => {
             <div className="relative bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden w-[320px]">
                 {/* Close button */}
                 <button
-                    onClick={() => setIsVisible(false)}
+                    onClick={handleDismiss}
                     className="absolute top-3 right-3 w-6 h-6 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center hover:bg-gray-200 transition-colors z-10"
                     aria-label="Close offer"
                 >
