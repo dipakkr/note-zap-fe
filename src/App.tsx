@@ -6,6 +6,8 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import MainLayout from './components/layout/MainLayout';
 import ScrollToTop from './components/ScrollToTop';
+import MobileStickyCta from './components/landing/MobileStickyCta';
+import DesktopFloatingOffer from './components/landing/DesktopFloatingOffer';
 
 // Lazy load all pages for code splitting
 const LandingPage = lazy(() => import('./pages/LandingPage'));
@@ -14,8 +16,7 @@ const DashboardPage = lazy(() => import('./pages/DashboardPage'));
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
 const TermsPage = lazy(() => import('./pages/TermsPage'));
 const AboutPage = lazy(() => import('./pages/AboutPage'));
-const BlogPage = lazy(() => import('./pages/BlogPage'));
-const BlogDetailPage = lazy(() => import('./pages/BlogDetailPage'));
+
 const ProfileDetailPage = lazy(() => import('./pages/ProfileDetailPage'));
 const ToolsHubPage = lazy(() => import('./pages/ToolsHubPage'));
 const ToolDetailPage = lazy(() => import('./pages/ToolDetailPage'));
@@ -84,8 +85,7 @@ function AppRoutes() {
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/about" element={<AboutPage />} />
-          <Route path="/blog" element={<BlogPage />} />
-          <Route path="/blog/:id" element={<BlogDetailPage />} />
+
           <Route path="/tools" element={<ToolsHubPage />} />
           <Route path="/tools/:slug" element={<ToolDetailPage />} />
         </Route>
@@ -128,6 +128,8 @@ function App() {
         <ThemeProvider>
           <AuthProvider>
             <AppRoutes />
+            <MobileStickyCta />
+            <DesktopFloatingOffer />
             <Toaster
               position="top-right"
               toastOptions={{

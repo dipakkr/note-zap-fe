@@ -33,65 +33,67 @@ const Features = () => {
             <h3 className="text-xl font-bold">One Click. Everywhere.</h3>
             <p className="mt-2 text-muted-foreground">Save once. Access everywhere. Free up hours every week.</p>
 
-            {/* Visual: Multi-platform illustration */}
-            <div className="mt-6 aspect-[4/3] rounded-xl border bg-gradient-to-br from-muted/30 to-muted/80 p-6 relative overflow-hidden">
+            {/* Visual: Multi-platform illustration - hidden on mobile, compact on tablet */}
+            <div className="mt-6 hidden sm:block aspect-[4/3] md:aspect-[4/3] rounded-xl border bg-gradient-to-br from-muted/30 to-muted/80 p-4 md:p-6 relative overflow-hidden">
 
               {/* Animated Connection Lines SVG */}
-              <svg className="absolute inset-0 w-full h-full pointer-events-none z-0" xmlns="http://www.w3.org/2000/svg">
+              <svg className="absolute inset-0 w-full h-full pointer-events-none z-0" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
                 <defs>
                   <linearGradient id="lineGradient1" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" stopColor="#a855f7" stopOpacity="0.4" />
                     <stop offset="100%" stopColor="#a855f7" stopOpacity="0.8" />
                   </linearGradient>
+
+                  {/* Define paths that match the exact line positions */}
+                  <path id="path-top-left" d="M 15 18 L 50 50" />
+                  <path id="path-top-right" d="M 85 18 L 50 50" />
+                  <path id="path-bottom-left" d="M 15 70 L 50 50" />
+                  <path id="path-bottom-right" d="M 85 70 L 50 50" />
                 </defs>
 
                 {/* Top-left to center */}
-                <line x1="15%" y1="18%" x2="50%" y2="50%" stroke="url(#lineGradient1)" strokeWidth="3" strokeDasharray="6 6" className="opacity-70" />
-                <circle r="5" fill="#a855f7" className="animate-pulse">
-                  <animateMotion dur="2s" repeatCount="indefinite" path="M 0,0 L 100,100" />
-                </circle>
+                <line x1="15" y1="18" x2="50" y2="50" stroke="url(#lineGradient1)" strokeWidth="0.8" strokeDasharray="2 2" className="opacity-70" vectorEffect="non-scaling-stroke" />
 
                 {/* Top-right to center */}
-                <line x1="85%" y1="18%" x2="50%" y2="50%" stroke="url(#lineGradient1)" strokeWidth="3" strokeDasharray="6 6" className="opacity-70" />
+                <line x1="85" y1="18" x2="50" y2="50" stroke="url(#lineGradient1)" strokeWidth="0.8" strokeDasharray="2 2" className="opacity-70" vectorEffect="non-scaling-stroke" />
 
                 {/* Bottom-left to center */}
-                <line x1="15%" y1="70%" x2="50%" y2="50%" stroke="url(#lineGradient1)" strokeWidth="3" strokeDasharray="6 6" className="opacity-70" />
+                <line x1="15" y1="70" x2="50" y2="50" stroke="url(#lineGradient1)" strokeWidth="0.8" strokeDasharray="2 2" className="opacity-70" vectorEffect="non-scaling-stroke" />
 
                 {/* Bottom-right to center */}
-                <line x1="85%" y1="70%" x2="50%" y2="50%" stroke="url(#lineGradient1)" strokeWidth="3" strokeDasharray="6 6" className="opacity-70" />
+                <line x1="85" y1="70" x2="50" y2="50" stroke="url(#lineGradient1)" strokeWidth="0.8" strokeDasharray="2 2" className="opacity-70" vectorEffect="non-scaling-stroke" />
 
-                {/* Animated dots on each line */}
-                <circle r="5" fill="#a855f7" opacity="1">
+                {/* Animated dot: top-left to center */}
+                <circle r="1.5" fill="#a855f7">
                   <animate attributeName="opacity" values="0.7;1;0.7" dur="1.5s" repeatCount="indefinite" />
-                  <animateMotion dur="3s" repeatCount="indefinite">
-                    <mpath href="#path1" />
+                  <animateMotion dur="2.5s" repeatCount="indefinite">
+                    <mpath href="#path-top-left" />
                   </animateMotion>
                 </circle>
-                <path id="path1" d="M 60 72 L 200 200" fill="none" className="hidden" />
 
-                <circle r="5" fill="#a855f7" opacity="1">
-                  <animate attributeName="opacity" values="0.7;1;0.7" dur="1.5s" repeatCount="indefinite" begin="0.5s" />
-                  <animateMotion dur="3s" repeatCount="indefinite" begin="0.5s">
-                    <mpath href="#path2" />
+                {/* Animated dot: top-right to center */}
+                <circle r="1.5" fill="#a855f7">
+                  <animate attributeName="opacity" values="0.7;1;0.7" dur="1.5s" repeatCount="indefinite" begin="0.6s" />
+                  <animateMotion dur="2.5s" repeatCount="indefinite" begin="0.6s">
+                    <mpath href="#path-top-right" />
                   </animateMotion>
                 </circle>
-                <path id="path2" d="M 340 72 L 200 200" fill="none" className="hidden" />
 
-                <circle r="5" fill="#a855f7" opacity="1">
-                  <animate attributeName="opacity" values="0.7;1;0.7" dur="1.5s" repeatCount="indefinite" begin="1s" />
-                  <animateMotion dur="3s" repeatCount="indefinite" begin="1s">
-                    <mpath href="#path3" />
+                {/* Animated dot: bottom-left to center */}
+                <circle r="1.5" fill="#a855f7">
+                  <animate attributeName="opacity" values="0.7;1;0.7" dur="1.5s" repeatCount="indefinite" begin="1.2s" />
+                  <animateMotion dur="2.5s" repeatCount="indefinite" begin="1.2s">
+                    <mpath href="#path-bottom-left" />
                   </animateMotion>
                 </circle>
-                <path id="path3" d="M 60 280 L 200 200" fill="none" className="hidden" />
 
-                <circle r="5" fill="#a855f7" opacity="1">
-                  <animate attributeName="opacity" values="0.7;1;0.7" dur="1.5s" repeatCount="indefinite" begin="1.5s" />
-                  <animateMotion dur="3s" repeatCount="indefinite" begin="1.5s">
-                    <mpath href="#path4" />
+                {/* Animated dot: bottom-right to center */}
+                <circle r="1.5" fill="#a855f7">
+                  <animate attributeName="opacity" values="0.7;1;0.7" dur="1.5s" repeatCount="indefinite" begin="1.8s" />
+                  <animateMotion dur="2.5s" repeatCount="indefinite" begin="1.8s">
+                    <mpath href="#path-bottom-right" />
                   </animateMotion>
                 </circle>
-                <path id="path4" d="M 340 280 L 200 200" fill="none" className="hidden" />
               </svg>
 
               {/* Center hub */}
@@ -139,8 +141,8 @@ const Features = () => {
             <h3 className="text-xl font-bold">Built for Teams, Loved by Freelancers</h3>
             <p className="mt-2 text-muted-foreground">Invite unlimited team members, assign roles, and approve content seamlessly.</p>
 
-            {/* Visual: Team collaboration illustration */}
-            <div className="mt-6 aspect-[4/3] rounded-xl border bg-gradient-to-br from-blue-50 to-purple-50 p-6 relative overflow-hidden">
+            {/* Visual: Team collaboration illustration - hidden on mobile, compact on tablet */}
+            <div className="mt-6 hidden sm:block aspect-[4/3] md:aspect-[4/3] rounded-xl border bg-gradient-to-br from-blue-50 to-purple-50 p-4 md:p-6 relative overflow-hidden">
               {/* Team avatars with actual images */}
               <div className="absolute top-6 left-6 flex -space-x-2">
                 <img

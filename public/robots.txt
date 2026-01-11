@@ -1,0 +1,20 @@
+# PostZaper Robots.txt
+# https://postzaper.com
+
+User-agent: *
+Allow: /
+
+# Block authenticated/private pages
+Disallow: /dashboard
+Disallow: /dashboard/*
+Disallow: /profile/*
+Disallow: /login
+
+# Allow all crawlers to access static assets
+Allow: /images/
+Allow: /*.svg$
+Allow: /*.png$
+Allow: /*.jpg$
+
+# Sitemap location
+Sitemap: https://postzaper.com/sitemap.xml

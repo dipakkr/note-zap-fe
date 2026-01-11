@@ -21,7 +21,7 @@ const Pricing = () => {
       name: "Pro",
       badge: "Most Popular",
       description: "Everything you need to save smarter",
-      price: "$39",
+      price: "$29",
       priceLabel: "per year",
       highlighted: true,
       features: [

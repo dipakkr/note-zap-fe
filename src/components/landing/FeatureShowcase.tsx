@@ -170,7 +170,7 @@ const FeatureShowcase = () => {
 
         {/* Bottom CTA */}
         <div className="mt-16 text-center">
-          <Button size="lg" className="gap-2 rounded-full bg-amber-500 hover:bg-amber-600 font-medium" disabled>
+          <Button size="lg" className="gap-2 rounded-full bg-amber-600 hover:bg-amber-700 text-white font-semibold" disabled>
             <Sparkles className="h-4 w-4" />
             Coming Soon — Join Waitlist
           </Button>

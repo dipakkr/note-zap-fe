@@ -91,8 +91,8 @@ const Hero = () => {
           </div>
         </div>
 
-        {/* RIGHT COLUMN: Animation */}
-        <div className="flex-1 w-full relative h-[400px] lg:h-[550px] flex items-center justify-center lg:-mr-20 scale-90">
+        {/* RIGHT COLUMN: Animation - Hidden on mobile, visible on desktop */}
+        <div className="hidden lg:flex flex-1 w-full relative h-[400px] lg:h-[550px] items-center justify-center lg:-mr-20 scale-90">
           <HeroAnimation />
         </div>
 

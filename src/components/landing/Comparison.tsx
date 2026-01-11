@@ -114,7 +114,7 @@ const Comparison = () => {
             <div className="grid grid-cols-5 border-t-2 bg-muted/30 rounded-b-2xl">
               <div className="p-5 font-semibold flex items-center rounded-bl-2xl">Pricing</div>
               <div className="p-5 text-center border-l border-r-2 border-r-primary/20 bg-primary/10">
-                <div className="text-2xl font-bold text-primary">$39</div>
+                <div className="text-2xl font-bold text-primary">$29</div>
                 <div className="text-xs text-muted-foreground">per year</div>
               </div>
               <div className="p-5 text-center border-l">
@@ -148,7 +148,7 @@ const Comparison = () => {
               </div>
               <div>
                 <div className="font-bold text-lg">PostZaper</div>
-                <div className="text-2xl font-bold text-primary">$39 <span className="text-sm font-normal text-muted-foreground">/year</span></div>
+                <div className="text-2xl font-bold text-primary">$29 <span className="text-sm font-normal text-muted-foreground">/year</span></div>
               </div>
             </div>
             <div className="space-y-2">

@@ -403,7 +403,7 @@ button:disabled,
 }
 
 .animate-scroll-brands {
-  animation: scroll-brands 40s linear infinite;
+  animation: scroll-brands 20s linear infinite;
 }
 
 /* Adaptable Masonry Grid */

@@ -10,26 +10,26 @@ const UseCases = () => {
             <div className="flex h-5 w-5 items-center justify-center rounded bg-foreground">
               <Zap className="h-3 w-3 text-background" />
             </div>
-            <span className="font-medium">Power Meets Simplicity</span>
+            <span className="font-medium">Your Viral Content Engine</span>
           </div>
 
           <h2 className="mt-6 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
-            Smarter Tool.
+            Never Run Out of
             <br />
-            Simpler Workflow.
+            Content Ideas
             <br />
-            <span className="italic text-primary">Stronger Results.</span>
+            <span className="italic text-primary">Ever Again.</span>
           </h2>
 
           <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
-            Powerful tools designed to simplify your workflow, boost engagement, and
-            keep your content engine running smoothly.
+            Choose templates that match your style, get AI-powered viral content
+            ideas, and turn inspiration into posts that actually get engagement.
           </p>
         </div>
 
         {/* Feature Cards */}
         <div className="mt-16 space-y-6">
-          {/* Plan & Schedule Card */}
+          {/* Viral Content Ideas Card */}
           <div className="rounded-2xl border bg-card p-8 lg:p-10">
             <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
               {/* Left Content */}
@@ -39,21 +39,21 @@ const UseCases = () => {
                 </div>
 
                 <h3 className="mt-6 text-2xl font-bold md:text-3xl">
-                  Plan & Schedule
+                  Template-Powered Ideas
                 </h3>
 
                 <p className="mt-4 text-muted-foreground">
-                  Powerful scheduling tool designed to help you plan ahead, stay
-                  consistent, and grow without chaos. Queue your content for optimal
-                  times and let automation handle the rest.
+                  Pick the content templates that resonate with you—threads, hooks,
+                  storytelling formats, or viral frameworks. Our AI generates fresh
+                  ideas tailored to your niche, so you always know what to post.
                 </p>
 
                 <ul className="mt-6 space-y-3">
                   {[
-                    "Visual content calendar",
-                    "Best time to post suggestions",
-                    "Bulk scheduling support",
-                    "Draft and approval workflow",
+                    "50+ proven viral content templates",
+                    "AI-generated ideas based on your niche",
+                    "Trending hooks and opening lines",
+                    "One-click post generation",
                   ].map((item) => (
                     <li key={item} className="flex items-center gap-3 text-sm">
                       <div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/10">
@@ -65,51 +65,37 @@ const UseCases = () => {
                 </ul>
               </div>
 
-              {/* Right - Calendar Demo */}
+              {/* Right - Template Cards Demo */}
               <div className="rounded-xl border bg-background p-4 shadow-sm">
-                {/* Calendar Header */}
+                {/* Templates Header */}
                 <div className="flex items-center justify-between border-b pb-3">
-                  <div className="flex items-center gap-2">
-                    <button className="rounded-lg border px-3 py-1 text-sm">Today</button>
-                    <span className="text-sm text-muted-foreground">+</span>
-                  </div>
-                  <span className="font-medium">September 2025</span>
+                  <span className="font-medium">Popular Templates</span>
+                  <span className="text-xs text-primary cursor-pointer hover:underline">View All →</span>
                 </div>
 
-                {/* Calendar Grid */}
-                <div className="mt-4">
-                  {/* Days Header */}
-                  <div className="grid grid-cols-7 gap-1 text-center text-xs text-muted-foreground">
-                    {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-                      <div key={day} className="py-2">{day}</div>
-                    ))}
-                  </div>
-
-                  {/* Calendar Days */}
-                  <div className="mt-2 grid grid-cols-7 gap-1">
-                    {Array.from({ length: 35 }, (_, i) => {
-                      const day = i - 6 + 1;
-                      const hasContent = [2, 3, 4, 5, 9, 10, 11, 12, 16, 17, 18, 19].includes(day);
-                      const isCurrentMonth = day > 0 && day <= 30;
-
-                      return (
-                        <div
-                          key={i}
-                          className={`aspect-square rounded-lg p-1 text-xs ${isCurrentMonth ? "" : "text-muted-foreground/30"
-                            }`}
-                        >
-                          <div className="text-right">{isCurrentMonth ? day : ""}</div>
-                          {hasContent && isCurrentMonth && (
-                            <div className="mt-1 space-y-0.5">
-                              <div className="h-1 rounded-full bg-primary/60" />
-                              <div className="h-1 rounded-full bg-blue-400/60" />
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
+                {/* Template Grid */}
+                <div className="mt-4 grid grid-cols-2 gap-3">
+                  {[
+                    { name: "Thread Starter", icon: "🧵", color: "bg-purple-500/10", uses: "12.4k" },
+                    { name: "Contrarian Take", icon: "🔥", color: "bg-orange-500/10", uses: "8.2k" },
+                    { name: "Hook Generator", icon: "🪝", color: "bg-blue-500/10", uses: "15.1k" },
+                    { name: "Storytelling", icon: "📖", color: "bg-green-500/10", uses: "6.8k" },
+                  ].map((template) => (
+                    <div
+                      key={template.name}
+                      className={`rounded-lg ${template.color} p-3 cursor-pointer hover:scale-[1.02] transition-transform border border-transparent hover:border-primary/20`}
+                    >
+                      <div className="text-2xl">{template.icon}</div>
+                      <div className="mt-2 text-sm font-medium">{template.name}</div>
+                      <div className="mt-1 text-xs text-muted-foreground">{template.uses} uses</div>
+                    </div>
+                  ))}
                 </div>
+
+                {/* Quick Generate Button */}
+                <button className="mt-4 w-full rounded-lg bg-primary py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors">
+                  ✨ Generate Idea
+                </button>
               </div>
             </div>
           </div>
@@ -130,8 +116,8 @@ const UseCases = () => {
               </h3>
 
               <p className="mx-auto mt-3 max-w-lg text-muted-foreground">
-                A single workspace that connects your content,
-                your team, and your schedule.
+                Watch how creators use templates to generate viral content
+                ideas in seconds—no more staring at a blank screen.
               </p>
             </div>
 
@@ -145,7 +131,7 @@ const UseCases = () => {
                       <Play className="h-6 w-6 ml-1" fill="currentColor" />
                     </div>
                     <p className="mt-4 text-sm text-muted-foreground">
-                      PostZaper Demo – Schedule & Manage All Your Social Media in One Place
+                      PostZaper Demo – Generate Viral Content Ideas with AI-Powered Templates
                     </p>
                   </div>
                 </div>

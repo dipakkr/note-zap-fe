@@ -49,10 +49,10 @@ const InstantSearch = () => {
 
     return (
         <div className="w-full h-full bg-gray-50 flex items-center justify-center p-6">
-            <div className="w-full max-w-[320px] bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden flex flex-col h-[220px] text-left">
+            <div className="w-full max-w-[320px] bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col h-[220px] text-left">
 
                 {/* Search Bar */}
-                <div className="p-3 border-b border-gray-100 bg-white z-10">
+                <div className="p-3 bg-white z-10">
                     <div className="relative">
                         <Search className="absolute left-2.5 top-2 text-gray-400" size={14} />
                         <input
@@ -60,7 +60,7 @@ const InstantSearch = () => {
                             value={searchText}
                             readOnly
                             placeholder="Search bookmarks..."
-                            className="w-full pl-8 pr-3 py-1.5 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none text-gray-800 placeholder:text-gray-400"
+                            className="w-full pl-8 pr-3 py-1.5 text-sm bg-gray-100/80 rounded-lg focus:outline-none text-gray-800 placeholder:text-gray-400"
                         />
                         {/* Cursor Blinking */}
                         {isTyping && (
@@ -74,8 +74,8 @@ const InstantSearch = () => {
                 {/* Results List */}
                 <div className="flex-1 overflow-hidden p-2 space-y-2 bg-gray-50/50">
                     {filteredItems.map((item) => (
-                        <div key={item.id} className="bg-white p-2 rounded-lg border border-gray-100 shadow-sm flex items-center gap-3 animate-fade-in transition-all duration-300">
-                            <div className="w-8 h-8 rounded-md bg-gray-50 flex items-center justify-center border border-gray-100 shrink-0">
+                        <div key={item.id} className="bg-white p-2.5 rounded-xl shadow-sm flex items-center gap-3 animate-fade-in transition-all duration-300">
+                            <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
                                 {item.icon}
                             </div>
                             <div className="min-w-0 flex-1">

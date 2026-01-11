@@ -17,7 +17,7 @@ const Problem = () => {
   ];
 
   return (
-    <section className="section-padding bg-muted/50">
+    <section className="pt-12 pb-20 md:section-padding bg-muted/50">
       <div className="container-tight">
         <div className="mx-auto max-w-3xl text-center">
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">

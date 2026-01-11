@@ -12,6 +12,7 @@ import FAQ from "@/components/landing/FAQ";
 import FinalCTA from "@/components/landing/FinalCTA";
 import SEO from "@/components/SEO";
 
+
 const LandingPage = () => {
   return (
     <>
