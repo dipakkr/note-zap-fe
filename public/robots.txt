@@ -1,5 +1,5 @@
 # PostZaper Robots.txt
-# https://postzaper.com
+# https://www.postzaper.com
 
 User-agent: *
 Allow: /
@@ -17,4 +17,4 @@ Allow: /*.png$
 Allow: /*.jpg$
 
 # Sitemap location
-Sitemap: https://postzaper.com/sitemap.xml
+Sitemap: https://www.postzaper.com/sitemap.xml
