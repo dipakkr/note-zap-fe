@@ -47,7 +47,7 @@ const Pricing = () => {
       features: [
         "Everything in Pro, plus:",
         "Access to Creator Studio",
-        "Generate 500 AI posts/mo",
+        "Generate 300 AI posts/mo",
         "AI-powered viral content generation",
         "Content segmentation & repurposing",
         "Trend analysis & insights",

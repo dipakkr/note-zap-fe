@@ -1,7 +1,12 @@
 import { Sparkles, TrendingUp, Brain, Zap } from 'lucide-react';
+import { useState } from 'react';
+import CreatorUpgradeDialog from './CreatorUpgradeDialog';
 
 export default function ComingSoonSection() {
+    const [showUpgrade, setShowUpgrade] = useState(false);
+
     const upcomingFeatures = [
+        // ... (features array remains same, omitted for brevity if tool supports partial, but using full file structure is safer for simple replace)
         {
             icon: Brain,
             title: "AI Content Suggestions",
@@ -150,11 +155,16 @@ export default function ComingSoonSection() {
                 {/* CTA */}
                 <div className="text-center mt-12">
                     <p className="text-gray-300 mb-4">Want early access to these features?</p>
-                    <button className="px-6 py-3 bg-white text-gray-900 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
-                        Join the Waitlist
+                    <button
+                        onClick={() => setShowUpgrade(true)}
+                        className="px-6 py-3 bg-white text-gray-900 rounded-lg font-semibold hover:bg-gray-100 transition-colors uppercase tracking-wide"
+                    >
+                        Join Waitlist
                     </button>
                 </div>
             </div>
+
+            <CreatorUpgradeDialog isOpen={showUpgrade} onClose={() => setShowUpgrade(false)} />
         </section>
     );
 }

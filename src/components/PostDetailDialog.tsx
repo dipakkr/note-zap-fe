@@ -1,7 +1,9 @@
 import { Dialog, DialogContent } from './ui/dialog';
+import { useState } from 'react';
 import type { Bookmark } from '../services/bookmarkService';
-import { MessageCircle, Repeat2, Heart, X, Wand2, Share2 } from 'lucide-react';
+import { MessageCircle, Repeat2, Heart, X, Zap, ExternalLink } from 'lucide-react';
 import { format } from 'date-fns';
+import CreatorUpgradeDialog from './CreatorUpgradeDialog';
 
 interface PostDetailDialogProps {
     isOpen: boolean;
@@ -10,6 +12,8 @@ interface PostDetailDialogProps {
 }
 
 export default function PostDetailDialog({ isOpen, onClose, bookmark }: PostDetailDialogProps) {
+    const [showCreatorUpgrade, setShowCreatorUpgrade] = useState(false);
+
     if (!bookmark) return null;
 
     const getAuthorInfo = () => {
@@ -145,40 +149,54 @@ export default function PostDetailDialog({ isOpen, onClose, bookmark }: PostDeta
                             )}
 
                             {/* Icon Action Row */}
-                            <div className="py-1 flex items-center justify-around text-muted-foreground border-b border-border">
-                                <button className="p-2.5 hover:bg-primary/10 hover:text-primary rounded-full transition-colors">
-                                    <MessageCircle className="w-5 h-5" />
+                            <div className="py-3 flex items-center justify-between px-6 text-muted-foreground border-t border-border mt-2">
+                                <button className="group flex items-center gap-1.5 hover:text-primary transition-colors">
+                                    <div className="p-2 rounded-full group-hover:bg-primary/10 transition-colors">
+                                        <MessageCircle className="w-5 h-5" />
+                                    </div>
+                                    <span className="text-xs font-medium">{stats?.replies || 0}</span>
                                 </button>
-                                <button className="p-2.5 hover:bg-emerald-500/10 hover:text-emerald-500 rounded-full transition-colors">
-                                    <Repeat2 className="w-5 h-5" />
+                                <button className="group flex items-center gap-1.5 hover:text-emerald-500 transition-colors">
+                                    <div className="p-2 rounded-full group-hover:bg-emerald-500/10 transition-colors">
+                                        <Repeat2 className="w-5 h-5" />
+                                    </div>
+                                    <span className="text-xs font-medium">{stats?.retweets || 0}</span>
                                 </button>
-                                <button className="p-2.5 hover:bg-rose-500/10 hover:text-rose-500 rounded-full transition-colors">
-                                    <Heart className="w-5 h-5" />
+                                <button className="group flex items-center gap-1.5 hover:text-rose-500 transition-colors">
+                                    <div className="p-2 rounded-full group-hover:bg-rose-500/10 transition-colors">
+                                        <Heart className="w-5 h-5" />
+                                    </div>
+                                    <span className="text-xs font-medium">{stats?.likes || 0}</span>
                                 </button>
-                                <button className="p-2.5 hover:bg-primary/10 hover:text-primary rounded-full transition-colors">
-                                    <Share2 className="w-5 h-5" />
+
+                                {/* Remix Button - Centered Vertical Alignment */}
+                                <button
+                                    onClick={() => setShowCreatorUpgrade(true)}
+                                    className="p-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-lg shadow-primary/25 hover:scale-110"
+                                    title="Remix with AI"
+                                >
+                                    <Zap className="w-5 h-5 fill-current" />
                                 </button>
+
+                                <a
+                                    href={bookmark.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="p-2 rounded-full hover:bg-primary/10 hover:text-primary transition-colors"
+                                    title="View Original"
+                                >
+                                    <ExternalLink className="w-5 h-5" />
+                                </a>
                             </div>
                         </div>
                     </div>
-
-                    {/* AI Tools Footer */}
-                    <div className="p-3 bg-muted/20 border-t border-border flex items-center justify-between px-4">
-                        <button className="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary text-[13px] font-bold rounded-full hover:bg-primary/20 transition-colors">
-                            <Wand2 className="w-4 h-4" />
-                            Remix for LinkedIn
-                        </button>
-                        <a
-                            href={bookmark.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-[13px] font-bold text-primary hover:underline"
-                        >
-                            View original
-                        </a>
-                    </div>
                 </div>
             </DialogContent>
+
+            <CreatorUpgradeDialog
+                isOpen={showCreatorUpgrade}
+                onClose={() => setShowCreatorUpgrade(false)}
+            />
         </Dialog>
     );
 }
