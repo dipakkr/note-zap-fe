@@ -14,6 +14,7 @@ import {
   Plus,
   Repeat2,
   Search,
+  RefreshCw,
   Settings,
   Sparkles,
   Star,
@@ -282,7 +283,7 @@ function Sidebar({
         <div className="px-4 mt-auto">
           <button
             onClick={() => setIsUpgradeDialogOpen(true)}
-            className="w-full bg-[#634400] hover:bg-[#4f46e5] text-white p-3.5 rounded-xl shadow-lg shadow-indigo-500/20 active:scale-[0.98] transition-all group flex items-center justify-center gap-2.5"
+            className="w-full bg-gradient-to-br from-yellow-400 via-orange-500 to-red-600 text-white p-3.5 rounded-xl shadow-lg shadow-orange-500/20 active:scale-[0.98] transition-all group flex items-center justify-center gap-2.5 hover:shadow-orange-500/40 hover:brightness-110"
           >
             <Crown className="w-4 h-4 fill-white/20" />
             <span className="text-[11px] font-black uppercase tracking-widest">Upgrade to Pro</span>
@@ -739,6 +740,14 @@ export default function DashboardPage() {
             </div>
 
             <div className="flex items-center gap-2 lg:gap-3">
+              <button
+                onClick={loadBookmarks}
+                disabled={loading}
+                className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition"
+                title="Refresh Feed"
+              >
+                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              </button>
               <div className={`relative group flex-1 sm:flex-none ${activeFilter === 'content-studio' ? 'opacity-0 pointer-events-none' : ''}`}>
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Search className="h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />

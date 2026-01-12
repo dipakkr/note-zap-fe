@@ -34,7 +34,7 @@ const Hero = () => {
 
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 border border-orange-100 text-orange-700 text-[10px] font-bold uppercase tracking-wide shadow-sm w-fit">
-            <span>🏆</span> Product Hunt #1 Product of the Day
+            <span>🚀</span> Join 500+ Early Adopters
           </div>
 
           {/* Headline */}
