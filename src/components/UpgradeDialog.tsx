@@ -39,7 +39,7 @@ export default function UpgradeDialog({ isOpen, onClose }: UpgradeDialogProps) {
                             Unlock unlimited bookmarks, AI tools, and seamless integrations.
                         </p>
 
-                        <div className="flex items-center justify-center gap-2 mb-8 bg-muted/50 p-1.5 pr-4 rounded-xl border border-border/50">
+                        <div className="flex items-center justify-center gap-2 mb-3 bg-muted/50 p-1.5 pr-4 rounded-xl border border-border/50">
                             <span className="bg-background shadow-sm border border-border px-3 py-1.5 rounded-lg text-sm font-bold text-foreground">
                                 Yearly
                             </span>
@@ -51,6 +51,11 @@ export default function UpgradeDialog({ isOpen, onClose }: UpgradeDialogProps) {
                                 SAVE 40%
                             </span>
                         </div>
+
+                        {/* Urgency Text */}
+                        <p className="text-xs font-bold text-orange-500 mb-6 animate-pulse">
+                            🔥 Only 45 left at this price
+                        </p>
 
                         {/* Divider */}
                         <div className="w-full h-px bg-gradient-to-r from-transparent via-border to-transparent mb-8" />
@@ -68,9 +73,12 @@ export default function UpgradeDialog({ isOpen, onClose }: UpgradeDialogProps) {
                         </div>
 
                         {/* Actions */}
+
+
+                        {/* Actions */}
                         <button
                             onClick={handleUpgrade}
-                            className="w-full py-4 bg-primary text-white rounded-xl font-bold text-sm shadow-xl shadow-primary/20 hover:shadow-2xl hover:shadow-primary/30 hover:-translate-y-0.5 active:translate-y-0 transition-all mb-5 flex items-center justify-center gap-2 group"
+                            className="w-full py-4 bg-gradient-to-br from-yellow-400 via-orange-500 to-red-600 text-white rounded-xl font-bold text-sm shadow-xl shadow-orange-500/20 hover:shadow-2xl hover:shadow-orange-500/40 hover:-translate-y-0.5 active:translate-y-0 transition-all mb-5 flex items-center justify-center gap-2 group"
                         >
                             <Star className="w-4 h-4 fill-white/20 group-hover:fill-white/40 transition-colors" />
                             Unlock Pro Access

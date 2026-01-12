@@ -25,9 +25,10 @@ import {
   LayoutGrid,
   Rows
 } from 'lucide-react';
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
+import { useClickOutside } from '../hooks/use-click-outside';
 import AddBookmarkDialog from '../components/AddBookmarkDialog';
 import BookmarkCard from '../components/BookmarkCard';
 import PostDetailDialog from '../components/PostDetailDialog';
@@ -161,6 +162,9 @@ function Sidebar({
   setIsClusterAddOpen,
   handleSignOut,
 }: SidebarProps) {
+  const userMenuRef = useRef<HTMLDivElement>(null);
+  useClickOutside(userMenuRef, () => setShowUserMenu(false));
+
   return (
     <aside className={`
       fixed lg:relative z-[70] lg:z-0
@@ -318,7 +322,7 @@ function Sidebar({
             >
               {isDarkMode ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
             </button>
-            <div className="relative">
+            <div className="relative" ref={userMenuRef}>
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
                 className={`p-1.5 hover:bg-muted rounded-lg ${showUserMenu ? 'bg-muted text-foreground' : 'text-muted-foreground'}`}
@@ -328,7 +332,6 @@ function Sidebar({
 
               {showUserMenu && (
                 <>
-                  <div className="fixed inset-0 z-40" onClick={() => setShowUserMenu(false)} />
                   <div className="absolute bottom-full right-0 mb-2 w-48 bg-card rounded-xl shadow-xl border border-border py-1.5 z-50">
                     <button
                       onClick={() => setIsSettingsOpen(true)}
@@ -402,6 +405,16 @@ export default function DashboardPage() {
 
   const activeCluster = clusters.find(c => c.name.toLowerCase() === activeFilter.toLowerCase());
   const activeFilterLabel = activeCluster ? activeCluster.name : activeFilter;
+
+  const authorMenuRef = useRef<HTMLDivElement>(null);
+  const tagMenuRef = useRef<HTMLDivElement>(null);
+  const filterMenuRef = useRef<HTMLDivElement>(null);
+  const clusterMenuRef = useRef<HTMLDivElement>(null);
+
+  useClickOutside(authorMenuRef, () => setShowAuthorMenu(false));
+  useClickOutside(tagMenuRef, () => setShowTagMenu(false));
+  useClickOutside(filterMenuRef, () => setShowFilterMenu(false));
+  useClickOutside(clusterMenuRef, () => setShowClusterMenu(false));
 
   const [isDarkMode, setIsDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -871,7 +884,7 @@ export default function DashboardPage() {
                       </div>
 
                       {/* Author Filter Dropdown */}
-                      <div className="relative">
+                      <div className="relative" ref={authorMenuRef}>
                         <button
                           onClick={() => setShowAuthorMenu(!showAuthorMenu)}
                           className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${authorFilter !== 'all'
@@ -885,7 +898,6 @@ export default function DashboardPage() {
 
                         {showAuthorMenu && (
                           <>
-                            <div className="fixed inset-0 z-40" onClick={() => setShowAuthorMenu(false)} />
                             <div className="absolute right-0 top-full mt-2 w-56 bg-card rounded-2xl shadow-2xl border border-border py-2 z-50">
                               <p className="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Filter by Profile</p>
                               <div className="max-h-60 overflow-y-auto no-scrollbar space-y-1 px-1">
@@ -914,7 +926,7 @@ export default function DashboardPage() {
                       </div>
 
                       {/* Tag Filter Dropdown */}
-                      <div className="relative">
+                      <div className="relative" ref={tagMenuRef}>
                         <button
                           onClick={() => setShowTagMenu(!showTagMenu)}
                           className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${tagFilter !== 'all'
@@ -928,7 +940,6 @@ export default function DashboardPage() {
 
                         {showTagMenu && (
                           <>
-                            <div className="fixed inset-0 z-40" onClick={() => setShowTagMenu(false)} />
                             <div className="absolute right-0 top-full mt-2 w-56 bg-card rounded-2xl shadow-2xl border border-border py-2 z-50">
                               <p className="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Filter by Tag</p>
                               <div className="max-h-60 overflow-y-auto no-scrollbar space-y-1 px-1">
@@ -966,7 +977,7 @@ export default function DashboardPage() {
                         <CheckCircle2 className="w-4 h-4" />
                         <span>{isSelectionMode ? 'Cancel' : 'Select'}</span>
                       </button>
-                      <div className="relative">
+                      <div className="relative" ref={filterMenuRef}>
                         <button
                           onClick={() => setShowFilterMenu(!showFilterMenu)}
                           className={`p-2 rounded-lg transition ${showFilterMenu
@@ -979,7 +990,6 @@ export default function DashboardPage() {
 
                         {showFilterMenu && (
                           <>
-                            <div className="fixed inset-0 z-40" onClick={() => setShowFilterMenu(false)} />
                             <div className="absolute right-0 top-full mt-2 w-56 bg-card rounded-2xl shadow-2xl border border-border py-3 z-50">
                               <div className="px-4 py-2">
                                 <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3">Sort By</p>
@@ -1196,7 +1206,7 @@ export default function DashboardPage() {
                   </div>
                   <div className="hidden xs:block h-8 w-px bg-white/10 mx-1 lg:mx-2" />
                   <div className="flex gap-2 relative">
-                    <div className="relative">
+                    <div className="relative" ref={clusterMenuRef}>
                       <button
                         onClick={() => setShowClusterMenu(!showClusterMenu)}
                         className={`p-2.5 lg:px-4 lg:py-2.5 rounded-xl text-[11px] font-bold flex items-center gap-2 transition border ${showClusterMenu ? 'bg-white text-slate-900 border-white' : 'bg-white/10 hover:bg-white/20 text-white border-white/5'
