@@ -434,6 +434,17 @@ export default function DashboardPage() {
     }
   }, [isDarkMode]);
 
+  // Handle URL upgrade trigger
+  useEffect(() => {
+    if (searchParams.get('upgrade') === 'true') {
+      setIsUpgradeDialogOpen(true);
+      // Optional: Clean up URL
+      const next = new URLSearchParams(searchParams);
+      next.delete('upgrade');
+      setSearchParams(next, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
+
   const toggleTheme = () => setIsDarkMode(!isDarkMode);
 
   const handleSignOut = async () => {
