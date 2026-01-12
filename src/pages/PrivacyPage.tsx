@@ -48,10 +48,10 @@ export default function PrivacyPage() {
 
                     <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">5. Contact Us</h2>
                     <p>
-                        If you have any questions about this policy, please reach out to us at <a href="mailto:privacy@postzaper.com" className="text-blue-600 hover:underline">privacy@postzaper.com</a>.
+                        If you have any questions about this policy, please reach out to us at <a href="mailto:axivionlabs@gmail.com" className="text-blue-600 hover:underline">axivionlabs@gmail.com</a>.
                     </p>
                     <p className="mt-8 text-sm text-gray-400">
-                        Last updated: January 6, 2026
+                        Last updated: January 12, 2026
                     </p>
                 </div>
             </div>

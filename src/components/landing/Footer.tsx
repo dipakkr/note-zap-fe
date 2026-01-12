@@ -11,7 +11,7 @@ const Footer = () => {
           {/* Brand Column (Spans 4 columns on desktop) */}
           <div className="col-span-2 md:col-span-12 lg:col-span-4">
             <Link to="/" className="inline-block">
-              <img src="/logo.svg" alt="PostZaper" className="h-8" />
+              <img src="/logo.svg" alt="PostZaper" className="h-9" />
             </Link>
             <p className="mt-6 text-sm text-gray-500 leading-relaxed max-w-xs">
               The smartest bookmark manager for creators. Save, organize, and repurpose content from Twitter, LinkedIn, and the web.
@@ -19,7 +19,7 @@ const Footer = () => {
 
             <div className="mt-6 flex items-center gap-3">
               <a
-                href="https://twitter.com/postzaper"
+                href="#"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-black hover:text-white transition-all duration-300"
@@ -65,7 +65,7 @@ const Footer = () => {
                 <li><Link to="/about" className="text-sm text-gray-500 hover:text-purple-600 transition-colors">About Us</Link></li>
                 <li><span className="text-sm text-gray-400 cursor-not-allowed">Blog</span></li>
                 <li><span className="text-sm text-gray-400 cursor-not-allowed">Community</span></li>
-                <li><a href="mailto:support@postzaper.com" className="text-sm text-gray-500 hover:text-purple-600 transition-colors">Contact Support</a></li>
+                <li><Link to="/contact" className="text-sm text-gray-500 hover:text-purple-600 transition-colors">Contact Support</Link></li>
               </ul>
             </div>
 
@@ -85,7 +85,7 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-gray-100 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-xs text-gray-400">
-            © {new Date().getFullYear()} PostZaper. All rights reserved. Built by <span className="font-medium text-gray-500">AxivionLabs</span>.
+            © {new Date().getFullYear()} PostZaper. All rights reserved. Built by <span className="font-medium text-gray-500">Axivion Labs</span>.
           </p>
 
           <div className="flex items-center gap-6">

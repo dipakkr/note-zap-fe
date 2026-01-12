@@ -18,7 +18,7 @@ const FAQ = () => {
     {
       question: "Can I import my existing bookmarks?",
       answer:
-        "Yes! One-click import from Chrome, Firefox, Safari. We'll bring all your bookmarks (and their folders) into PostZaper.",
+        "Right now you can sync existing bookmarks from LinkedIn and Twitter. We will soon release a feature to import existing CSVs or bookmarks from your browser.",
     },
     {
       question: "Does it work on mobile?",
