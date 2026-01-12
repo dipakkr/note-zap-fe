@@ -21,9 +21,11 @@ import {
   Sun,
   Users,
   Wand2,
-  Zap
+  Zap,
+  LayoutGrid,
+  Rows
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import AddBookmarkDialog from '../components/AddBookmarkDialog';
@@ -369,6 +371,7 @@ export default function DashboardPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [loading, setLoading] = useState(true);
+  const [viewLayout, setViewLayout] = useState<'masonry' | 'feed'>('masonry');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -381,8 +384,10 @@ export default function DashboardPage() {
   const [sourceFilter, setSourceFilter] = useState<'all' | 'extension' | 'web'>('all');
   const [typeFilter, setTypeFilter] = useState<'all' | 'tweet' | 'thread' | 'linkedin' | 'article'>('all');
   const [authorFilter, setAuthorFilter] = useState<string>('all');
+  const [tagFilter, setTagFilter] = useState<string>('all');
   const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [showAuthorMenu, setShowAuthorMenu] = useState(false);
+  const [showTagMenu, setShowTagMenu] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const numCols = useMasonryColumns();
@@ -516,89 +521,143 @@ export default function DashboardPage() {
       b.linkedinProfileData !== undefined;
   };
 
-  const filteredBookmarks = bookmarks.filter(bookmark => {
-    if (!searchQuery) return true;
+  const displayBookmarks = useMemo(() => {
+    let result = bookmarks.filter(bookmark => {
+      if (!searchQuery) return true;
 
-    const query = searchQuery.toLowerCase();
-    return (
-      bookmark.title.toLowerCase().includes(query) ||
-      bookmark.description?.toLowerCase().includes(query) ||
-      bookmark.tags.some(tag => tag.toLowerCase().includes(query)) ||
-      bookmark.url.toLowerCase().includes(query)
-    );
-  });
-
-  const safelyGetTime = (date?: string) => {
-    if (!date) return 0;
-    const timestamp = new Date(date).getTime();
-    return isNaN(timestamp) ? 0 : timestamp;
-  };
-
-  let displayBookmarks = [...filteredBookmarks].sort((a, b) =>
-    safelyGetTime(b.createdAt) - safelyGetTime(a.createdAt)
-  );
-
-  if (activeFilter === 'favorites') {
-    displayBookmarks = displayBookmarks.filter(b => b.isFavorite);
-  } else if (activeFilter === 'profiles') {
-    displayBookmarks = displayBookmarks.filter(isProfile);
-  } else if (activeFilter === 'linkedin') {
-    displayBookmarks = displayBookmarks.filter(b => !isProfile(b));
-  } else {
-    // Check if it's a cluster filter
-    const cluster = clusters.find(c => c.name.toLowerCase() === activeFilter.toLowerCase());
-    if (cluster) {
-      displayBookmarks = displayBookmarks.filter(b => b.tags?.includes(cluster.name));
-    }
-  }
-
-  // Apply Source Filter
-  if (sourceFilter !== 'all') {
-    displayBookmarks = displayBookmarks.filter(b => b.source === sourceFilter);
-  }
-
-  // Apply Type Filter (Only if activeFilter is 'all')
-  if (activeFilter === 'all' && typeFilter !== 'all') {
-    displayBookmarks = displayBookmarks.filter(b => b.type === typeFilter);
-  }
-
-  // Get authors before filtering by author to populate the list
-  const availableAuthors = Array.from(new Set(displayBookmarks.map(b => {
-    if (b.type === 'tweet') return b.tweetData?.author?.name;
-    if (b.type === 'thread') return b.threadData?.author?.name;
-    if (b.type === 'linkedin') return b.linkedinData?.author?.name;
-    return null;
-  }).filter(Boolean))) as string[];
-
-  // Apply Author Filter
-  if (authorFilter !== 'all') {
-    displayBookmarks = displayBookmarks.filter(b => {
-      const authorName =
-        (b.type === 'tweet' && b.tweetData?.author?.name) ||
-        (b.type === 'thread' && b.threadData?.author?.name) ||
-        (b.type === 'linkedin' && b.linkedinData?.author?.name);
-      return authorName === authorFilter;
+      const query = searchQuery.toLowerCase();
+      return (
+        bookmark.title.toLowerCase().includes(query) ||
+        bookmark.description?.toLowerCase().includes(query) ||
+        bookmark.tags.some(tag => tag.toLowerCase().includes(query)) ||
+        bookmark.url.toLowerCase().includes(query)
+      );
     });
-  }
 
-  // Apply Sorting
-  displayBookmarks = [...displayBookmarks].sort((a, b) => {
-    if (sortBy === 'newest') {
-      return safelyGetTime(b.createdAt) - safelyGetTime(a.createdAt);
+    const safelyGetTime = (date?: string) => {
+      if (!date) return 0;
+      const timestamp = new Date(date).getTime();
+      return isNaN(timestamp) ? 0 : timestamp;
+    };
+
+    if (activeFilter === 'favorites') {
+      result = result.filter(b => b.isFavorite);
+    } else if (activeFilter === 'profiles') {
+      result = result.filter(isProfile);
+    } else if (activeFilter === 'linkedin') {
+      result = result.filter(b => !isProfile(b));
+    } else if (activeFilter === 'all') {
+      // Exclude profiles from the main feed
+      result = result.filter(b => !isProfile(b));
+    } else {
+      // Check if it's a cluster filter
+      const cluster = clusters.find(c => c.name.toLowerCase() === activeFilter.toLowerCase());
+      if (cluster) {
+        result = result.filter(b => b.tags?.includes(cluster.name));
+      }
     }
-    if (sortBy === 'oldest') {
-      return safelyGetTime(a.createdAt) - safelyGetTime(b.createdAt);
+
+    // Apply Source Filter
+    if (sourceFilter !== 'all') {
+      result = result.filter(b => b.source === sourceFilter);
     }
-    if (sortBy === 'likes') {
-      const getLikes = (bk: Bookmark) => {
-        if (bk.type === 'tweet') return bk.tweetData?.stats?.likes || 0;
-        if (bk.type === 'linkedin') return bk.linkedinData?.stats?.likes || 0;
-        return 0;
-      };
-      return getLikes(b) - getLikes(a);
+
+    // Apply Type Filter (Only if activeFilter is 'all')
+    if (activeFilter === 'all' && typeFilter !== 'all') {
+      result = result.filter(b => b.type === typeFilter);
     }
-    return 0;
-  });
+
+    // Apply Author Filter
+    if (authorFilter !== 'all') {
+      result = result.filter(b => {
+        const authorName =
+          (b.type === 'tweet' && b.tweetData?.author?.name) ||
+          (b.type === 'thread' && b.threadData?.author?.name) ||
+          (b.type === 'linkedin' && b.linkedinData?.author?.name);
+        return authorName === authorFilter;
+      });
+    }
+
+    // Apply Tag Filter
+    if (tagFilter !== 'all') {
+      result = result.filter(b => b.tags?.includes(tagFilter));
+    }
+
+    // Apply Sorting
+    result = [...result].sort((a, b) => {
+      if (sortBy === 'newest') {
+        return safelyGetTime(b.createdAt) - safelyGetTime(a.createdAt);
+      }
+      if (sortBy === 'oldest') {
+        return safelyGetTime(a.createdAt) - safelyGetTime(b.createdAt);
+      }
+      if (sortBy === 'likes') {
+        const getLikes = (bk: Bookmark) => {
+          if (bk.type === 'tweet') return bk.tweetData?.stats?.likes || 0;
+          if (bk.type === 'linkedin') return bk.linkedinData?.stats?.likes || 0;
+          return 0;
+        };
+        return getLikes(b) - getLikes(a);
+      }
+      return 0;
+    });
+
+    return result;
+  }, [bookmarks, searchQuery, activeFilter, sourceFilter, typeFilter, authorFilter, tagFilter, sortBy, clusters]);
+
+
+  // Get available tags for the current view
+  const availableTags = useMemo(() => {
+    let filtered = bookmarks;
+    if (activeFilter === 'favorites') filtered = filtered.filter(b => b.isFavorite);
+    else if (activeFilter === 'profiles') filtered = filtered.filter(isProfile);
+    else if (activeFilter === 'linkedin') filtered = filtered.filter(b => !isProfile(b));
+    else if (activeFilter === 'all') filtered = filtered.filter(b => !isProfile(b));
+
+    // Quick type filter matching the list view
+    if (activeFilter === 'all' && typeFilter !== 'all') filtered = filtered.filter(b => b.type === typeFilter);
+
+    const tags = new Set<string>();
+    filtered.forEach(b => {
+      b.tags?.forEach(t => tags.add(t));
+    });
+    return Array.from(tags).sort();
+  }, [bookmarks, activeFilter, typeFilter]);
+
+
+  // Get authors before filtering by author to populate the list - Memoized
+  const availableAuthors = useMemo(() => {
+    // We derive authors from the PARTIALLY filtered list (before author filter is applied)
+    // to explicitly allow user to see all available authors for the current "View" (e.g. All Items/Linkedin).
+    // However, simpler is just to calculate from 'displayBookmarks' if authorFilter wasn't applied?
+    // Actually, standard UI pattern: Filter options should reflect the current dataset *ignoring* that specific filter.
+
+    // For simplicity and speed without deep refactoring, let's just derive from the current filtered set 
+    // OR if we want to be perfect, we should derive it from the 'result' just before 'Apply Author Filter' step above.
+    // Given the constraints, I will derive it from the fully filtered list to match existing behavior logic visually seen in snippets
+    // BUT wait, looking at the original code: 
+    // It calculated availableAuthors using 'displayBookmarks' BEFORE 'Apply Author Filter' was run (lines 566 vs 574).
+    // So I need to replicate that.
+
+    // To do that inside useMemo, I might need to extract the 'pre-author-filter' list logic.
+    // Or I can calculate it separately here efficiently.
+
+    let filtered = bookmarks;
+    if (activeFilter === 'favorites') filtered = filtered.filter(b => b.isFavorite);
+    else if (activeFilter === 'profiles') filtered = filtered.filter(isProfile);
+    else if (activeFilter === 'linkedin') filtered = filtered.filter(b => !isProfile(b));
+    else if (activeFilter === 'all') filtered = filtered.filter(b => !isProfile(b));
+
+    // Quick type filter check
+    if (activeFilter === 'all' && typeFilter !== 'all') filtered = filtered.filter(b => b.type === typeFilter);
+
+    return Array.from(new Set(filtered.map(b => {
+      if (b.type === 'tweet') return b.tweetData?.author?.name;
+      if (b.type === 'thread') return b.threadData?.author?.name;
+      if (b.type === 'linkedin') return b.linkedinData?.author?.name;
+      return null;
+    }).filter(Boolean))) as string[];
+  }, [bookmarks, activeFilter, typeFilter]);
 
   const filters = [
     { id: 'all', label: 'All Items', icon: <Library className="w-4 h-4" /> },
@@ -793,6 +852,24 @@ export default function DashboardPage() {
                     </div>
 
                     <div className="flex items-center justify-between sm:justify-end gap-3 lg:gap-4">
+                      {/* View Layout Switcher */}
+                      <div className="flex bg-muted rounded-lg p-1 border border-border">
+                        <button
+                          onClick={() => setViewLayout('masonry')}
+                          className={`p-1.5 rounded-md transition-all ${viewLayout === 'masonry' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                          title="Masonry Grid"
+                        >
+                          <LayoutGrid className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => setViewLayout('feed')}
+                          className={`p-1.5 rounded-md transition-all ${viewLayout === 'feed' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                          title="Feed View"
+                        >
+                          <Rows className="w-4 h-4" />
+                        </button>
+                      </div>
+
                       {/* Author Filter Dropdown */}
                       <div className="relative">
                         <button
@@ -836,6 +913,49 @@ export default function DashboardPage() {
                         )}
                       </div>
 
+                      {/* Tag Filter Dropdown */}
+                      <div className="relative">
+                        <button
+                          onClick={() => setShowTagMenu(!showTagMenu)}
+                          className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${tagFilter !== 'all'
+                            ? 'bg-primary/10 text-primary border border-primary/20'
+                            : 'text-muted-foreground hover:bg-muted border border-transparent hover:border-border'
+                            }`}
+                        >
+                          <Filter className="w-4 h-4" />
+                          <span className="max-w-[100px] truncate">{tagFilter === 'all' ? 'Tags' : tagFilter}</span>
+                        </button>
+
+                        {showTagMenu && (
+                          <>
+                            <div className="fixed inset-0 z-40" onClick={() => setShowTagMenu(false)} />
+                            <div className="absolute right-0 top-full mt-2 w-56 bg-card rounded-2xl shadow-2xl border border-border py-2 z-50">
+                              <p className="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Filter by Tag</p>
+                              <div className="max-h-60 overflow-y-auto no-scrollbar space-y-1 px-1">
+                                <button
+                                  onClick={() => { setTagFilter('all'); setShowTagMenu(false); }}
+                                  className={`w-full text-left px-3 py-1.5 rounded-lg text-[11px] font-bold transition-colors ${tagFilter === 'all' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}
+                                >
+                                  All Tags
+                                </button>
+                                {availableTags.map(tag => (
+                                  <button
+                                    key={tag}
+                                    onClick={() => { setTagFilter(tag); setShowTagMenu(false); }}
+                                    className={`w-full text-left px-3 py-1.5 rounded-lg text-[11px] font-bold transition-colors truncate ${tagFilter === tag ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}
+                                  >
+                                    {tag}
+                                  </button>
+                                ))}
+                                {availableTags.length === 0 && (
+                                  <p className="px-3 py-2 text-[10px] text-muted-foreground italic text-center">No tags found</p>
+                                )}
+                              </div>
+                            </div>
+                          </>
+                        )}
+                      </div>
+
                       <button
                         onClick={() => setIsSelectionMode(!isSelectionMode)}
                         className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${isSelectionMode
@@ -844,7 +964,7 @@ export default function DashboardPage() {
                           }`}
                       >
                         <CheckCircle2 className="w-4 h-4" />
-                        <span>{isSelectionMode ? 'Cancel' : 'Multi-select'}</span>
+                        <span>{isSelectionMode ? 'Cancel' : 'Select'}</span>
                       </button>
                       <div className="relative">
                         <button
@@ -985,39 +1105,72 @@ export default function DashboardPage() {
                       }}
                     />
                   ) : (
-                    <div className="flex gap-4 lg:gap-6 items-start">
-                      {Array.from({ length: numCols }).map((_, colIndex) => (
-                        <div key={colIndex} className="flex flex-col gap-4 lg:gap-6 flex-1 min-w-0">
-                          {displayBookmarks
-                            .filter((_, index) => index % numCols === colIndex)
-                            .map((bookmark) => (
-                              <div key={bookmark.id} className="relative group/card w-full">
-                                {isSelectionMode && (
-                                  <div
-                                    className={`absolute top-4 left-4 z-40 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all cursor-pointer ${selectedIds.has(bookmark.id)
-                                      ? 'bg-primary border-primary'
-                                      : 'bg-card border-border opacity-60 group-hover/card:opacity-100 shadow-sm'
-                                      }`}
-                                    onClick={() => handleToggleSelection(bookmark.id)}
-                                  >
-                                    {selectedIds.has(bookmark.id) && <Plus className="w-4 h-4 text-white rotate-45" />}
-                                  </div>
-                                )}
-                                <div
-                                  className={`transition-all duration-300 w-full ${selectedIds.has(bookmark.id) ? 'scale-[0.98] ring-2 ring-primary ring-offset-4 rounded-xl' : ''
-                                    }`}
-                                >
-                                  <BookmarkCard
-                                    bookmark={bookmark}
-                                    clusters={clusters}
-                                    onToggleFavorite={handleToggleFavorite}
-                                    onDelete={handleDeleteClick}
-                                  />
-                                </div>
+                    <div className={`
+                      ${viewLayout === 'feed' ? 'max-w-2xl mx-auto flex flex-col gap-6' : 'flex gap-4 lg:gap-6 items-start'}
+                    `}>
+                      {viewLayout === 'feed' ? (
+                        /* Feed View - Single Column Direct Map */
+                        displayBookmarks.map(bookmark => (
+                          <div key={bookmark.id} className="relative group/card w-full">
+                            {isSelectionMode && (
+                              <div
+                                className={`absolute top-4 left-4 z-40 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all cursor-pointer ${selectedIds.has(bookmark.id)
+                                  ? 'bg-primary border-primary'
+                                  : 'bg-card border-border opacity-60 group-hover/card:opacity-100 shadow-sm'
+                                  }`}
+                                onClick={() => handleToggleSelection(bookmark.id)}
+                              >
+                                {selectedIds.has(bookmark.id) && <Plus className="w-4 h-4 text-white rotate-45" />}
                               </div>
-                            ))}
-                        </div>
-                      ))}
+                            )}
+                            <div
+                              className={`transition-all duration-300 w-full ${selectedIds.has(bookmark.id) ? 'scale-[0.98] ring-2 ring-primary ring-offset-4 rounded-xl' : ''
+                                }`}
+                            >
+                              <BookmarkCard
+                                bookmark={bookmark}
+                                clusters={clusters}
+                                onToggleFavorite={handleToggleFavorite}
+                                onDelete={handleDeleteClick}
+                              />
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        /* Masonry View */
+                        Array.from({ length: numCols }).map((_, colIndex) => (
+                          <div key={colIndex} className="flex flex-col gap-4 lg:gap-6 flex-1 min-w-0">
+                            {displayBookmarks
+                              .filter((_, index) => index % numCols === colIndex)
+                              .map((bookmark) => (
+                                <div key={bookmark.id} className="relative group/card w-full">
+                                  {isSelectionMode && (
+                                    <div
+                                      className={`absolute top-4 left-4 z-40 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all cursor-pointer ${selectedIds.has(bookmark.id)
+                                        ? 'bg-primary border-primary'
+                                        : 'bg-card border-border opacity-60 group-hover/card:opacity-100 shadow-sm'
+                                        }`}
+                                      onClick={() => handleToggleSelection(bookmark.id)}
+                                    >
+                                      {selectedIds.has(bookmark.id) && <Plus className="w-4 h-4 text-white rotate-45" />}
+                                    </div>
+                                  )}
+                                  <div
+                                    className={`transition-all duration-300 w-full ${selectedIds.has(bookmark.id) ? 'scale-[0.98] ring-2 ring-primary ring-offset-4 rounded-xl' : ''
+                                      }`}
+                                  >
+                                    <BookmarkCard
+                                      bookmark={bookmark}
+                                      clusters={clusters}
+                                      onToggleFavorite={handleToggleFavorite}
+                                      onDelete={handleDeleteClick}
+                                    />
+                                  </div>
+                                </div>
+                              ))}
+                          </div>
+                        ))
+                      )}
                     </div>
                   )}
                 </>
