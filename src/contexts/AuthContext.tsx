@@ -154,9 +154,55 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       signOut();
     };
 
+    // Handle token refresh request from extension
+    const handleTokenRefreshRequest = async () => {
+      console.log('[Bookmark Manager] Token refresh requested by extension');
+
+      try {
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+          console.error('[Bookmark Manager] No user logged in, cannot refresh token');
+          window.dispatchEvent(new CustomEvent('bookmark-manager-token-refresh-result', {
+            detail: { success: false, error: 'No user logged in' }
+          }));
+          return;
+        }
+
+        // Force refresh the token
+        const token = await currentUser.getIdToken(true);
+
+        // Sync to extension via event - use latest user/workspaceId from API
+        // We need to fetch the latest data since this is triggered externally
+        const response = await authService.getMe();
+
+        // Sync to extension via event
+        window.dispatchEvent(new CustomEvent('bookmark-manager-auth-sync', {
+          detail: {
+            user: response.user,
+            workspaceId: response.workspaceId,
+            idToken: token
+          }
+        }));
+
+        // Also store in localStorage
+        localStorage.setItem('bookmark_auth_token', token);
+
+        console.log('[Bookmark Manager] Token refreshed successfully');
+        window.dispatchEvent(new CustomEvent('bookmark-manager-token-refresh-result', {
+          detail: { success: true }
+        }));
+      } catch (error) {
+        console.error('[Bookmark Manager] Failed to refresh token:', error);
+        window.dispatchEvent(new CustomEvent('bookmark-manager-token-refresh-result', {
+          detail: { success: false, error: String(error) }
+        }));
+      }
+    };
+
     if (typeof window !== 'undefined') {
       window.addEventListener('bookmark-manager-extension-ready', handleExtensionReady);
       window.addEventListener('bookmark-manager-extension-logout', handleExtensionLogout);
+      window.addEventListener('bookmark-manager-token-refresh-request', handleTokenRefreshRequest);
 
       // Check initial state
       if ((window as any).__BOOKMARK_MANAGER_EXTENSION__) {
@@ -169,6 +215,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (typeof window !== 'undefined') {
         window.removeEventListener('bookmark-manager-extension-ready', handleExtensionReady);
         window.removeEventListener('bookmark-manager-extension-logout', handleExtensionLogout);
+        window.removeEventListener('bookmark-manager-token-refresh-request', handleTokenRefreshRequest);
       }
     };
   }, []);
