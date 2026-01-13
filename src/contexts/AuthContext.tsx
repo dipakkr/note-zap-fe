@@ -121,7 +121,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Check if user came from extension
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('source') === 'extension') {
-          toast.info('Please reload the extension and this page, then log in again.', { duration: 6000 });
+          toast.info('Please reload the extension and this page, then log in again.', { duration: 2000 });
         }
       }
     }
