@@ -5,6 +5,7 @@ import { Toaster } from 'sonner';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import MainLayout from './components/layout/MainLayout';
+import PageSkeleton, { DashboardSkeleton } from './components/layout/PageSkeleton';
 import ScrollToTop from './components/ScrollToTop';
 import MobileStickyCta from './components/landing/MobileStickyCta';
 import DesktopFloatingOffer from './components/landing/DesktopFloatingOffer';
@@ -22,12 +23,9 @@ const ProfileDetailPage = lazy(() => import('./pages/ProfileDetailPage'));
 const ToolsHubPage = lazy(() => import('./pages/ToolsHubPage'));
 const ToolDetailPage = lazy(() => import('./pages/ToolDetailPage'));
 
-// Loading spinner component
-const PageLoader = () => (
-  <div className="min-h-screen flex items-center justify-center">
-    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-  </div>
-);
+// Skeleton loading component that shows header + footer + content placeholders
+// This provides a better perceived loading experience than a blank spinner
+const PageLoader = () => <PageSkeleton variant="landing" />;
 
 
 const queryClient = new QueryClient({
@@ -44,11 +42,8 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
+    // Show dashboard skeleton while auth is loading for protected routes
+    return <DashboardSkeleton />;
   }
 
   if (!user) {
@@ -63,11 +58,8 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
+    // Show landing page skeleton while auth is loading for public routes
+    return <PageSkeleton variant="simple" />;
   }
 
   if (user) {
