@@ -68,7 +68,7 @@ const Hero = () => {
             <Button
               size="lg"
               className="bg-gray-900 text-white hover:bg-gray-800 h-12 px-6 rounded-full text-base shadow-xl shadow-gray-200/50 transition-all hover:scale-105 active:scale-95 flex items-center gap-2"
-              onClick={() => window.open('https://chromewebstore.google.com/detail/postzaper-save-linkedin-t/hgecghfgpkhjjipffbnlgkdfbbpdjbiñ', '_blank')}
+              onClick={() => window.open('https://chromewebstore.google.com/detail/ecfbdcdbijkebgkjjdolbnapnkdpfoid', '_blank')}
             >
               {/* Chrome Logo */}
               <img src="/chrome.svg" alt="Chrome" className="w-5 h-5" />

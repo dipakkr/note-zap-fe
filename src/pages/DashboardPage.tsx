@@ -1104,7 +1104,7 @@ export default function DashboardPage() {
                       </p>
                       {!searchQuery && (
                         <a
-                          href="https://chromewebstore.google.com/detail/postzaper-save-linkedin-t/hgecghfgpkhjjipffbnlgkdfbbpdjbiñ"
+                          href="https://chromewebstore.google.com/detail/ecfbdcdbijkebgkjjdolbnapnkdpfoid"
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-2.5 px-5 py-3 bg-gray-900 text-white text-sm font-bold rounded-full hover:bg-gray-800 transition-all hover:scale-105 active:scale-95 shadow-lg"
