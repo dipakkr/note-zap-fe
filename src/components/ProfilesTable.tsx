@@ -193,6 +193,34 @@ export default function ProfilesTable({ profiles, onToggleFavorite, onDelete, on
 
                 <td className="px-6 py-4">
                   <div className="flex items-center justify-center gap-1 opacity-0 group-hover/row:opacity-100 transition-opacity">
+                    {/* Note Icon with Tooltip */}
+                    <div className="relative group/note">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onProfileClick(bookmark.id);
+                        }}
+                        className={`p-2 rounded-lg transition-all active:scale-95 ${bookmark.notes
+                          ? 'text-yellow-500 bg-yellow-500/10'
+                          : 'text-muted-foreground hover:text-yellow-500 hover:bg-yellow-500/10'
+                          }`}
+                      >
+                        <StickyNote className={`w-4 h-4 ${bookmark.notes ? 'fill-yellow-500/20' : ''}`} />
+                      </button>
+                      {/* Tooltip */}
+                      {bookmark.notes && (
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-card border border-border rounded-lg shadow-xl opacity-0 invisible group-hover/note:opacity-100 group-hover/note:visible transition-all duration-200 z-50 min-w-[200px] max-w-[280px] pointer-events-none">
+                          <div className="flex items-center gap-1.5 mb-1.5">
+                            <StickyNote className="w-3 h-3 text-yellow-500" />
+                            <span className="text-[10px] font-bold text-yellow-500 uppercase tracking-wider">Private Note</span>
+                          </div>
+                          <p className="text-[11px] text-foreground/80 leading-relaxed line-clamp-4">{bookmark.notes}</p>
+                          {/* Arrow */}
+                          <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-border"></div>
+                          <div className="absolute top-full left-1/2 -translate-x-1/2 mt-[-1px] w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-t-[5px] border-t-card"></div>
+                        </div>
+                      )}
+                    </div>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();

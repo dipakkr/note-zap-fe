@@ -475,8 +475,11 @@ export default function DashboardPage() {
 
       if (activeFilter === 'tweet') {
         options.type = 'tweet';
-      } else if (activeFilter === 'linkedin' || activeFilter === 'profiles') {
+      } else if (activeFilter === 'linkedin') {
         options.type = 'linkedin';
+      } else if (activeFilter === 'profiles') {
+        // For profiles, we need to fetch all types since profiles can be linkedin or twitter
+        // We'll filter client-side for isProfile
       } else if (activeFilter === 'article') {
         options.type = 'article';
       } else if (activeFilter === 'thread') {
@@ -541,8 +544,11 @@ export default function DashboardPage() {
 
   const isProfile = (b: Bookmark) => {
     return b.tags?.includes('profile') ||
+      b.isProfile === true ||
       b.linkedinData?.isProfile === true ||
-      b.linkedinProfileData !== undefined;
+      b.linkedinProfileData !== undefined ||
+      b.twitterProfileData !== undefined ||
+      (b.type === 'twitter' && b.folder === 'profiles');
   };
 
   const displayBookmarks = useMemo(() => {

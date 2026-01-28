@@ -39,6 +39,25 @@ export default function ProfileDetailDialog({ isOpen, onClose, bookmark, onUpdat
         }
     };
     const getProfileData = (b: Bookmark): LinkedInProfileData & { connectionDegree?: string, skills?: string[] } => {
+        // Handle Twitter profile data
+        if (b.twitterProfileData) {
+            const tp = b.twitterProfileData;
+            return {
+                name: tp.name || b.title?.replace(' - X Profile', '') || 'X User',
+                headline: tp.bio || b.description || '-',
+                profilePhoto: tp.profilePhoto || b.thumbnail || '',
+                profileUrl: tp.profileUrl || b.url,
+                location: tp.location || '',
+                currentCompany: '',
+                connectionsCount: tp.followersCount ? `${tp.followersCount} followers` : '',
+                followersCount: tp.followersCount || '',
+                connectionDegree: '',
+                website: tp.website || '',
+                about: tp.bio || '',
+                skills: []
+            };
+        }
+
         if (b.linkedinProfileData) return { ...b.linkedinProfileData, skills: [] };
         const li = b.linkedinData || {};
         const base = li.profileData || {};
@@ -118,6 +137,12 @@ export default function ProfileDetailDialog({ isOpen, onClose, bookmark, onUpdat
     };
 
     if (!bookmark) return null;
+
+    // Determine platform type
+    const isTwitterProfile = bookmark.type === 'twitter' || bookmark.twitterProfileData !== undefined;
+    const platformName = isTwitterProfile ? 'X' : 'LinkedIn';
+    const platformLabel = isTwitterProfile ? 'X Profile' : 'LinkedIn Dossier';
+
     const profile = getProfileData(bookmark);
     const savedDate = format(new Date(bookmark.createdAt), 'MMMM d, yyyy');
 
@@ -129,7 +154,7 @@ export default function ProfileDetailDialog({ isOpen, onClose, bookmark, onUpdat
                     <div className="flex items-center justify-between px-5 py-3 border-b border-border bg-card sticky top-0 z-10">
                         <div className="flex items-center gap-2">
                             <span className="px-2 py-0.5 bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-widest rounded-md border border-primary/20">Profile</span>
-                            <span className="text-xs text-muted-foreground font-medium">LinkedIn Dossier</span>
+                            <span className="text-xs text-muted-foreground font-medium">{platformLabel}</span>
                         </div>
                         <button
                             onClick={onClose}
@@ -184,7 +209,7 @@ export default function ProfileDetailDialog({ isOpen, onClose, bookmark, onUpdat
                                 onClick={() => window.open(profile.profileUrl, '_blank')}
                                 className="px-4 py-1.5 bg-primary text-white text-[12px] font-bold rounded-full hover:bg-primary/90 transition-all active:scale-95 shadow-lg shadow-primary/10"
                             >
-                                Open in LinkedIn
+                                Open in {platformName}
                             </button>
                             <button className="px-4 py-1.5 bg-card border border-primary text-primary text-[12px] font-bold rounded-full hover:bg-primary/5 transition-all">
                                 Contact Info
@@ -217,7 +242,7 @@ export default function ProfileDetailDialog({ isOpen, onClose, bookmark, onUpdat
                                         setHasChanges(true);
                                     }}
                                     placeholder="Add private notes about this profile..."
-                                    className="w-full bg-transparent border-none p-0 text-[12px] text-foreground/80 placeholder:text-muted-foreground/50 focus:ring-0 resize-none min-h-[60px] leading-relaxed font-medium"
+                                    className="w-full bg-transparent border-none p-0 text-[12px] text-foreground/80 placeholder:text-muted-foreground/50 focus:ring-0 focus:outline-none outline-none resize-none min-h-[60px] leading-relaxed font-medium"
                                 />
                             </section>
                             <section className="bg-muted/5 p-4 rounded-xl border border-border">

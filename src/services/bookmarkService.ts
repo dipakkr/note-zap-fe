@@ -56,13 +56,15 @@ export interface Bookmark {
   tags: string[];
   isFavorite: boolean;
   isRead: boolean;
-  type: 'link' | 'tweet' | 'linkedin' | 'linkedin-profile' | 'article' | 'thread';
+  isProfile?: boolean;
+  type: 'link' | 'tweet' | 'linkedin' | 'linkedin-profile' | 'article' | 'thread' | 'twitter';
   source: 'web' | 'extension';
   createdAt: string;
   updatedAt: string;
   tweetData?: any;
   linkedinData?: any;
   linkedinProfileData?: LinkedInProfileData;
+  twitterProfileData?: any;
   articleData?: any;
   threadData?: any;
   notes?: string;
