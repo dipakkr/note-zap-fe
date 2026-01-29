@@ -1,4 +1,5 @@
 import {
+  BarChart2,
   CheckCircle2,
   ChevronRight,
   X as CloseIcon,
@@ -40,6 +41,7 @@ import { ConfirmDialog } from '../components/ui/confirm-dialog';
 import { Dialog, DialogContent } from '../components/ui/dialog';
 import { BookmarkGridSkeleton, ProfileTableSkeleton } from '../components/ui/skeleton';
 import UpgradeDialog from '../components/UpgradeDialog';
+import { AnalyticsOverview } from '../components/analytics/AnalyticsOverview';
 import { useAuth } from '../contexts/AuthContext';
 import { bookmarkService, clusterService, type Bookmark, type Cluster } from '../services/bookmarkService';
 
@@ -70,55 +72,61 @@ function useMasonryColumns() {
 
 function ContentStudioView() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-120px)] py-4 lg:py-8 px-4 text-center max-w-5xl mx-auto animate-fade-in overflow-hidden">
-      <div className="w-12 h-12 lg:w-14 lg:h-14 bg-primary/10 rounded-2xl flex items-center justify-center mb-4 lg:mb-5 animate-pulse shadow-inner ring-1 ring-primary/20 shrink-0">
-        <Sparkles className="w-6 h-6 lg:w-7 lg:h-7 text-primary" />
+    <div className="max-w-3xl mx-auto py-12 px-4">
+      {/* Header */}
+      <div className="mb-12">
+        <div className="flex items-center gap-3 mb-4">
+          <h1 className="text-2xl font-bold text-foreground">Content Studio</h1>
+          <span className="text-[10px] font-medium text-muted-foreground bg-muted px-2 py-1 rounded">
+            Coming Soon
+          </span>
+        </div>
+        <p className="text-muted-foreground text-sm max-w-lg">
+          Transform your saved content into threads, posts, and articles with AI assistance.
+        </p>
       </div>
 
-      <h2 className="text-2xl lg:text-3xl font-black text-foreground tracking-tight mb-3 uppercase shrink-0">Content Studio</h2>
-      <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-500/10 text-amber-500 rounded-full text-[9px] lg:text-[10px] font-black uppercase tracking-[0.2em] mb-6 border border-amber-500/20 shadow-sm shrink-0">
-        <Zap className="w-3 h-3 fill-current" />
-        Coming Soon
-      </div>
-
-      <p className="text-sm lg:text-base text-muted-foreground mb-8 max-w-2xl leading-relaxed font-medium shrink-0">
-        The ultimate workspace for transforming your saved insights into viral content. Harness the power of AI to bridge the gap between inspiration and publication.
-      </p>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-left w-full mb-8 shrink-0">
-        <div className="p-4 lg:p-5 bg-card border border-border rounded-xl shadow-sm hover:shadow-lg hover:border-primary/20 transition-all duration-300 group">
-          <div className="w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-            <Wand2 className="w-5 h-5 text-blue-500" />
+      {/* Features */}
+      <div className="space-y-3 mb-12">
+        <div className="flex items-start gap-4 p-4 rounded-lg border border-border bg-card/50 hover:bg-card transition-colors">
+          <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <Wand2 className="w-4 h-4 text-blue-500" />
           </div>
-          <h4 className="font-bold text-base text-foreground mb-1.5">AI Hook Generator</h4>
-          <p className="text-[12px] text-muted-foreground leading-relaxed">Convert your saved bookmarks into catchy hooks for Twitter and LinkedIn instantly.</p>
+          <div>
+            <h3 className="text-sm font-semibold text-foreground mb-1">Hook Generator</h3>
+            <p className="text-xs text-muted-foreground">Turn bookmarks into engaging hooks for Twitter and LinkedIn.</p>
+          </div>
         </div>
 
-        <div className="p-4 lg:p-5 bg-card border border-border rounded-xl shadow-sm hover:shadow-lg hover:border-primary/20 transition-all duration-300 group">
-          <div className="w-10 h-10 bg-purple-500/10 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-            <Repeat2 className="w-5 h-5 text-purple-500" />
+        <div className="flex items-start gap-4 p-4 rounded-lg border border-border bg-card/50 hover:bg-card transition-colors">
+          <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <Repeat2 className="w-4 h-4 text-purple-500" />
           </div>
-          <h4 className="font-bold text-base text-foreground mb-1.5">Cluster Remix</h4>
-          <p className="text-[12px] text-muted-foreground leading-relaxed">Turn your clusters of research into full-length threads or thought-leadership articles.</p>
+          <div>
+            <h3 className="text-sm font-semibold text-foreground mb-1">Thread Builder</h3>
+            <p className="text-xs text-muted-foreground">Convert your research clusters into structured threads.</p>
+          </div>
         </div>
 
-        <div className="p-4 lg:p-5 bg-card border border-border rounded-xl shadow-sm hover:shadow-lg hover:border-primary/20 transition-all duration-300 group">
-          <div className="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-            <Users className="w-5 h-5 text-emerald-500" />
+        <div className="flex items-start gap-4 p-4 rounded-lg border border-border bg-card/50 hover:bg-card transition-colors">
+          <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <Users className="w-4 h-4 text-emerald-500" />
           </div>
-          <h4 className="font-bold text-base text-foreground mb-1.5">Tone Matching</h4>
-          <p className="text-[12px] text-muted-foreground leading-relaxed">AI that learns your writing style and applies it to new content based on your saved library.</p>
+          <div>
+            <h3 className="text-sm font-semibold text-foreground mb-1">Voice Matching</h3>
+            <p className="text-xs text-muted-foreground">AI learns your style from saved content and applies it.</p>
+          </div>
         </div>
       </div>
 
-      <div className="p-6 lg:p-7 bg-primary rounded-2xl text-white overflow-hidden relative group cursor-pointer shadow-xl shadow-primary/20 w-full shrink-0">
-        <div className="absolute top-0 right-0 -mr-12 -mt-12 w-48 h-48 bg-white/10 rounded-full blur-3xl group-hover:scale-110 transition-transform" />
-        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="text-center md:text-left">
-            <h3 className="text-xl font-black mb-1">Want early access?</h3>
-            <p className="text-white/80 text-xs font-medium">Join 500+ creators waiting for the Studio Beta.</p>
+      {/* Waitlist */}
+      <div className="p-5 rounded-xl border border-border bg-card">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-sm font-medium text-foreground">Get notified when it launches</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Be first to try Content Studio.</p>
           </div>
-          <button className="px-6 py-3 bg-white text-primary rounded-xl font-black text-[11px] lg:text-xs uppercase tracking-widest hover:scale-105 transition-transform shadow-lg shrink-0">
+          <button className="px-4 py-2 bg-foreground text-background rounded-lg text-xs font-semibold hover:opacity-90 transition-opacity flex-shrink-0">
             Join Waitlist
           </button>
         </div>
@@ -171,27 +179,49 @@ function Sidebar({
       w-64 h-full border-r border-border flex flex-col bg-sidebar-background transition-all duration-300 ease-in-out
       ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
     `}>
-      <div className="p-6">
-        <div className="flex items-center justify-between mb-8">
-          <a href="/" className="flex items-center gap-2.5 group cursor-pointer">
-            <img
-              src="/logo-icon.svg"
-              alt="PostZaper"
-              className="w-8 h-8 rounded-lg shadow-sm group-hover:scale-105 transition-transform duration-200"
-            />
-            <span className="text-lg font-black tracking-tight text-foreground">PostZaper</span>
-          </a>
-          <button
-            onClick={() => setIsMobileMenuOpen(false)}
-            className="lg:hidden p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition"
-          >
-            <CloseIcon className="w-5 h-5" />
-          </button>
+      <div className="flex-1 flex flex-col min-h-0">
+        {/* Logo Header */}
+        <div className="px-4 py-4">
+          <div className="flex items-center justify-between">
+            <a href="/" className="flex items-center gap-2 group cursor-pointer">
+              <img
+                src="/logo-icon.svg"
+                alt="PostZaper"
+                className="w-7 h-7 rounded-lg shadow-sm group-hover:scale-105 transition-transform duration-200"
+              />
+              <span className="text-base font-black tracking-tight text-foreground">PostZaper</span>
+            </a>
+            <button
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="lg:hidden p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition"
+            >
+              <CloseIcon className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
-        <nav className="space-y-6">
+        {/* Scrollable Nav */}
+        <nav className="flex-1 overflow-y-auto px-3 space-y-4 no-scrollbar">
+          <div className="space-y-0.5">
+            <button
+              onClick={() => {
+                setActiveFilter('insights');
+                setIsMobileMenuOpen(false);
+              }}
+              className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-md text-[13px] font-medium transition-all ${activeFilter === 'insights'
+                ? 'bg-primary/10 text-primary font-semibold'
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                }`}
+            >
+              <div className="flex items-center gap-2">
+                <BarChart2 className="w-4 h-4" />
+                Overview
+              </div>
+            </button>
+          </div>
+
           <div>
-            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-3 px-3">Library</p>
+            <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-widest mb-1.5 px-2.5">Library</p>
             <div className="space-y-1">
               {filters.slice(0, 1).concat(filters.slice(5)).map(item => (
                 <button
@@ -284,21 +314,24 @@ function Sidebar({
         </nav>
       </div>
 
-      {/* Upgrade CTA */}
-      {user?.subscription !== 'pro' && (
-        <div className="px-4 mt-auto">
-          <button
-            onClick={() => setIsUpgradeDialogOpen(true)}
-            className="w-full bg-gradient-to-br from-yellow-400 via-orange-500 to-red-600 text-white p-3.5 rounded-xl shadow-lg shadow-orange-500/20 active:scale-[0.98] transition-all group flex items-center justify-center gap-2.5 hover:shadow-orange-500/40 hover:brightness-110"
-          >
-            <Crown className="w-4 h-4 fill-white/20" />
-            <span className="text-[11px] font-black uppercase tracking-widest">Upgrade to Pro</span>
-          </button>
-        </div>
-      )}
+      {/* Bottom Section - Fixed */}
+      {/* Bottom Section - Fixed */}
+      <div className="flex-shrink-0">
+        {/* Upgrade CTA */}
+        {user?.subscription !== 'pro' && (
+          <div className="px-4 pb-2">
+            <button
+              onClick={() => setIsUpgradeDialogOpen(true)}
+              className="w-full bg-gradient-to-br from-yellow-400 via-orange-500 to-red-600 text-white p-3.5 rounded-xl shadow-lg shadow-orange-500/20 active:scale-[0.98] transition-all group flex items-center justify-center gap-2.5 hover:shadow-orange-500/40 hover:brightness-110"
+            >
+              <Crown className="w-4 h-4 fill-white/20" />
+              <span className="text-[11px] font-black uppercase tracking-widest">Upgrade to Pro</span>
+            </button>
+          </div>
+        )}
 
-      {/* User Card */}
-      <div className="mt-auto p-4 border-t border-border bg-sidebar-background transition-colors duration-300">
+        {/* User Card */}
+        <div className="p-4 border-t border-border bg-sidebar-background transition-colors duration-300">
         <div className="flex items-center justify-between p-2 rounded-xl bg-card border border-border shadow-sm">
           <div className="flex items-center gap-2.5 min-w-0 text-left">
             {user?.picture ? (
@@ -352,6 +385,7 @@ function Sidebar({
               )}
             </div>
           </div>
+        </div>
         </div>
       </div>
     </aside>
@@ -583,7 +617,28 @@ export default function DashboardPage() {
       // Check if it's a cluster filter
       const cluster = clusters.find(c => c.name.toLowerCase() === activeFilter.toLowerCase());
       if (cluster) {
-        result = result.filter(b => b.tags?.includes(cluster.name));
+        const clusterKeyword = cluster.name.toLowerCase();
+        result = result.filter(b => {
+          // Check if explicitly tagged
+          if (b.tags?.includes(cluster.name)) return true;
+
+          // Smart filter: check if content contains cluster name
+          const contentToSearch = [
+            b.title,
+            b.description,
+            b.tweetData?.content,
+            b.tweetData?.author?.name,
+            b.tweetData?.author?.handle,
+            b.linkedinData?.content,
+            b.linkedinData?.author?.name,
+            b.threadData?.content,
+            b.threadData?.author?.name,
+            b.threadData?.author?.username,
+            b.notes,
+          ].filter(Boolean).join(' ').toLowerCase();
+
+          return contentToSearch.includes(clusterKeyword);
+        });
       }
     }
 
@@ -765,6 +820,38 @@ export default function DashboardPage() {
     }
   };
 
+  const handleAssignSingleBookmarkToCluster = async (bookmarkId: string, clusterName: string) => {
+    try {
+      const bookmark = bookmarks.find(b => b.id === bookmarkId);
+      if (bookmark) {
+        const newTags = Array.from(new Set([...(bookmark.tags || []), clusterName]));
+        await bookmarkService.updateBookmark(bookmarkId, { tags: newTags });
+        setBookmarks(prev => prev.map(b =>
+          b.id === bookmarkId ? { ...b, tags: newTags } : b
+        ));
+        toast.success(`Added to ${clusterName}`);
+      }
+    } catch (error) {
+      toast.error('Failed to add to cluster');
+    }
+  };
+
+  const handleRemoveClusterFromBookmark = async (bookmarkId: string, clusterName: string) => {
+    try {
+      const bookmark = bookmarks.find(b => b.id === bookmarkId);
+      if (bookmark) {
+        const newTags = (bookmark.tags || []).filter(t => t !== clusterName);
+        await bookmarkService.updateBookmark(bookmarkId, { tags: newTags });
+        setBookmarks(prev => prev.map(b =>
+          b.id === bookmarkId ? { ...b, tags: newTags } : b
+        ));
+        toast.success(`Removed from ${clusterName}`);
+      }
+    } catch (error) {
+      toast.error('Failed to remove from cluster');
+    }
+  };
+
   const selectedBookmark = detailId ? bookmarks.find(b => b.id === detailId) : null;
   const isSelectedProfile = !!(selectedBookmark && (
     selectedBookmark.tags?.includes('profile') ||
@@ -869,6 +956,8 @@ export default function DashboardPage() {
             <div className="max-w-6xl mx-auto">
               {activeFilter === 'content-studio' ? (
                 <ContentStudioView />
+              ) : activeFilter === 'insights' ? (
+                <AnalyticsOverview bookmarks={bookmarks} />
               ) : (
                 <>
                   <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
@@ -1159,6 +1248,8 @@ export default function DashboardPage() {
                                 clusters={clusters}
                                 onToggleFavorite={handleToggleFavorite}
                                 onDelete={handleDeleteClick}
+                                onAssignCluster={handleAssignSingleBookmarkToCluster}
+                                onRemoveCluster={handleRemoveClusterFromBookmark}
                               />
                             </div>
                           </div>
@@ -1191,6 +1282,8 @@ export default function DashboardPage() {
                                       clusters={clusters}
                                       onToggleFavorite={handleToggleFavorite}
                                       onDelete={handleDeleteClick}
+                                      onAssignCluster={handleAssignSingleBookmarkToCluster}
+                                      onRemoveCluster={handleRemoveClusterFromBookmark}
                                     />
                                   </div>
                                 </div>

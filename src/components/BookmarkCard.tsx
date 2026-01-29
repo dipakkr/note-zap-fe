@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Star, Trash2, ExternalLink, MessageCircle, Repeat2, Heart, MoreHorizontal, Play, List } from 'lucide-react';
+import { Star, Trash2, ExternalLink, MessageCircle, Repeat2, Heart, MoreHorizontal, Play, List, FolderPlus, ChevronRight, X } from 'lucide-react';
 import type { Bookmark } from '../services/bookmarkService';
 import { formatDistanceToNow } from 'date-fns';
 import { useSearchParams } from 'react-router-dom';
@@ -18,12 +18,15 @@ interface BookmarkCardProps {
   clusters: any[]; // User clusters to match tags against
   onToggleFavorite: (id: string) => void;
   onDelete: (id: string) => void;
+  onAssignCluster?: (bookmarkId: string, clusterName: string) => void;
+  onRemoveCluster?: (bookmarkId: string, clusterName: string) => void;
 }
 
-export default function BookmarkCard({ bookmark, clusters = [], onToggleFavorite, onDelete }: BookmarkCardProps) {
+export default function BookmarkCard({ bookmark, clusters = [], onToggleFavorite, onDelete, onAssignCluster, onRemoveCluster }: BookmarkCardProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const [showMore, setShowMore] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [showClusterMenu, setShowClusterMenu] = useState(false);
   const [imageError, setImageError] = useState<Set<string>>(new Set());
 
   const isProfileType = () => {
@@ -222,7 +225,7 @@ export default function BookmarkCard({ bookmark, clusters = [], onToggleFavorite
           {showMenu && (
             <>
               <div className="fixed inset-0 z-10" onClick={(e) => { e.stopPropagation(); setShowMenu(false); }} />
-              <div className="absolute right-0 top-8 bg-card rounded-xl shadow-2xl border border-border py-1.5 z-20 w-44">
+              <div className="absolute right-0 top-8 bg-card rounded-xl shadow-2xl border border-border py-1.5 z-20 w-48">
                 <a
                   href={bookmark.url}
                   target="_blank"
@@ -244,6 +247,49 @@ export default function BookmarkCard({ bookmark, clusters = [], onToggleFavorite
                   <Star className={`w-3.5 h-3.5 ${bookmark.isFavorite ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground'}`} />
                   {bookmark.isFavorite ? 'Unfavorite' : 'Add to favorites'}
                 </button>
+
+                {/* Add to Cluster */}
+                {onAssignCluster && clusters.length > 0 && (
+                  <div className="relative">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowClusterMenu(!showClusterMenu);
+                      }}
+                      className="w-full flex items-center justify-between px-4 py-2 text-xs font-medium text-foreground hover:bg-muted transition"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <FolderPlus className="w-3.5 h-3.5 text-muted-foreground" />
+                        Add to cluster
+                      </div>
+                      <ChevronRight className="w-3 h-3 text-muted-foreground" />
+                    </button>
+
+                    {showClusterMenu && (
+                      <div className="absolute left-full top-0 ml-1 bg-card rounded-xl shadow-2xl border border-border py-1.5 w-40 max-h-48 overflow-y-auto">
+                        {clusters.filter(c => !bookmark.tags?.includes(c.name)).map(cluster => (
+                          <button
+                            key={cluster.id}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onAssignCluster(bookmark.id, cluster.name);
+                              setShowMenu(false);
+                              setShowClusterMenu(false);
+                            }}
+                            className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-foreground hover:bg-muted transition"
+                          >
+                            <div className={`w-2 h-2 rounded-full ${cluster.color}`} />
+                            <span className="truncate">{cluster.name}</span>
+                          </button>
+                        ))}
+                        {clusters.filter(c => !bookmark.tags?.includes(c.name)).length === 0 && (
+                          <p className="px-4 py-2 text-[10px] text-muted-foreground italic">Already in all clusters</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 <div className="h-px bg-border my-1" />
                 <button
                   onClick={(e) => {
@@ -348,19 +394,34 @@ export default function BookmarkCard({ bookmark, clusters = [], onToggleFavorite
             const cluster = clusters.find(c => c.name === tag);
             if (!cluster) return null;
             return (
-              <button
+              <div
                 key={cluster.id}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  const next = new URLSearchParams(searchParams);
-                  next.set('type', cluster.name);
-                  setSearchParams(next);
-                }}
                 className={`flex items-center gap-1.5 px-2 py-1 rounded-md text-[9px] font-bold border border-transparent hover:border-border transition-all group/tag ${cluster.color.replace('bg-', 'bg-opacity-10 text-').replace('500', '600')} dark:${cluster.color.replace('bg-', 'bg-opacity-20 text-').replace('500', '400')} bg-current/10`}
               >
-                <div className={`w-1.5 h-1.5 rounded-full ${cluster.color}`} />
-                {cluster.name}
-              </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const next = new URLSearchParams(searchParams);
+                    next.set('type', cluster.name);
+                    setSearchParams(next);
+                  }}
+                  className="flex items-center gap-1.5"
+                >
+                  <div className={`w-1.5 h-1.5 rounded-full ${cluster.color}`} />
+                  {cluster.name}
+                </button>
+                {onRemoveCluster && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRemoveCluster(bookmark.id, cluster.name);
+                    }}
+                    className="ml-0.5 opacity-0 group-hover/tag:opacity-100 hover:text-destructive transition-all"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                )}
+              </div>
             );
           })}
 
