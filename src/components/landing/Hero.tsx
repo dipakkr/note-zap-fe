@@ -4,7 +4,7 @@ import HeroAnimation from "./HeroAnimation";
 
 const Hero = () => {
   return (
-    <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden bg-gradient-to-b from-purple-50/50 via-white to-white pt-6 pb-16">
+    <section className="relative min-h-[88vh] flex items-center justify-center overflow-hidden bg-gradient-to-b from-purple-50/50 via-white to-white pt-6 pb-16">
 
       {/* Background Effects */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
@@ -40,26 +40,26 @@ const Hero = () => {
           {/* Headline */}
           <div className="space-y-4">
             <h1 className="text-4xl lg:text-6xl font-bold tracking-tight text-gray-900 leading-[1.1]">
-              Save Once.<br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600">Find Forever.</span>
+              Your Personal<br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600">Social Bookmark Manager</span>
             </h1>
             <p className="text-md text-gray-600 leading-relaxed max-w-md">
-              Capture posts, threads, and profiles from LinkedIn & X with one click.
+              Save posts, threads, and profiles from X & LinkedIn in one click. Find them when you need them.
             </p>
           </div>
 
           <div className="flex flex-col gap-2 text-gray-600 text-sm">
             <div className="flex items-center gap-2">
               <CheckCircle2 size={14} className="text-green-500" />
-              <span>One-click capture from X & LinkedIn</span>
+              <span>Save directly from X & LinkedIn with our Chrome extension</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle2 size={14} className="text-green-500" />
-              <span>Turn bookmarks into a Knowledge Graph</span>
+              <span>Smart search & organize — never lose a post again</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle2 size={14} className="text-green-500" />
-              <span>AI-powered auto-organization</span>
+              <span>Build your personal knowledge library</span>
             </div>
           </div>
 

@@ -1,4 +1,3 @@
-import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell } from 'recharts';
 import type { TimelineData } from './useAnalyticsData';
 
@@ -30,21 +29,19 @@ export function ActivityTimeline({
         <div className="flex bg-muted rounded-lg p-0.5 border border-border">
           <button
             onClick={() => onTimeRangeChange('weekly')}
-            className={`px-3 py-1 rounded-md text-[11px] font-bold transition-all ${
-              timeRange === 'weekly'
+            className={`px-3 py-1 rounded-md text-[11px] font-bold transition-all ${timeRange === 'weekly'
                 ? 'bg-card text-foreground shadow-sm'
                 : 'text-muted-foreground hover:text-foreground'
-            }`}
+              }`}
           >
             Weekly
           </button>
           <button
             onClick={() => onTimeRangeChange('monthly')}
-            className={`px-3 py-1 rounded-md text-[11px] font-bold transition-all ${
-              timeRange === 'monthly'
+            className={`px-3 py-1 rounded-md text-[11px] font-bold transition-all ${timeRange === 'monthly'
                 ? 'bg-card text-foreground shadow-sm'
                 : 'text-muted-foreground hover:text-foreground'
-            }`}
+              }`}
           >
             Monthly
           </button>

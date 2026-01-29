@@ -6,6 +6,7 @@ export interface ContentTypeData {
   name: string;
   value: number;
   color: string;
+  [key: string]: string | number;
 }
 
 export interface TimelineData {
@@ -150,8 +151,8 @@ export function useAnalyticsData(
       extensionCount === 0 && webCount === 0
         ? null
         : extensionCount >= webCount
-        ? 'extension'
-        : 'web';
+          ? 'extension'
+          : 'web';
 
     const stats: AnalyticsStats = {
       totalBookmarks: contentBookmarks.length,

@@ -1,4 +1,3 @@
-import React from 'react';
 import type { TagData } from './useAnalyticsData';
 import { Hash } from 'lucide-react';
 
@@ -24,11 +23,10 @@ export function TopTagsList({ tags }: TopTagsListProps) {
           <div className="flex items-center justify-between mb-1.5">
             <div className="flex items-center gap-2">
               <span
-                className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
-                  index === 0
+                className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${index === 0
                     ? 'bg-primary/10 text-primary'
                     : 'bg-muted text-muted-foreground'
-                }`}
+                  }`}
               >
                 {index + 1}
               </span>
@@ -42,9 +40,8 @@ export function TopTagsList({ tags }: TopTagsListProps) {
           </div>
           <div className="h-2 bg-muted rounded-full overflow-hidden ml-7">
             <div
-              className={`h-full rounded-full transition-all duration-500 ${
-                index === 0 ? 'bg-primary' : 'bg-primary/40'
-              }`}
+              className={`h-full rounded-full transition-all duration-500 ${index === 0 ? 'bg-primary' : 'bg-primary/40'
+                }`}
               style={{ width: `${tag.percentage}%` }}
             />
           </div>

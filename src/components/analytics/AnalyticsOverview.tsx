@@ -1,4 +1,3 @@
-import React from 'react';
 import { Bookmark, TrendingUp, Star, Sparkles } from 'lucide-react';
 import type { Bookmark as BookmarkType } from '../../services/bookmarkService';
 import { useAnalyticsData } from './useAnalyticsData';

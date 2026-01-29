@@ -22,7 +22,6 @@ import {
   Sun,
   Users,
   Wand2,
-  Zap,
   LayoutGrid,
   Rows
 } from 'lucide-react';
@@ -332,60 +331,60 @@ function Sidebar({
 
         {/* User Card */}
         <div className="p-4 border-t border-border bg-sidebar-background transition-colors duration-300">
-        <div className="flex items-center justify-between p-2 rounded-xl bg-card border border-border shadow-sm">
-          <div className="flex items-center gap-2.5 min-w-0 text-left">
-            {user?.picture ? (
-              <img src={user.picture} alt="" className="w-8 h-8 rounded-full border border-border" />
-            ) : (
-              <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground font-semibold border border-border text-xs">
-                {user?.name?.charAt(0) || 'U'}
-              </div>
-            )}
-            <div className="min-w-0">
-              <p className="text-xs font-bold truncate">{user?.name || 'User'}</p>
-              <p className="text-[10px] text-muted-foreground truncate">{user?.subscription === 'pro' ? 'Pro Member' : 'Free Plan'}</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-1">
-            <button
-              onClick={toggleTheme}
-              className="p-1.5 hover:bg-muted rounded-lg transition text-muted-foreground hover:text-foreground"
-              title={isDarkMode ? 'Switch to Light' : 'Switch to Dark'}
-            >
-              {isDarkMode ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
-            </button>
-            <div className="relative" ref={userMenuRef}>
-              <button
-                onClick={() => setShowUserMenu(!showUserMenu)}
-                className={`p-1.5 hover:bg-muted rounded-lg ${showUserMenu ? 'bg-muted text-foreground' : 'text-muted-foreground'}`}
-              >
-                <MoreVertical className="w-3.5 h-3.5" />
-              </button>
-
-              {showUserMenu && (
-                <>
-                  <div className="absolute bottom-full right-0 mb-2 w-48 bg-card rounded-xl shadow-xl border border-border py-1.5 z-50">
-                    <button
-                      onClick={() => setIsSettingsOpen(true)}
-                      className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition"
-                    >
-                      <Settings className="w-3.5 h-3.5" />
-                      Settings
-                    </button>
-                    <button
-                      onClick={handleSignOut}
-                      className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-destructive hover:bg-destructive/10 transition"
-                    >
-                      <LogOut className="w-3.5 h-3.5" />
-                      Sign Out
-                    </button>
-                  </div>
-                </>
+          <div className="flex items-center justify-between p-2 rounded-xl bg-card border border-border shadow-sm">
+            <div className="flex items-center gap-2.5 min-w-0 text-left">
+              {user?.picture ? (
+                <img src={user.picture} alt="" className="w-8 h-8 rounded-full border border-border" />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground font-semibold border border-border text-xs">
+                  {user?.name?.charAt(0) || 'U'}
+                </div>
               )}
+              <div className="min-w-0">
+                <p className="text-xs font-bold truncate">{user?.name || 'User'}</p>
+                <p className="text-[10px] text-muted-foreground truncate">{user?.subscription === 'pro' ? 'Pro Member' : 'Free Plan'}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1">
+              <button
+                onClick={toggleTheme}
+                className="p-1.5 hover:bg-muted rounded-lg transition text-muted-foreground hover:text-foreground"
+                title={isDarkMode ? 'Switch to Light' : 'Switch to Dark'}
+              >
+                {isDarkMode ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
+              </button>
+              <div className="relative" ref={userMenuRef}>
+                <button
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className={`p-1.5 hover:bg-muted rounded-lg ${showUserMenu ? 'bg-muted text-foreground' : 'text-muted-foreground'}`}
+                >
+                  <MoreVertical className="w-3.5 h-3.5" />
+                </button>
+
+                {showUserMenu && (
+                  <>
+                    <div className="absolute bottom-full right-0 mb-2 w-48 bg-card rounded-xl shadow-xl border border-border py-1.5 z-50">
+                      <button
+                        onClick={() => setIsSettingsOpen(true)}
+                        className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition"
+                      >
+                        <Settings className="w-3.5 h-3.5" />
+                        Settings
+                      </button>
+                      <button
+                        onClick={handleSignOut}
+                        className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-destructive hover:bg-destructive/10 transition"
+                      >
+                        <LogOut className="w-3.5 h-3.5" />
+                        Sign Out
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           </div>
-        </div>
         </div>
       </div>
     </aside>
