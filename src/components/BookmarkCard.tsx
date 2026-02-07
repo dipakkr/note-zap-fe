@@ -174,11 +174,14 @@ export default function BookmarkCard({ bookmark, clusters = [], onToggleFavorite
       return;
     }
 
-    if (isProfileType() || bookmark.type === 'tweet' || bookmark.type === 'linkedin' || bookmark.type === 'thread') {
+    // Open detail view for profiles, tweets, linkedin, threads, and articles
+    // The detail view has an external link button to open the original URL
+    if (isProfileType() || bookmark.type === 'tweet' || bookmark.type === 'linkedin' || bookmark.type === 'thread' || bookmark.type === 'article') {
       const next = new URLSearchParams(searchParams);
       next.set('detailId', bookmark.id);
       setSearchParams(next);
     } else {
+      // For other types (like 'link'), open URL directly
       window.open(bookmark.url, '_blank', 'noopener,noreferrer');
     }
   };
@@ -189,7 +192,7 @@ export default function BookmarkCard({ bookmark, clusters = [], onToggleFavorite
       className="bg-card cursor-pointer rounded-xl border border-border p-5 hover:shadow-xl hover:shadow-primary/5 hover:border-primary/20 transition-all duration-300 group active:scale-[0.99]"
     >
       <div className="flex items-start gap-3 mb-4">
-        <div className="w-11 h-11 rounded-full bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center text-white font-black overflow-hidden flex-shrink-0 shadow-sm">
+        <div className="w-11 h-11 rounded-full bg-muted flex items-center justify-center text-muted-foreground font-bold overflow-hidden flex-shrink-0">
           {author.avatar ? (
             <img src={author.avatar} alt={author.name} className="w-full h-full object-cover" />
           ) : (

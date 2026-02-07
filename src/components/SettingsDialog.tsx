@@ -126,9 +126,7 @@ export default function SettingsDialog({ isOpen, onClose, onOpenUpgrade }: Setti
                                 <div className="flex items-center justify-between gap-4">
                                     <div>
                                         <h4 className="text-sm font-bold text-foreground mb-1">Pro Active</h4>
-                                        <p className="text-xs text-muted-foreground">
-                                            Thanks for supporting PostZaper!
-                                        </p>
+
                                     </div>
                                     <div className="px-2 py-1 bg-green-500/10 text-green-600 rounded text-[10px] font-bold flex items-center gap-1">
                                         <Shield className="w-3 h-3" />

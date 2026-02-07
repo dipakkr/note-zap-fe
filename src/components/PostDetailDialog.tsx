@@ -31,6 +31,19 @@ export default function PostDetailDialog({ isOpen, onClose, bookmark }: PostDeta
                 avatar: bookmark.linkedinData.author.avatar,
             };
         }
+        if (bookmark.type === 'article') {
+            // For articles, try to get site name from articleData or extract from URL
+            try {
+                const siteName = bookmark.articleData?.siteName || new URL(bookmark.url).hostname.replace('www.', '');
+                return {
+                    name: siteName,
+                    handle: bookmark.articleData?.author || '',
+                    avatar: bookmark.favicon || null,
+                };
+            } catch {
+                return { name: 'Article', handle: '', avatar: bookmark.favicon || null };
+            }
+        }
         return { name: 'Unknown', handle: '', avatar: null };
     };
 
@@ -81,13 +94,28 @@ export default function PostDetailDialog({ isOpen, onClose, bookmark }: PostDeta
                 <div className="flex flex-col h-full max-h-[90vh]">
                     {/* Native Header */}
                     <div className="flex items-center justify-between px-4 py-3 border-b border-border sticky top-0 bg-card/80 backdrop-blur-md z-10">
-                        <h3 className="font-bold text-[15px]">{bookmark.type === 'thread' ? 'Thread' : (bookmark.type === 'tweet' ? 'Tweet' : 'Post')}</h3>
-                        <button
-                            onClick={onClose}
-                            className="p-2 hover:bg-muted rounded-full transition-colors"
-                        >
-                            <X className="w-4 h-4" />
-                        </button>
+                        <h3 className="font-bold text-[15px]">
+                            {bookmark.type === 'thread' ? 'Thread' :
+                                bookmark.type === 'tweet' ? 'Tweet' :
+                                    bookmark.type === 'article' ? 'Article' : 'Post'}
+                        </h3>
+                        <div className="flex items-center gap-2">
+                            <a
+                                href={bookmark.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-2 hover:bg-muted rounded-full transition-colors text-muted-foreground hover:text-primary"
+                                title="Open original"
+                            >
+                                <ExternalLink className="w-4 h-4" />
+                            </a>
+                            <button
+                                onClick={onClose}
+                                className="p-2 hover:bg-muted rounded-full transition-colors"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
                     </div>
 
                     <div className="flex-1 overflow-y-auto p-4 sm:p-5 scroll-smooth no-scrollbar">
@@ -180,8 +208,8 @@ export default function PostDetailDialog({ isOpen, onClose, bookmark }: PostDeta
                                         {author.avatar ? (
                                             <img src={author.avatar} alt={author.name} className="w-full h-full object-cover" />
                                         ) : (
-                                            <div className="w-full h-full flex items-center justify-center font-bold text-primary bg-primary/10">
-                                                {author.name.charAt(0)}
+                                            <div className="w-full h-full flex items-center justify-center font-bold text-muted-foreground bg-muted">
+                                                {author.name.charAt(0).toUpperCase()}
                                             </div>
                                         )}
                                     </div>
@@ -217,8 +245,8 @@ export default function PostDetailDialog({ isOpen, onClose, bookmark }: PostDeta
                                         </span>
                                     </div>
 
-                                    {/* Engagement Stats Row */}
-                                    {stats && (
+                                    {/* Engagement Stats Row - only for social posts */}
+                                    {stats && bookmark.type !== 'article' && (
                                         <div className="py-3 border-b border-border flex items-center gap-5">
                                             <div className="flex items-center gap-1.5 text-[14px] hover:underline cursor-pointer">
                                                 <span className="font-bold text-foreground">{stats.retweets}</span>
@@ -231,46 +259,48 @@ export default function PostDetailDialog({ isOpen, onClose, bookmark }: PostDeta
                                         </div>
                                     )}
 
-                                    {/* Icon Action Row */}
-                                    <div className="py-3 flex items-center justify-between px-6 text-muted-foreground border-t border-border mt-2">
-                                        <button className="group flex items-center gap-1.5 hover:text-primary transition-colors">
-                                            <div className="p-2 rounded-full group-hover:bg-primary/10 transition-colors">
-                                                <MessageCircle className="w-5 h-5" />
-                                            </div>
-                                            <span className="text-xs font-medium">{stats?.replies || 0}</span>
-                                        </button>
-                                        <button className="group flex items-center gap-1.5 hover:text-emerald-500 transition-colors">
-                                            <div className="p-2 rounded-full group-hover:bg-emerald-500/10 transition-colors">
-                                                <Repeat2 className="w-5 h-5" />
-                                            </div>
-                                            <span className="text-xs font-medium">{stats?.retweets || 0}</span>
-                                        </button>
-                                        <button className="group flex items-center gap-1.5 hover:text-rose-500 transition-colors">
-                                            <div className="p-2 rounded-full group-hover:bg-rose-500/10 transition-colors">
-                                                <Heart className="w-5 h-5" />
-                                            </div>
-                                            <span className="text-xs font-medium">{stats?.likes || 0}</span>
-                                        </button>
+                                    {/* Icon Action Row - only for social posts */}
+                                    {bookmark.type !== 'article' && (
+                                        <div className="py-3 flex items-center justify-between px-6 text-muted-foreground border-t border-border mt-2">
+                                            <button className="group flex items-center gap-1.5 hover:text-primary transition-colors">
+                                                <div className="p-2 rounded-full group-hover:bg-primary/10 transition-colors">
+                                                    <MessageCircle className="w-5 h-5" />
+                                                </div>
+                                                <span className="text-xs font-medium">{stats?.replies || 0}</span>
+                                            </button>
+                                            <button className="group flex items-center gap-1.5 hover:text-emerald-500 transition-colors">
+                                                <div className="p-2 rounded-full group-hover:bg-emerald-500/10 transition-colors">
+                                                    <Repeat2 className="w-5 h-5" />
+                                                </div>
+                                                <span className="text-xs font-medium">{stats?.retweets || 0}</span>
+                                            </button>
+                                            <button className="group flex items-center gap-1.5 hover:text-rose-500 transition-colors">
+                                                <div className="p-2 rounded-full group-hover:bg-rose-500/10 transition-colors">
+                                                    <Heart className="w-5 h-5" />
+                                                </div>
+                                                <span className="text-xs font-medium">{stats?.likes || 0}</span>
+                                            </button>
 
-                                        {/* Remix Button - Centered Vertical Alignment */}
-                                        <button
-                                            onClick={() => setShowCreatorUpgrade(true)}
-                                            className="p-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-lg shadow-primary/25 hover:scale-110"
-                                            title="Remix with AI"
-                                        >
-                                            <Zap className="w-5 h-5 fill-current" />
-                                        </button>
+                                            {/* Remix Button - Centered Vertical Alignment */}
+                                            <button
+                                                onClick={() => setShowCreatorUpgrade(true)}
+                                                className="p-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-lg shadow-primary/25 hover:scale-110"
+                                                title="Remix with AI"
+                                            >
+                                                <Zap className="w-5 h-5 fill-current" />
+                                            </button>
 
-                                        <a
-                                            href={bookmark.url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="p-2 rounded-full hover:bg-primary/10 hover:text-primary transition-colors"
-                                            title="View Original"
-                                        >
-                                            <ExternalLink className="w-5 h-5" />
-                                        </a>
-                                    </div>
+                                            <a
+                                                href={bookmark.url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="p-2 rounded-full hover:bg-primary/10 hover:text-primary transition-colors"
+                                                title="View Original"
+                                            >
+                                                <ExternalLink className="w-5 h-5" />
+                                            </a>
+                                        </div>
+                                    )}
                                 </div>
                             </>
                         )}
