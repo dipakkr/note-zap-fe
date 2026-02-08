@@ -69,15 +69,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const syncExtensionStorage = (response: { user: BookmarkUser; workspaceId: string }, token: string) => {
+  const syncExtensionStorage = (response: { user: BookmarkUser; workspaceId: string; refreshToken?: string }, token: string) => {
+    // Store refresh token in localStorage as backup
+    if (response.refreshToken) {
+      localStorage.setItem('bookmark_refresh_token', response.refreshToken);
+    }
+
     // Method 1: Direct chrome.storage access (works in extension popup/options page)
     const chromeApi = (globalThis as { chrome?: { storage?: { local: { set: (data: Record<string, unknown>) => void } } } }).chrome;
     if (chromeApi?.storage) {
       chromeApi.storage.local.set({
         bookmark_manager_auth: { ...response.user, idToken: token },
         bookmark_workspace_id: response.workspaceId,
+        bookmark_refresh_token: response.refreshToken, // For persistent login
       });
-      console.log('[Bookmark Manager] Auth synced via chrome.storage');
+      console.log('[Bookmark Manager] Auth synced via chrome.storage (with refresh token)');
       return;
     }
 
@@ -112,7 +118,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         detail: {
           user: response.user,
           workspaceId: response.workspaceId,
-          idToken: token
+          idToken: token,
+          refreshToken: response.refreshToken // For persistent login
         }
       }));
 
@@ -225,11 +232,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
     setWorkspaceId(null);
     localStorage.removeItem('bookmark_auth_token');
+    localStorage.removeItem('bookmark_refresh_token');
 
     // Clear extension storage - Method 1: Direct access
     const chromeApi = (globalThis as { chrome?: { storage?: { local: { remove: (keys: string[]) => void } } } }).chrome;
     if (chromeApi?.storage) {
-      chromeApi.storage.local.remove(['bookmark_manager_auth', 'bookmark_workspace_id']);
+      chromeApi.storage.local.remove(['bookmark_manager_auth', 'bookmark_workspace_id', 'bookmark_refresh_token']);
       return;
     }
 
