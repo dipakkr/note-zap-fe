@@ -24,7 +24,7 @@ export default defineConfig({
     // Enable minification
     minify: 'esbuild',
     // Chunk size warning threshold
-    chunkSizeWarningLimit: 200,
+    chunkSizeWarningLimit: 500,
     rollupOptions: {
       output: {
         manualChunks: (id) => {
@@ -33,14 +33,20 @@ export default defineConfig({
             if (id.includes("firebase")) {
               return "firebase";
             }
-            // React core - MUST keep react, react-dom, and scheduler together
-            // to avoid initialization order issues with React 19
-            // Also include sonner which directly depends on React internals
+            // React core + all React-dependent UI libraries
+            // MUST be bundled together to avoid initialization order issues
+            // This includes: react, react-dom, scheduler, and any library that
+            // directly uses React hooks or internals
             if (
               id.includes("react-dom") ||
               id.includes("scheduler") ||
               id.includes("/react/") ||
-              id.includes("sonner")
+              id.includes("sonner") ||
+              id.includes("@radix-ui") ||
+              id.includes("react-remove-scroll") ||
+              id.includes("use-callback-ref") ||
+              id.includes("use-sidecar") ||
+              id.includes("react-style-singleton")
             ) {
               return "react-vendor";
             }
@@ -50,10 +56,6 @@ export default defineConfig({
             // Tanstack query - can be lazy loaded
             if (id.includes("@tanstack")) {
               return "tanstack";
-            }
-            // Radix UI - split by component usage
-            if (id.includes("@radix-ui")) {
-              return "radix-ui";
             }
             // Lucide icons - only import what's used
             if (id.includes("lucide-react")) {
