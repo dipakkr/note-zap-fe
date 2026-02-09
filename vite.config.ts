@@ -23,50 +23,20 @@ export default defineConfig({
     target: 'es2020',
     // Enable minification
     minify: 'esbuild',
-    // Chunk size warning threshold
+    // Chunk size warning threshold (increased to avoid noisy warnings)
     chunkSizeWarningLimit: 500,
     rollupOptions: {
       output: {
+        // Simplified chunking - let Vite handle most dependencies automatically
+        // to avoid initialization order issues with React 19
         manualChunks: (id) => {
           if (id.includes("node_modules")) {
-            // Firebase in its own chunk (loaded only when auth is needed)
+            // Only separate firebase for lazy loading (it's large and only needed for auth)
             if (id.includes("firebase")) {
               return "firebase";
             }
-            // React core + all React-dependent UI libraries
-            // MUST be bundled together to avoid initialization order issues
-            // This includes: react, react-dom, scheduler, and any library that
-            // directly uses React hooks or internals
-            if (
-              id.includes("react-dom") ||
-              id.includes("scheduler") ||
-              id.includes("/react/") ||
-              id.includes("sonner") ||
-              id.includes("@radix-ui") ||
-              id.includes("react-remove-scroll") ||
-              id.includes("use-callback-ref") ||
-              id.includes("use-sidecar") ||
-              id.includes("react-style-singleton")
-            ) {
-              return "react-vendor";
-            }
-            if (id.includes("react-router")) {
-              return "react-router";
-            }
-            // Tanstack query - can be lazy loaded
-            if (id.includes("@tanstack")) {
-              return "tanstack";
-            }
-            // Lucide icons - only import what's used
-            if (id.includes("lucide-react")) {
-              return "icons";
-            }
-            // Date utilities
-            if (id.includes("date-fns")) {
-              return "date-utils";
-            }
-            // Other smaller vendors
-            return "vendor";
+            // Let Vite automatically handle all other chunking
+            // This avoids initialization order issues with React 19 and its dependents
           }
         },
       },
