@@ -19,7 +19,6 @@ import {
   Moon,
   MoreVertical,
   Plus,
-  Repeat2,
   Search,
   RefreshCw,
   Settings,
@@ -629,7 +628,6 @@ function ContentStudioView({ workspaceId, clusters, bookmarks }: ContentStudioVi
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [copiedPostId, setCopiedPostId] = useState<string | null>(null);
 
-  const selectedCluster = clusters.find(c => c.id === selectedClusterId);
   const selectedPost = generatedPosts.find(p => p.id === selectedPostId) || null;
   const latestPost = latestPostId ? generatedPosts.find(p => p.id === latestPostId) || null : null;
 
@@ -641,10 +639,6 @@ function ContentStudioView({ workspaceId, clusters, bookmarks }: ContentStudioVi
     return map;
   }, [toneAuthors]);
 
-  const truncate = (text: string, max: number) => {
-    if (text.length <= max) return text;
-    return text.substring(0, max).replace(/\s+\S*$/, '') + '...';
-  };
 
   const formatDate = (dateStr: string) => {
     const d = new Date(dateStr);
@@ -2693,7 +2687,7 @@ export default function DashboardPage() {
           isOpen={!!detailId && !isSelectedProfile}
           onClose={handleCloseDetailDialog}
           bookmark={selectedBookmark || null}
-          workspaceId={workspaceId}
+          workspaceId={workspaceId || undefined}
           toneAuthors={pageToneAuthors}
         />
       </div >

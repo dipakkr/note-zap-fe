@@ -1,5 +1,5 @@
 import { Search, FileText, MessageSquare, Linkedin, Link2, X } from 'lucide-react';
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import type { Bookmark } from '../services/bookmarkService';
 import { Dialog, DialogContent } from './ui/dialog';
 import { Checkbox } from './ui/checkbox';
