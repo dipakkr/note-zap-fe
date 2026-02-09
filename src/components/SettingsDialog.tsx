@@ -2,6 +2,7 @@ import { Dialog, DialogContent } from './ui/dialog';
 import { useAuth } from '../contexts/AuthContext';
 import { Moon, Sun, LogOut, Shield } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { hasProAccess, getTierBadgeText } from '../lib/utils';
 
 interface SettingsDialogProps {
     isOpen: boolean;
@@ -60,8 +61,8 @@ export default function SettingsDialog({ isOpen, onClose, onOpenUpgrade }: Setti
                             <h3 className="text-base font-bold text-foreground">{user.name}</h3>
                             <p className="text-sm text-muted-foreground">{user.email}</p>
                             <div className="flex items-center gap-2 mt-1.5">
-                                <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${user.subscription === 'pro' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
-                                    {user.subscription === 'pro' ? 'Pro Plan' : 'Free Plan'}
+                                <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${hasProAccess(user.subscription) ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
+                                    {getTierBadgeText(user.subscription)}
                                 </span>
                             </div>
                         </div>
@@ -99,7 +100,7 @@ export default function SettingsDialog({ isOpen, onClose, onOpenUpgrade }: Setti
                     {/* Subscription Actions */}
                     <div className="space-y-3">
                         <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">Subscription</label>
-                        {user.subscription !== 'pro' ? (
+                        {!hasProAccess(user.subscription) ? (
                             <div className="p-4 rounded-xl bg-gradient-to-r from-primary/10 to-purple-500/10 border border-primary/20">
                                 <div className="flex items-start justify-between gap-4">
                                     <div>

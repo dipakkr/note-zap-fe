@@ -191,8 +191,8 @@ export default function ProfilesTable({ profiles, onToggleFavorite, onDelete, on
                   )}
                 </td>
 
-                <td className="px-6 py-4">
-                  <div className="flex items-center justify-center gap-1 opacity-0 group-hover/row:opacity-100 transition-opacity">
+                <td className="px-4 sm:px-6 py-4">
+                  <div className="flex items-center justify-center gap-1 sm:opacity-0 sm:group-hover/row:opacity-100 transition-opacity">
                     {/* Note Icon with Tooltip */}
                     <div className="relative group/note">
                       <button

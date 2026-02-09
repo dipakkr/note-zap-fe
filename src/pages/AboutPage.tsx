@@ -5,9 +5,9 @@ export default function AboutPage() {
     return (
         <>
             <SEO
-                title="About PostZaper - The Anti-Hoarding Bookmark Tool"
-                description="We built PostZaper because we were tired of 'Read Later' becoming 'Read Never'. Learn about our mission to help you organize your digital life."
-                keywords="about postzaper, bookmark manager company, content curation tool, startup story"
+                title="About PostZaper - Save Posts, Generate Content, Own Your Feed"
+                description="We built PostZaper because we were tired of 'Read Later' becoming 'Read Never'. Save posts from X & LinkedIn, generate original content with AI, and own your feed."
+                keywords="about postzaper, bookmark manager, ai content generation, content studio, save tweets, linkedin bookmarks"
             />
             <div className="max-w-3xl mx-auto px-4 sm:px-6 py-16 lg:py-24">
                 <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight mb-8">

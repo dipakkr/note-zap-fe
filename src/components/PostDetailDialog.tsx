@@ -1,18 +1,48 @@
 import { Dialog, DialogContent } from './ui/dialog';
-import { useState } from 'react';
-import type { Bookmark } from '../services/bookmarkService';
-import { MessageCircle, Repeat2, Heart, X, Zap, ExternalLink } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import type { Bookmark, ToneAuthor, GeneratedPost } from '../services/bookmarkService';
+import { contentStudioService } from '../services/bookmarkService';
+import ZapWizardDialog from './ZapWizardDialog';
+import { MessageCircle, Repeat2, Heart, X, Zap, ExternalLink, Sparkles, Copy, Check, ChevronDown, ChevronUp, Loader2, Twitter, Linkedin } from 'lucide-react';
 import { format } from 'date-fns';
-import CreatorUpgradeDialog from './CreatorUpgradeDialog';
 
 interface PostDetailDialogProps {
     isOpen: boolean;
     onClose: () => void;
     bookmark: Bookmark | null;
+    workspaceId?: string;
+    toneAuthors?: ToneAuthor[];
 }
 
-export default function PostDetailDialog({ isOpen, onClose, bookmark }: PostDetailDialogProps) {
-    const [showCreatorUpgrade, setShowCreatorUpgrade] = useState(false);
+export default function PostDetailDialog({ isOpen, onClose, bookmark, workspaceId, toneAuthors }: PostDetailDialogProps) {
+    const [showZapWizard, setShowZapWizard] = useState(false);
+    const [generatedPosts, setGeneratedPosts] = useState<GeneratedPost[]>([]);
+    const [loadingPosts, setLoadingPosts] = useState(false);
+    const [showGenerated, setShowGenerated] = useState(true);
+    const [copiedPostId, setCopiedPostId] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (isOpen && bookmark && workspaceId) {
+            setLoadingPosts(true);
+            contentStudioService.getPosts(workspaceId, { bookmarkId: bookmark.id, limit: 20 })
+                .then(res => setGeneratedPosts(res.posts))
+                .catch(() => setGeneratedPosts([]))
+                .finally(() => setLoadingPosts(false));
+        } else {
+            setGeneratedPosts([]);
+        }
+    }, [isOpen, bookmark?.id, workspaceId]);
+
+    const handleCopyPost = async (post: GeneratedPost) => {
+        await navigator.clipboard.writeText(post.content);
+        setCopiedPostId(post.id);
+        setTimeout(() => setCopiedPostId(null), 2000);
+    };
+
+    const handleClose = () => {
+        setShowZapWizard(false);
+        onClose();
+    };
 
     if (!bookmark) return null;
 
@@ -89,7 +119,7 @@ export default function PostDetailDialog({ isOpen, onClose, bookmark }: PostDeta
     const formattedDate = format(createdAt, 'h:mm a · MMM d, yyyy');
 
     return (
-        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+        <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
             <DialogContent className="sm:max-w-xl p-0 overflow-hidden rounded-xl border-border bg-card shadow-2xl animate-in fade-in zoom-in duration-200">
                 <div className="flex flex-col h-full max-h-[90vh]">
                     {/* Native Header */}
@@ -110,7 +140,7 @@ export default function PostDetailDialog({ isOpen, onClose, bookmark }: PostDeta
                                 <ExternalLink className="w-4 h-4" />
                             </a>
                             <button
-                                onClick={onClose}
+                                onClick={handleClose}
                                 className="p-2 hover:bg-muted rounded-full transition-colors"
                             >
                                 <X className="w-4 h-4" />
@@ -151,7 +181,7 @@ export default function PostDetailDialog({ isOpen, onClose, bookmark }: PostDeta
                                                     </span>
                                                 </div>
 
-                                                <p className="text-[15px] leading-relaxed whitespace-pre-wrap text-foreground mb-3 font-normal">
+                                                <p className="text-[15px] leading-relaxed whitespace-pre-wrap break-words text-foreground mb-3 font-normal">
                                                     {tweet.content}
                                                 </p>
 
@@ -203,7 +233,7 @@ export default function PostDetailDialog({ isOpen, onClose, bookmark }: PostDeta
                         ) : (
                             <>
                                 {/* Author Section */}
-                                <div className="flex items-center gap-3 mb-4">
+                                <div className="flex items-start gap-3 mb-4">
                                     <div className="w-11 h-11 rounded-full overflow-hidden bg-muted flex-shrink-0">
                                         {author.avatar ? (
                                             <img src={author.avatar} alt={author.name} className="w-full h-full object-cover" />
@@ -214,14 +244,14 @@ export default function PostDetailDialog({ isOpen, onClose, bookmark }: PostDeta
                                         )}
                                     </div>
                                     <div className="min-w-0">
-                                        <h4 className="font-bold text-[14px] text-foreground truncate leading-tight">{author.name}</h4>
-                                        <p className="text-[13px] text-muted-foreground truncate leading-tight font-normal">{author.handle}</p>
+                                        <h4 className="font-bold text-[14px] text-foreground leading-tight">{author.name}</h4>
+                                        <p className="text-[13px] text-muted-foreground leading-snug font-normal line-clamp-2 mt-0.5">{author.handle}</p>
                                     </div>
                                 </div>
 
                                 {/* Content Section */}
-                                <div className="space-y-4">
-                                    <p className="text-[15px] leading-[1.6] font-normal text-foreground whitespace-pre-wrap">
+                                <div className="space-y-4 overflow-hidden">
+                                    <p className="text-[15px] leading-[1.6] font-normal text-foreground whitespace-pre-wrap break-words overflow-wrap-anywhere">
                                         {content}
                                     </p>
 
@@ -281,11 +311,12 @@ export default function PostDetailDialog({ isOpen, onClose, bookmark }: PostDeta
                                                 <span className="text-xs font-medium">{stats?.likes || 0}</span>
                                             </button>
 
-                                            {/* Remix Button - Centered Vertical Alignment */}
+                                            {/* Remix Button */}
                                             <button
-                                                onClick={() => setShowCreatorUpgrade(true)}
-                                                className="p-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-lg shadow-primary/25 hover:scale-110"
-                                                title="Remix with AI"
+                                                onClick={() => setShowZapWizard(true)}
+                                                disabled={!workspaceId}
+                                                className="p-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-lg shadow-primary/25 hover:scale-110 disabled:opacity-50 disabled:hover:scale-100"
+                                                title="Generate similar post with AI"
                                             >
                                                 <Zap className="w-5 h-5 fill-current" />
                                             </button>
@@ -304,13 +335,84 @@ export default function PostDetailDialog({ isOpen, onClose, bookmark }: PostDeta
                                 </div>
                             </>
                         )}
+
+                        {/* Generated Posts History */}
+                        {workspaceId && (loadingPosts || generatedPosts.length > 0) && (
+                            <div className="mt-4 border-t border-border pt-3">
+                                <button
+                                    onClick={() => setShowGenerated(!showGenerated)}
+                                    className="flex items-center gap-2 w-full text-left mb-2"
+                                >
+                                    <Sparkles className="w-3.5 h-3.5 text-primary" />
+                                    <span className="text-xs font-bold text-foreground">
+                                        Generated Posts ({generatedPosts.length})
+                                    </span>
+                                    {showGenerated ? <ChevronUp className="w-3.5 h-3.5 text-muted-foreground ml-auto" /> : <ChevronDown className="w-3.5 h-3.5 text-muted-foreground ml-auto" />}
+                                </button>
+
+                                {showGenerated && (
+                                    <div className="space-y-2">
+                                        {loadingPosts ? (
+                                            <div className="flex items-center justify-center py-4">
+                                                <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                                            </div>
+                                        ) : (
+                                            generatedPosts.map(post => (
+                                                <div key={post.id} className="group rounded-lg border border-border bg-muted/50 p-3 hover:bg-muted transition-colors">
+                                                    <div className="flex items-center gap-2 mb-1.5">
+                                                        {post.platform === 'twitter' ? (
+                                                            <Twitter className="w-3 h-3 text-foreground" />
+                                                        ) : (
+                                                            <Linkedin className="w-3 h-3 text-blue-600" />
+                                                        )}
+                                                        <span className="text-[10px] font-medium text-muted-foreground uppercase">
+                                                            {post.platform === 'twitter' ? 'X' : 'LinkedIn'} · {post.contentType}
+                                                        </span>
+                                                        {post.source?.toneAuthorName && (
+                                                            <span className="text-[10px] text-muted-foreground">· {post.source.toneAuthorName}</span>
+                                                        )}
+                                                        <span className="text-[10px] text-muted-foreground ml-auto">
+                                                            {new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-xs text-foreground leading-relaxed whitespace-pre-wrap line-clamp-4 mb-2">
+                                                        {post.content}
+                                                    </p>
+                                                    <div className="flex items-center gap-2">
+                                                        <button
+                                                            onClick={() => handleCopyPost(post)}
+                                                            className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground hover:text-foreground transition-colors"
+                                                        >
+                                                            {copiedPostId === post.id ? (
+                                                                <><Check className="w-3 h-3 text-emerald-500" /> Copied</>
+                                                            ) : (
+                                                                <><Copy className="w-3 h-3" /> Copy</>
+                                                            )}
+                                                        </button>
+                                                        {post.scheduledDate && (
+                                                            <span className="text-[10px] text-primary font-medium ml-auto">
+                                                                Scheduled {new Date(post.scheduledDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
             </DialogContent>
 
-            <CreatorUpgradeDialog
-                isOpen={showCreatorUpgrade}
-                onClose={() => setShowCreatorUpgrade(false)}
+            {/* Zap Wizard Dialog */}
+            <ZapWizardDialog
+                isOpen={showZapWizard}
+                onClose={() => setShowZapWizard(false)}
+                bookmark={bookmark}
+                workspaceId={workspaceId}
+                toneAuthors={toneAuthors}
             />
         </Dialog>
     );

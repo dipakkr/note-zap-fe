@@ -34,32 +34,33 @@ const Hero = () => {
 
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 border border-orange-100 text-orange-700 text-[10px] font-bold uppercase tracking-wide shadow-sm w-fit">
-            <span>🚀</span> Join 500+ Early Adopters
+            <span>🚀</span> Trusted by 1,000+ creators
           </div>
 
           {/* Headline */}
           <div className="space-y-4">
             <h1 className="text-4xl lg:text-6xl font-bold tracking-tight text-gray-900 leading-[1.1]">
-              Your Personal<br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600">Social Bookmark Manager</span>
+              Save Posts.<br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600">Generate Content.</span><br />
+              Own Your Feed.
             </h1>
             <p className="text-md text-gray-600 leading-relaxed max-w-md">
-              Save posts, threads, and profiles from X & LinkedIn in one click. Find them when you need them.
+              Bookmark the best posts from X & LinkedIn, then turn them into original content with AI — all from one dashboard.
             </p>
           </div>
 
           <div className="flex flex-col gap-2 text-gray-600 text-sm">
             <div className="flex items-center gap-2">
               <CheckCircle2 size={14} className="text-green-500" />
-              <span>Save directly from X & LinkedIn with our Chrome extension</span>
+              <span>One-click save from X & LinkedIn via Chrome extension</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle2 size={14} className="text-green-500" />
-              <span>Smart search & organize — never lose a post again</span>
+              <span>AI Content Studio — generate posts in your voice from saved content</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle2 size={14} className="text-green-500" />
-              <span>Build your personal knowledge library</span>
+              <span>Collections, calendar scheduling & smart search to stay organized</span>
             </div>
           </div>
 
@@ -70,9 +71,16 @@ const Hero = () => {
               className="bg-gray-900 text-white hover:bg-gray-800 h-12 px-6 rounded-full text-base shadow-xl shadow-gray-200/50 transition-all hover:scale-105 active:scale-95 flex items-center gap-2"
               onClick={() => window.open('https://chromewebstore.google.com/detail/ecfbdcdbijkebgkjjdolbnapnkdpfoid', '_blank')}
             >
-              {/* Chrome Logo */}
               <img src="/chrome.svg" alt="Chrome" className="w-5 h-5" />
-              Add to Chrome
+              Add to Chrome — It's Free
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="h-12 px-6 rounded-full text-base border-gray-200 text-gray-700 hover:bg-gray-50 transition-all"
+              onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}
+            >
+              See How It Works
             </Button>
           </div>
 
@@ -89,7 +97,7 @@ const Hero = () => {
               <div className="flex text-yellow-500 gap-0.5">
                 {[1, 2, 3, 4, 5].map((i) => <Star key={i} size={12} fill="currentColor" />)}
               </div>
-              <span className="font-medium text-gray-900 text-xs">Loved by 1k+ creators</span>
+              <span className="font-medium text-gray-900 text-xs">Loved by 1,000+ creators</span>
             </div>
           </div>
         </div>

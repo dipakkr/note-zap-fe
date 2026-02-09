@@ -50,7 +50,9 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/login" replace />;
   }
 
-  return <>{children}</>;
+  // Use DashboardSkeleton as Suspense fallback so lazy-loaded pages
+  // don't flash the landing/login skeleton while the JS chunk loads
+  return <Suspense fallback={<DashboardSkeleton />}>{children}</Suspense>;
 }
 
 // Public Route Component (redirect to dashboard if logged in)

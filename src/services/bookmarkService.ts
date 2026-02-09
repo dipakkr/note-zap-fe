@@ -44,6 +44,16 @@ export interface Cluster {
   updatedAt: string;
 }
 
+export interface ToneAuthor {
+  name: string;
+  username: string;
+  avatar: string | null;
+  headline: string | null;
+  postCount: number;
+  platforms: string[];
+  authorKey: string;
+}
+
 export interface Bookmark {
   id: string;
   _id?: string; // MongoDB ID
@@ -174,6 +184,13 @@ export const bookmarkService = {
 
   toggleFavorite: (id: string) =>
     apiClient.patch(`/api/bookmarks/${id}/favorite`, {}),
+
+  getAuthors: async (workspaceId: string) => {
+    const response = await apiClient.get<{ authors: ToneAuthor[] }>(
+      `/api/bookmarks/workspace/${workspaceId}/authors`
+    );
+    return response;
+  },
 };
 
 /**
@@ -190,6 +207,156 @@ export const clusterService = {
     return { ...response, id: response._id || response.id };
   },
 
+  updateCluster: async (id: string, data: { name?: string; color?: string }) => {
+    const response = await apiClient.put<Cluster>(`/api/clusters/${id}`, data);
+    return { ...response, id: response._id || response.id };
+  },
+
   deleteCluster: (id: string) =>
     apiClient.delete(`/api/clusters/${id}`),
+};
+
+/**
+ * Content Studio
+ */
+export interface GeneratedPost {
+  id: string;
+  _id?: string;
+  userId: string;
+  workspaceId: string;
+  content: string;
+  platform: 'twitter' | 'linkedin';
+  contentType: 'post' | 'hook';
+  source: {
+    type: 'cluster' | 'bookmarks';
+    clusterId?: string;
+    clusterName?: string;
+    bookmarkIds: string[];
+    toneAuthorKey?: string;
+    toneAuthorName?: string;
+    sourceBookmarkTitle?: string;
+  };
+  generation: {
+    model: string;
+    promptTokens: number;
+    completionTokens: number;
+    totalTokens: number;
+    responseTimeMs: number;
+    regenerationCount: number;
+  };
+  status: 'generated' | 'edited' | 'saved' | 'used';
+  isEdited: boolean;
+  createdAt: string;
+  updatedAt: string;
+  scheduledDate?: string | null;
+}
+
+export interface GenerateContentRequest {
+  workspaceId: string;
+  clusterId?: string;
+  bookmarkIds?: string[];
+  platform: 'twitter' | 'linkedin';
+  contentType: 'post' | 'hook';
+  hookText?: string;
+  toneAuthorKey?: string;
+  model?: string;
+}
+
+export interface GenerateContentResponse {
+  posts: GeneratedPost[];
+  hooks?: string[];
+  usage?: {
+    dailyUsed: number;
+    dailyLimit: number;
+    subscription: string;
+    remainingGenerations: number;
+  };
+}
+
+export interface GeneratedPostsResponse {
+  posts: GeneratedPost[];
+  total: number;
+  hasMore: boolean;
+}
+
+const mapPost = (p: any): GeneratedPost => ({
+  ...p,
+  id: p.id || p._id,
+});
+
+export const contentStudioService = {
+  generate: async (data: GenerateContentRequest) => {
+    const response = await apiClient.post<GenerateContentResponse>(
+      '/api/content-studio/generate',
+      data
+    );
+    return {
+      ...response,
+      posts: response.posts.map(mapPost),
+    };
+  },
+
+  getPosts: async (
+    workspaceId: string,
+    options?: { platform?: string; contentType?: string; bookmarkId?: string; limit?: number; offset?: number }
+  ) => {
+    const params = new URLSearchParams();
+    if (options?.platform) params.append('platform', options.platform);
+    if (options?.contentType) params.append('contentType', options.contentType);
+    if (options?.bookmarkId) params.append('bookmarkId', options.bookmarkId);
+    if (options?.limit) params.append('limit', options.limit.toString());
+    if (options?.offset) params.append('offset', options.offset.toString());
+
+    const query = params.toString();
+    const response = await apiClient.get<GeneratedPostsResponse>(
+      `/api/content-studio/posts/${workspaceId}${query ? `?${query}` : ''}`
+    );
+    return {
+      ...response,
+      posts: response.posts.map(mapPost),
+    };
+  },
+
+  updatePost: async (id: string, data: { content?: string; status?: string }) => {
+    const response = await apiClient.put<{ post: GeneratedPost }>(
+      `/api/content-studio/${id}`,
+      data
+    );
+    return { post: mapPost(response.post) };
+  },
+
+  deletePost: (id: string) =>
+    apiClient.delete(`/api/content-studio/${id}`),
+
+  regeneratePost: async (id: string) => {
+    const response = await apiClient.post<{ post: GeneratedPost; usage?: any }>(
+      `/api/content-studio/${id}/regenerate`,
+      {}
+    );
+    return { post: mapPost(response.post), usage: response.usage };
+  },
+
+  schedulePost: async (id: string, scheduledDate: string) => {
+    const response = await apiClient.patch<{ post: GeneratedPost }>(
+      `/api/content-studio/${id}/schedule`,
+      { scheduledDate }
+    );
+    return { post: mapPost(response.post) };
+  },
+
+  unschedulePost: async (id: string) => {
+    const response = await apiClient.patch<{ post: GeneratedPost }>(
+      `/api/content-studio/${id}/unschedule`,
+      {}
+    );
+    return { post: mapPost(response.post) };
+  },
+
+  getCalendarPosts: async (workspaceId: string, start: string, end: string) => {
+    const params = new URLSearchParams({ start, end });
+    const response = await apiClient.get<{ posts: GeneratedPost[] }>(
+      `/api/content-studio/calendar/${workspaceId}?${params.toString()}`
+    );
+    return { posts: response.posts.map(mapPost) };
+  },
 };

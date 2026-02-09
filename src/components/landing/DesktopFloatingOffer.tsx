@@ -2,6 +2,7 @@ import { X, Sparkles } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import { STRIPE_LINKS } from "@/lib/constants";
+import { hasProAccess } from "@/lib/utils";
 
 const DesktopFloatingOffer = () => {
     const { user, loading } = useAuth();
@@ -12,10 +13,10 @@ const DesktopFloatingOffer = () => {
         // Check local storage for dismissal
         const isDismissed = localStorage.getItem("hide_launch_offer");
 
-        // Show only if not dismissed and NOT Pro
+        // Show only if not dismissed and does NOT have Pro/Creator access
         // We check 'user' existence? Actually seeing the offer might be useful for free users logged in.
-        // So we strictly check if subscription is 'pro'.
-        if (!isDismissed && user?.subscription !== 'pro') {
+        // So we strictly check if user has pro-level access.
+        if (!isDismissed && !hasProAccess(user?.subscription)) {
             setIsVisible(true);
         }
     }, [user]);
@@ -41,8 +42,8 @@ const DesktopFloatingOffer = () => {
     // 3. Haven't scrolled enough
     if (loading || !isVisible || !hasScrolled) return null;
 
-    // Double check specific PRO condition just in case state updates lagged
-    if (user?.subscription === 'pro') return null;
+    // Double check Pro/Creator condition just in case state updates lagged
+    if (hasProAccess(user?.subscription)) return null;
 
     const handleClick = () => {
         // Redirect to Stripe payment link

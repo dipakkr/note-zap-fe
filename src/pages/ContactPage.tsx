@@ -7,7 +7,8 @@ export default function ContactPage() {
         <>
             <SEO
                 title="Contact Us - PostZaper"
-                description="Get in touch with the team behind PostZaper. We're here to help you organize your digital life."
+                description="Get in touch with the PostZaper team. Questions about bookmarking, AI content generation, or your account? We're here to help."
+                keywords="contact postzaper, postzaper support, bookmark manager help"
             />
 
             <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 flex flex-col">

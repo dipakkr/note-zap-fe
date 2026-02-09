@@ -263,7 +263,7 @@ export default function BookmarkCard({ bookmark, clusters = [], onToggleFavorite
                     >
                       <div className="flex items-center gap-2.5">
                         <FolderPlus className="w-3.5 h-3.5 text-muted-foreground" />
-                        Add to cluster
+                        Add to collection
                       </div>
                       <ChevronRight className="w-3 h-3 text-muted-foreground" />
                     </button>
@@ -286,7 +286,7 @@ export default function BookmarkCard({ bookmark, clusters = [], onToggleFavorite
                           </button>
                         ))}
                         {clusters.filter(c => !bookmark.tags?.includes(c.name)).length === 0 && (
-                          <p className="px-4 py-2 text-[10px] text-muted-foreground italic">Already in all clusters</p>
+                          <p className="px-4 py-2 text-[10px] text-muted-foreground italic">Already in all collections</p>
                         )}
                       </div>
                     )}

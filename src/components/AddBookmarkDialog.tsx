@@ -115,7 +115,7 @@ export default function AddBookmarkDialog({ isOpen, onClose, onSuccess, workspac
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">
-                Cluster
+                Collection
               </label>
               <select
                 value={folder}

@@ -17,9 +17,9 @@ const LandingPage = () => {
   return (
     <>
       <SEO
-        title="PostZaper - Save & Organize Your Twitter & LinkedIn Bookmarks"
-        description="Never lose valuable content again. PostZaper helps you save, organize, and revisit your favorite posts from Twitter and LinkedIn with our powerful Chrome extension."
-        keywords="bookmark manager, twitter bookmarks, linkedin bookmarks, save tweets, social media organizer, content curation, chrome extension"
+        title="PostZaper - Save Posts, Generate Content, Own Your Feed"
+        description="Bookmark the best posts from X & LinkedIn, then turn them into original content with AI. One-click save, AI Content Studio, collections, and calendar scheduling — all from one dashboard."
+        keywords="bookmark manager, twitter bookmarks, linkedin bookmarks, save tweets, social media organizer, content curation, chrome extension, ai content generation, content studio"
       />
       <Hero />
       <TrustedBy />
