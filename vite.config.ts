@@ -35,10 +35,12 @@ export default defineConfig({
             }
             // React core - MUST keep react, react-dom, and scheduler together
             // to avoid initialization order issues with React 19
+            // Also include sonner which directly depends on React internals
             if (
               id.includes("react-dom") ||
               id.includes("scheduler") ||
-              id.includes("/react/")
+              id.includes("/react/") ||
+              id.includes("sonner")
             ) {
               return "react-vendor";
             }
