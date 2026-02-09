@@ -3,8 +3,6 @@
  * Handles HTTP requests to the Express/MongoDB backend
  */
 
-import { auth } from '../lib/firebase';
-
 // API base URL from environment or default
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5002';
 
@@ -24,29 +22,10 @@ export class APIError extends Error {
 }
 
 /**
- * Get Firebase auth token
+ * Get JWT access token from localStorage
  */
-async function getAuthToken(): Promise<string | null> {
-  try {
-    const currentUser = auth.currentUser;
-
-    if (currentUser) {
-      // Get fresh token from Firebase
-      const token = await currentUser.getIdToken();
-      return token;
-    }
-
-    // Fallback to cached token from localStorage
-    const cachedToken = localStorage.getItem('bookmark_auth_token');
-    if (cachedToken) {
-      return cachedToken;
-    }
-
-    return null;
-  } catch (error) {
-    console.error('[apiClient] Failed to get auth token:', error);
-    return localStorage.getItem('bookmark_auth_token');
-  }
+function getAuthToken(): string | null {
+  return localStorage.getItem('bookmark_auth_token');
 }
 
 /**
@@ -56,7 +35,7 @@ async function request<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const token = await getAuthToken();
+  const token = getAuthToken();
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',

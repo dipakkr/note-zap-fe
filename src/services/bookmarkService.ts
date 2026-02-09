@@ -83,7 +83,8 @@ export interface Bookmark {
 export interface AuthResponse {
   user: BookmarkUser;
   workspaceId: string;
-  refreshToken?: string; // For extension persistent login
+  accessToken?: string;
+  refreshToken?: string;
   message: string;
 }
 

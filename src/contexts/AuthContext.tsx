@@ -1,12 +1,12 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { type User, onAuthStateChanged, signOut as firebaseSignOut } from 'firebase/auth';
+import { onAuthStateChanged, signOut as firebaseSignOut } from 'firebase/auth';
+import type { User } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import { authService, type BookmarkUser } from '../services/bookmarkService';
 import { toast } from 'sonner';
 
 interface AuthContextType {
   user: BookmarkUser | null;
-  firebaseUser: User | null;
   workspaceId: string | null;
   loading: boolean;
   signOut: () => Promise<void>;
@@ -17,7 +17,6 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<BookmarkUser | null>(null);
-  const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
   const [workspaceId, setWorkspaceId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
@@ -29,16 +28,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsAuthenticating(true);
 
     try {
-      // Cache token FIRST before any API calls
-      const token = await fbUser.getIdToken();
-      localStorage.setItem('bookmark_auth_token', token);
+      // Get Firebase token for initial login/register API call
+      const firebaseToken = await fbUser.getIdToken();
+      localStorage.setItem('bookmark_auth_token', firebaseToken);
 
       // Try login first (existing user)
       try {
         const response = await authService.login(fbUser.uid);
+        // Replace Firebase token with our JWT for all subsequent API calls
+        if (response.accessToken) {
+          localStorage.setItem('bookmark_auth_token', response.accessToken);
+        }
         setUser(response.user);
         setWorkspaceId(response.workspaceId);
-        syncExtensionStorage(response, token);
+        syncExtensionStorage(response, response.accessToken || firebaseToken);
         return;
       } catch (loginError: unknown) {
         // If login fails, try to register (new user)
@@ -57,9 +60,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         name: fbUser.displayName || fbUser.email?.split('@')[0] || 'User',
         picture: fbUser.photoURL || undefined,
       });
+      // Replace Firebase token with our JWT
+      if (response.accessToken) {
+        localStorage.setItem('bookmark_auth_token', response.accessToken);
+      }
       setUser(response.user);
       setWorkspaceId(response.workspaceId);
-      syncExtensionStorage(response, token);
+      syncExtensionStorage(response, response.accessToken || firebaseToken);
     } catch (error) {
       console.error('Failed to sync with backend:', error);
       setUser(null);
@@ -79,24 +86,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const chromeApi = (globalThis as { chrome?: { storage?: { local: { set: (data: Record<string, unknown>) => void } } } }).chrome;
     if (chromeApi?.storage) {
       chromeApi.storage.local.set({
-        bookmark_manager_auth: { ...response.user, idToken: token },
+        bookmark_manager_auth: { ...response.user, accessToken: token },
         bookmark_workspace_id: response.workspaceId,
-        bookmark_refresh_token: response.refreshToken, // For persistent login
+        bookmark_refresh_token: response.refreshToken,
       });
-      console.log('[Bookmark Manager] Auth synced via chrome.storage (with refresh token)');
+      console.log('[Bookmark Manager] Auth synced via chrome.storage');
       return;
     }
 
     // Method 2: Dispatch custom event for content script bridge (works in web app)
-    // The auth-bridge.js content script listens for this event and relays to extension
     if (typeof window !== 'undefined') {
       console.log('[Bookmark Manager] Dispatching auth sync event for extension');
 
-      // Use state if available, otherwise check window
       const isExtAvailable = extensionAvailable || (window as any).__BOOKMARK_MANAGER_EXTENSION__;
 
       if (isExtAvailable) {
-        // Listen for the result
         const handleResult = (event: Event) => {
           const customEvent = event as CustomEvent<{ success: boolean; error?: string }>;
           window.removeEventListener('bookmark-manager-auth-sync-result', handleResult);
@@ -108,7 +112,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         };
         window.addEventListener('bookmark-manager-auth-sync-result', handleResult);
 
-        // Set timeout to clean up listener
         setTimeout(() => {
           window.removeEventListener('bookmark-manager-auth-sync-result', handleResult);
         }, 5000);
@@ -118,14 +121,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         detail: {
           user: response.user,
           workspaceId: response.workspaceId,
-          idToken: token,
-          refreshToken: response.refreshToken // For persistent login
+          accessToken: token,
+          refreshToken: response.refreshToken
         }
       }));
 
-      // Show info toast if extension not detected
       if (!isExtAvailable) {
-        // Check if user came from extension
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('source') === 'extension') {
           toast.info('Please reload the extension and this page, then log in again.', { duration: 2000 });
@@ -141,8 +142,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
-      setFirebaseUser(fbUser);
-
       if (fbUser) {
         await syncWithBackend(fbUser);
       } else {
@@ -161,57 +160,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       signOut();
     };
 
-    // Handle token refresh request from extension
-    const handleTokenRefreshRequest = async () => {
-      console.log('[Bookmark Manager] Token refresh requested by extension');
-
-      try {
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-          console.error('[Bookmark Manager] No user logged in, cannot refresh token');
-          window.dispatchEvent(new CustomEvent('bookmark-manager-token-refresh-result', {
-            detail: { success: false, error: 'No user logged in' }
-          }));
-          return;
-        }
-
-        // Force refresh the token
-        const token = await currentUser.getIdToken(true);
-
-        // Sync to extension via event - use latest user/workspaceId from API
-        // We need to fetch the latest data since this is triggered externally
-        const response = await authService.getMe();
-
-        // Sync to extension via event
-        window.dispatchEvent(new CustomEvent('bookmark-manager-auth-sync', {
-          detail: {
-            user: response.user,
-            workspaceId: response.workspaceId,
-            idToken: token
-          }
-        }));
-
-        // Also store in localStorage
-        localStorage.setItem('bookmark_auth_token', token);
-
-        console.log('[Bookmark Manager] Token refreshed successfully');
-        window.dispatchEvent(new CustomEvent('bookmark-manager-token-refresh-result', {
-          detail: { success: true }
-        }));
-      } catch (error) {
-        console.error('[Bookmark Manager] Failed to refresh token:', error);
-        window.dispatchEvent(new CustomEvent('bookmark-manager-token-refresh-result', {
-          detail: { success: false, error: String(error) }
-        }));
-      }
-    };
-
     if (typeof window !== 'undefined') {
       window.addEventListener('bookmark-manager-extension-ready', handleExtensionReady);
       window.addEventListener('bookmark-manager-extension-logout', handleExtensionLogout);
-      window.addEventListener('bookmark-manager-token-refresh-request', handleTokenRefreshRequest);
 
-      // Check initial state
       if ((window as any).__BOOKMARK_MANAGER_EXTENSION__) {
         setExtensionAvailable(true);
       }
@@ -222,7 +174,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (typeof window !== 'undefined') {
         window.removeEventListener('bookmark-manager-extension-ready', handleExtensionReady);
         window.removeEventListener('bookmark-manager-extension-logout', handleExtensionLogout);
-        window.removeEventListener('bookmark-manager-token-refresh-request', handleTokenRefreshRequest);
       }
     };
   }, []);
@@ -251,7 +202,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
-        firebaseUser,
         workspaceId,
         loading,
         signOut,
