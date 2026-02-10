@@ -22,6 +22,14 @@ export function hasProAccess(subscription: string | undefined | null): boolean {
 }
 
 /**
+ * Check if subscription is the Creator tier
+ */
+export function isCreatorTier(subscription: string | undefined | null): boolean {
+  const tier = (subscription || 'free').toLowerCase();
+  return tier === 'creator';
+}
+
+/**
  * Get display name for subscription tier
  */
 export function getTierDisplayName(subscription: string | undefined | null): string {
