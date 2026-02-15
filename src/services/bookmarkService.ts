@@ -136,6 +136,7 @@ export const bookmarkService = {
       folder?: string;
       limit?: number;
       offset?: number;
+      signal?: AbortSignal;
     }
   ) => {
     const params = new URLSearchParams();
@@ -146,7 +147,8 @@ export const bookmarkService = {
 
     const query = params.toString();
     const response = await apiClient.get<BookmarksResponse>(
-      `/api/bookmarks/workspace/${workspaceId}${query ? `?${query}` : ''}`
+      `/api/bookmarks/workspace/${workspaceId}${query ? `?${query}` : ''}`,
+      { signal: options?.signal }
     );
 
     return {
@@ -186,9 +188,10 @@ export const bookmarkService = {
   toggleFavorite: (id: string) =>
     apiClient.patch(`/api/bookmarks/${id}/favorite`, {}),
 
-  getAuthors: async (workspaceId: string) => {
+  getAuthors: async (workspaceId: string, signal?: AbortSignal) => {
     const response = await apiClient.get<{ authors: ToneAuthor[] }>(
-      `/api/bookmarks/workspace/${workspaceId}/authors`
+      `/api/bookmarks/workspace/${workspaceId}/authors`,
+      { signal }
     );
     return response;
   },
@@ -198,8 +201,8 @@ export const bookmarkService = {
  * Clusters
  */
 export const clusterService = {
-  getClusters: async (workspaceId: string) => {
-    const response = await apiClient.get<Cluster[]>(`/api/clusters/workspace/${workspaceId}`);
+  getClusters: async (workspaceId: string, signal?: AbortSignal) => {
+    const response = await apiClient.get<Cluster[]>(`/api/clusters/workspace/${workspaceId}`, { signal });
     return response.map(c => ({ ...c, id: c._id || c.id }));
   },
 
@@ -299,7 +302,7 @@ export const contentStudioService = {
 
   getPosts: async (
     workspaceId: string,
-    options?: { platform?: string; contentType?: string; bookmarkId?: string; limit?: number; offset?: number }
+    options?: { platform?: string; contentType?: string; bookmarkId?: string; limit?: number; offset?: number; signal?: AbortSignal }
   ) => {
     const params = new URLSearchParams();
     if (options?.platform) params.append('platform', options.platform);
@@ -310,7 +313,8 @@ export const contentStudioService = {
 
     const query = params.toString();
     const response = await apiClient.get<GeneratedPostsResponse>(
-      `/api/content-studio/posts/${workspaceId}${query ? `?${query}` : ''}`
+      `/api/content-studio/posts/${workspaceId}${query ? `?${query}` : ''}`,
+      { signal: options?.signal }
     );
     return {
       ...response,

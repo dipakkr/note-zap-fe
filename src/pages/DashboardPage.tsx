@@ -1,4 +1,5 @@
 import {
+
   BarChart2,
   CheckCircle2,
   ChevronLeft,
@@ -32,7 +33,7 @@ import {
   LayoutGrid,
   Rows
 } from 'lucide-react';
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useClickOutside } from '../hooks/use-click-outside';
@@ -280,11 +281,10 @@ function ContentCalendarView({ workspaceId }: { workspaceId: string }) {
                         {dayPosts.slice(0, 2).map(post => (
                           <div
                             key={post.id}
-                            className={`text-[8px] font-medium px-1 py-0.5 rounded truncate ${
-                              post.platform === 'twitter'
-                                ? 'bg-sky-500/10 text-sky-600'
-                                : 'bg-blue-600/10 text-blue-600'
-                            }`}
+                            className={`text-[8px] font-medium px-1 py-0.5 rounded truncate ${post.platform === 'twitter'
+                              ? 'bg-sky-500/10 text-sky-600'
+                              : 'bg-blue-600/10 text-blue-600'
+                              }`}
                           >
                             {post.content.substring(0, 25)}...
                           </div>
@@ -340,9 +340,8 @@ function ContentCalendarView({ workspaceId }: { workspaceId: string }) {
               {selectedDayPosts.map(post => (
                 <div key={post.id} onClick={() => setViewingPost(post)} className="px-4 py-3 border-b border-border/50 hover:bg-muted/30 transition cursor-pointer">
                   <div className="flex items-center gap-2 mb-2">
-                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                      post.platform === 'twitter' ? 'bg-sky-500/10 text-sky-600' : 'bg-blue-600/10 text-blue-600'
-                    }`}>
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${post.platform === 'twitter' ? 'bg-sky-500/10 text-sky-600' : 'bg-blue-600/10 text-blue-600'
+                      }`}>
                       {post.platform === 'twitter' ? (
                         <><Twitter className="w-2.5 h-2.5" /> X</>
                       ) : (
@@ -393,9 +392,8 @@ function ContentCalendarView({ workspaceId }: { workspaceId: string }) {
           {viewingPost && (
             <div>
               <div className="flex items-center gap-2 px-5 pt-5 pb-3 flex-wrap">
-                <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold ${
-                  viewingPost.platform === 'twitter' ? 'bg-sky-500/10 text-sky-600' : 'bg-blue-600/10 text-blue-600'
-                }`}>
+                <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold ${viewingPost.platform === 'twitter' ? 'bg-sky-500/10 text-sky-600' : 'bg-blue-600/10 text-blue-600'
+                  }`}>
                   {viewingPost.platform === 'twitter' ? <><Twitter className="w-3 h-3" /> X</> : <><Linkedin className="w-3 h-3" /> LinkedIn</>}
                 </span>
                 {viewingPost.source.clusterName && (
@@ -444,9 +442,10 @@ interface ContentStudioViewProps {
   workspaceId: string;
   clusters: Cluster[];
   bookmarks: Bookmark[];
+  toneAuthors: ToneAuthor[];
 }
 
-function ContentStudioView({ workspaceId, clusters, bookmarks }: ContentStudioViewProps) {
+function ContentStudioView({ workspaceId, clusters, bookmarks, toneAuthors }: ContentStudioViewProps) {
   const [sourceMode, setSourceMode] = useState<'cluster' | 'bookmarks'>('cluster');
   const [selectedClusterId, setSelectedClusterId] = useState<string>('');
   const [selectedBookmarkIds, setSelectedBookmarkIds] = useState<string[]>([]);
@@ -463,9 +462,7 @@ function ContentStudioView({ workspaceId, clusters, bookmarks }: ContentStudioVi
   const [isDeletingPost, setIsDeletingPost] = useState(false);
   const [regeneratingId, setRegeneratingId] = useState<string | null>(null);
   const [savingId, setSavingId] = useState<string | null>(null);
-  const [toneAuthors, setToneAuthors] = useState<ToneAuthor[]>([]);
   const [selectedToneAuthorKey, setSelectedToneAuthorKey] = useState<string | null>(null);
-  const [toneAuthorsLoading, setToneAuthorsLoading] = useState(false);
   const [latestPostId, setLatestPostId] = useState<string | null>(null);
   const [selectedModel, setSelectedModel] = useState<string>('gpt-4o-mini');
   const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
@@ -473,36 +470,25 @@ function ContentStudioView({ workspaceId, clusters, bookmarks }: ContentStudioVi
   const [scheduleDate, setScheduleDate] = useState('');
   const [isScheduling, setIsScheduling] = useState(false);
 
-  // Load tone authors
-  useEffect(() => {
-    const loadAuthors = async () => {
-      setToneAuthorsLoading(true);
-      try {
-        const { authors } = await bookmarkService.getAuthors(workspaceId);
-        setToneAuthors(authors);
-      } catch {
-        // non-critical
-      } finally {
-        setToneAuthorsLoading(false);
-      }
-    };
-    loadAuthors();
-  }, [workspaceId]);
-
   // Load existing generated posts
   useEffect(() => {
+    const controller = new AbortController();
+
     const loadPosts = async () => {
       setPostsLoading(true);
       try {
-        const response = await contentStudioService.getPosts(workspaceId);
+        const response = await contentStudioService.getPosts(workspaceId, { signal: controller.signal });
         setGeneratedPosts(response.posts);
-      } catch (error) {
-        console.error('Failed to load generated posts:', error);
+      } catch (error: any) {
+        if (error.name !== 'AbortError') {
+          console.error('Failed to load generated posts:', error);
+        }
       } finally {
-        setPostsLoading(false);
+        if (!controller.signal.aborted) setPostsLoading(false);
       }
     };
     loadPosts();
+    return () => controller.abort();
   }, [workspaceId]);
 
   const handleGenerate = async () => {
@@ -741,7 +727,7 @@ function ContentStudioView({ workspaceId, clusters, bookmarks }: ContentStudioVi
                 authors={toneAuthors}
                 selectedAuthorKey={selectedToneAuthorKey}
                 onSelect={setSelectedToneAuthorKey}
-                isLoading={toneAuthorsLoading}
+                isLoading={false}
               />
             </div>
 
@@ -773,9 +759,8 @@ function ContentStudioView({ workspaceId, clusters, bookmarks }: ContentStudioVi
                 <span className="text-[10px] text-muted-foreground ml-auto">{formatDate(latestPost.createdAt)}</span>
               </div>
               <div className="flex items-center gap-2 mb-3">
-                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                  latestPost.platform === 'twitter' ? 'bg-sky-500/10 text-sky-600' : 'bg-blue-600/10 text-blue-600'
-                }`}>
+                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${latestPost.platform === 'twitter' ? 'bg-sky-500/10 text-sky-600' : 'bg-blue-600/10 text-blue-600'
+                  }`}>
                   {latestPost.platform === 'twitter' ? <Twitter className="w-3 h-3" /> : <Linkedin className="w-3 h-3" />}
                   {latestPost.platform === 'twitter' ? 'Twitter' : 'LinkedIn'}
                 </span>
@@ -913,9 +898,8 @@ function ContentStudioView({ workspaceId, clusters, bookmarks }: ContentStudioVi
                         {authorAvatar ? (
                           <img src={authorAvatar} alt="" className="w-5 h-5 rounded-full object-cover" />
                         ) : (
-                          <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold ${
-                            post.platform === 'twitter' ? 'bg-sky-500/10 text-sky-600' : 'bg-blue-600/10 text-blue-600'
-                          }`}>
+                          <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold ${post.platform === 'twitter' ? 'bg-sky-500/10 text-sky-600' : 'bg-blue-600/10 text-blue-600'
+                            }`}>
                             {post.platform === 'twitter' ? 'X' : 'LI'}
                           </div>
                         )}
@@ -937,9 +921,8 @@ function ContentStudioView({ workspaceId, clusters, bookmarks }: ContentStudioVi
                               {post.source.sourceBookmarkTitle}
                             </span>
                           )}
-                          <span className={`inline-flex items-center px-1 py-0.5 rounded text-[7px] font-bold ${
-                            post.platform === 'twitter' ? 'bg-sky-500/10 text-sky-600' : 'bg-blue-600/10 text-blue-600'
-                          }`}>
+                          <span className={`inline-flex items-center px-1 py-0.5 rounded text-[7px] font-bold ${post.platform === 'twitter' ? 'bg-sky-500/10 text-sky-600' : 'bg-blue-600/10 text-blue-600'
+                            }`}>
                             {post.platform === 'twitter' ? 'X' : 'LI'}
                           </span>
                           {post.scheduledDate && (
@@ -1062,9 +1045,8 @@ function ContentStudioView({ workspaceId, clusters, bookmarks }: ContentStudioVi
               <div className="flex flex-col max-h-[80vh]">
                 {/* Header */}
                 <div className="flex items-center gap-1.5 px-5 pr-12 py-2.5 border-b border-border flex-wrap">
-                  <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold ${
-                    post.platform === 'twitter' ? 'bg-sky-500/10 text-sky-600' : 'bg-blue-600/10 text-blue-600'
-                  }`}>
+                  <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold ${post.platform === 'twitter' ? 'bg-sky-500/10 text-sky-600' : 'bg-blue-600/10 text-blue-600'
+                    }`}>
                     {post.platform === 'twitter' ? <Twitter className="w-2.5 h-2.5" /> : <Linkedin className="w-2.5 h-2.5" />}
                     {post.platform === 'twitter' ? 'X' : 'LI'}
                   </span>
@@ -1348,7 +1330,7 @@ function Sidebar({
                       }`}
                   >
                     <div className="flex items-center gap-2">
-                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
                       Content Calendar
                     </div>
                   </button>
@@ -1612,22 +1594,24 @@ export default function DashboardPage() {
     }
   };
 
-  const loadClusters = async () => {
+  const loadClusters = useCallback(async (signal?: AbortSignal) => {
     if (!workspaceId) return;
     try {
-      const fetchedClusters = await clusterService.getClusters(workspaceId);
+      const fetchedClusters = await clusterService.getClusters(workspaceId, signal);
       setClusters(fetchedClusters);
-    } catch (error) {
-      console.error('Failed to load clusters:', error);
+    } catch (error: any) {
+      if (error.name !== 'AbortError') {
+        console.error('Failed to load clusters:', error);
+      }
     }
-  };
+  }, [workspaceId]);
 
-  const loadBookmarks = async () => {
+  const loadBookmarks = useCallback(async (signal?: AbortSignal) => {
     if (!workspaceId) return;
 
     setLoading(true);
     try {
-      const options: { type?: string; folder?: string } = {};
+      const options: { type?: string; folder?: string; signal?: AbortSignal } = { signal };
 
       if (activeFilter === 'tweet') {
         options.type = 'tweet';
@@ -1646,31 +1630,69 @@ export default function DashboardPage() {
 
       const response = await bookmarkService.getBookmarks(workspaceId, options);
       setBookmarks(response.bookmarks);
-    } catch (error) {
-      console.error('Failed to load bookmarks:', error);
-      toast.error('Failed to load bookmarks');
+    } catch (error: any) {
+      if (error.name !== 'AbortError') {
+        console.error('Failed to load bookmarks:', error);
+        toast.error('Failed to load bookmarks');
+      }
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) setLoading(false);
     }
-  };
+  }, [workspaceId, activeFilter]);
 
   // Tone authors for Zap Wizard (loaded once at page level)
   const [pageToneAuthors, setPageToneAuthors] = useState<ToneAuthor[]>([]);
   useEffect(() => {
     if (!workspaceId) return;
-    bookmarkService.getAuthors(workspaceId)
-      .then(({ authors }) => setPageToneAuthors(authors))
-      .catch(() => {});
-  }, [workspaceId]);
 
+    // Optimization: Only load authors when needed (Content Studio or Detail Dialog)
+    // and only if not already loaded
+    if (activeFilter !== 'content-studio' && !detailId) return;
+    if (pageToneAuthors.length > 0) return;
+
+    const controller = new AbortController();
+
+    bookmarkService.getAuthors(workspaceId, controller.signal)
+      .then(({ authors }) => setPageToneAuthors(authors))
+      .catch((err) => {
+        if (err.name !== 'AbortError') {
+          // silent fail
+        }
+      });
+
+    return () => controller.abort();
+  }, [workspaceId, activeFilter, detailId]);
+
+  // Load clusters only when workspace changes (not on filter change)
   useEffect(() => {
-    loadBookmarks();
-    loadClusters();
-    // Reset filters when main category changes
+    const controller = new AbortController();
+    const timer = setTimeout(() => {
+      loadClusters(controller.signal);
+    }, 10);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [loadClusters]);
+
+  // Load bookmarks when workspace or filter changes
+  useEffect(() => {
+    const controller = new AbortController();
+
+    // Reset filters immediately when main category changes
     setTypeFilter('all');
     setAuthorFilter('all');
     setSourceFilter('all');
-  }, [workspaceId, activeFilter]);
+
+    const timer = setTimeout(() => {
+      loadBookmarks(controller.signal);
+    }, 10);
+
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [loadBookmarks]);
 
   const handleToggleFavorite = async (id: string) => {
     try {
@@ -2115,7 +2137,7 @@ export default function DashboardPage() {
                 </>
               )}
               <button
-                onClick={loadBookmarks}
+                onClick={() => loadBookmarks()}
                 disabled={loading}
                 className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition"
                 title="Refresh Feed"
@@ -2129,7 +2151,12 @@ export default function DashboardPage() {
             <div className="max-w-6xl mx-auto">
               {activeFilter === 'content-studio' ? (
                 isCreatorTier(user?.subscription) ? (
-                  <ContentStudioView workspaceId={workspaceId!} clusters={clusters} bookmarks={bookmarks} />
+                  <ContentStudioView
+                    workspaceId={workspaceId!}
+                    clusters={clusters}
+                    bookmarks={bookmarks}
+                    toneAuthors={pageToneAuthors}
+                  />
                 ) : (
                   <div className="flex flex-col items-center justify-center py-20 text-center">
                     <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-yellow-400 via-orange-500 to-red-600 flex items-center justify-center mb-4 shadow-lg shadow-orange-500/20">
@@ -2153,7 +2180,7 @@ export default function DashboardPage() {
                 ) : (
                   <div className="flex flex-col items-center justify-center py-20 text-center">
                     <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-yellow-400 via-orange-500 to-red-600 flex items-center justify-center mb-4 shadow-lg shadow-orange-500/20">
-                      <svg className="w-8 h-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                      <svg className="w-8 h-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
                     </div>
                     <h2 className="text-xl font-black text-foreground mb-2">Content Calendar</h2>
                     <p className="text-sm text-muted-foreground mb-6 max-w-md">

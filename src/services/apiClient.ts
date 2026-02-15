@@ -74,8 +74,13 @@ async function request<T>(
     }
 
     return isJson ? await response.json() : ({} as T);
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof APIError) {
+      throw error;
+    }
+
+    // Don't wrap AbortError
+    if (error.name === 'AbortError') {
       throw error;
     }
 
