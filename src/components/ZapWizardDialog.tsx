@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import type { Bookmark, GeneratedPost, ToneAuthor } from '../services/bookmarkService';
 import { contentStudioService } from '../services/bookmarkService';
 import AuthorPickerDropdown from './AuthorPickerDropdown';
-import { Zap, Loader2, Copy, Check, Twitter, Linkedin, ChevronLeft, RefreshCw, ChevronRight, Clock, Pencil } from 'lucide-react';
+import { Zap, Loader2, Copy, Check, Twitter, Linkedin, ChevronLeft, RefreshCw, Clock, ChevronRight, Sparkles, Link2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -13,38 +13,36 @@ interface ZapWizardDialogProps {
     bookmark: Bookmark | null;
     workspaceId?: string;
     toneAuthors?: ToneAuthor[];
+    onUpgradeRequired?: () => void;
 }
 
-type WizardStep = 'select-platform' | 'generating-hooks' | 'pick-hook' | 'generating-post' | 'post-ready';
+type WizardStep = 'select-platform' | 'generating' | 'post-ready';
 
-export default function ZapWizardDialog({ isOpen, onClose, bookmark, workspaceId, toneAuthors = [] }: ZapWizardDialogProps) {
+export default function ZapWizardDialog({ isOpen, onClose, bookmark, workspaceId, toneAuthors = [], onUpgradeRequired }: ZapWizardDialogProps) {
     const [step, setStep] = useState<WizardStep>('select-platform');
     const [platform, setPlatform] = useState<'twitter' | 'linkedin'>('twitter');
-    const [hooks, setHooks] = useState<string[]>([]);
-    const [selectedHookIndex, setSelectedHookIndex] = useState<number | null>(0);
-    const [customHook, setCustomHook] = useState('');
-    const [useCustom, setUseCustom] = useState(false);
     const [generatedPost, setGeneratedPost] = useState<string | null>(null);
     const [generatedPostId, setGeneratedPostId] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
+    const [hasCopiedOnce, setHasCopiedOnce] = useState(false); // persists for share nudge
     const [history, setHistory] = useState<GeneratedPost[]>([]);
     const [showHistory, setShowHistory] = useState(false);
     const [expandedHistoryId, setExpandedHistoryId] = useState<string | null>(null);
     const [copiedHistoryId, setCopiedHistoryId] = useState<string | null>(null);
     const [selectedToneAuthorKey, setSelectedToneAuthorKey] = useState<string | null>(null);
+    const [includeAttribution, setIncludeAttribution] = useState(true);
+    const [copiedLink, setCopiedLink] = useState(false);
 
     // Auto-detect platform and auto-select matching tone author
     useEffect(() => {
         if (!bookmark || !isOpen) return;
 
-        // Auto-detect platform
         if (bookmark.type === 'linkedin') {
             setPlatform('linkedin');
         } else {
             setPlatform('twitter');
         }
 
-        // Auto-select tone author matching the bookmark's author
         if (toneAuthors.length > 0) {
             let authorName = '';
             let authorUsername = '';
@@ -54,24 +52,19 @@ export default function ZapWizardDialog({ isOpen, onClose, bookmark, workspaceId
                 authorUsername = bookmark.tweetData.author.username || bookmark.tweetData.author.handle || '';
             } else if (bookmark.type === 'linkedin' && bookmark.linkedinData?.author) {
                 authorName = bookmark.linkedinData.author.name || '';
-                authorUsername = '';
             } else if (bookmark.type === 'thread' && bookmark.threadData?.tweets?.[0]?.author) {
                 authorName = bookmark.threadData.tweets[0].author.name || '';
                 authorUsername = bookmark.threadData.tweets[0].author.username || '';
             }
 
             if (authorName) {
-                // Try exact key match (name||username)
                 const key = authorName + '||' + authorUsername;
                 const exact = toneAuthors.find(a => a.authorKey === key);
                 if (exact) {
                     setSelectedToneAuthorKey(exact.authorKey);
                 } else {
-                    // Fallback: case-insensitive name match
                     const nameMatch = toneAuthors.find(a => a.name.toLowerCase() === authorName.toLowerCase());
-                    if (nameMatch) {
-                        setSelectedToneAuthorKey(nameMatch.authorKey);
-                    }
+                    if (nameMatch) setSelectedToneAuthorKey(nameMatch.authorKey);
                 }
             }
         }
@@ -87,16 +80,28 @@ export default function ZapWizardDialog({ isOpen, onClose, bookmark, workspaceId
 
     const resetWizard = () => {
         setStep('select-platform');
-        setHooks([]);
-        setSelectedHookIndex(0);
-        setCustomHook('');
-        setUseCustom(false);
         setGeneratedPost(null);
         setGeneratedPostId(null);
         setCopied(false);
+        setCopiedLink(false);
+        setHasCopiedOnce(false);
         setShowHistory(false);
         setExpandedHistoryId(null);
         setSelectedToneAuthorKey(null);
+    };
+
+    const handleShareOnTwitter = () => {
+        const zapUrl = `${window.location.origin}/z/${generatedPostId}`;
+        const text = `Just generated this post in seconds with @PostZaper ⚡\n\n${zapUrl}`;
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
+    };
+
+    const handleCopyZapLink = async () => {
+        const zapUrl = `${window.location.origin}/z/${generatedPostId}`;
+        await navigator.clipboard.writeText(zapUrl);
+        setCopiedLink(true);
+        setTimeout(() => setCopiedLink(false), 2000);
+        toast.success('Link copied!');
     };
 
     const handleClose = () => {
@@ -112,43 +117,16 @@ export default function ZapWizardDialog({ isOpen, onClose, bookmark, workspaceId
         return bookmark.description || bookmark.title || '';
     };
 
-    const handleGenerateHooks = async () => {
+    // Single-click generation — no intermediate hook step
+    const handleZap = async () => {
         if (!bookmark || !workspaceId) return;
-        setStep('generating-hooks');
-        try {
-            const response = await contentStudioService.generate({
-                workspaceId,
-                bookmarkIds: [bookmark.id],
-                platform,
-                contentType: 'hook',
-                toneAuthorKey: selectedToneAuthorKey || undefined,
-            });
-            setHooks(response.hooks || []);
-            setSelectedHookIndex(0);
-            setUseCustom(false);
-            setStep('pick-hook');
-        } catch (error: any) {
-            const message = error?.response?.data?.error || error?.message || 'Failed to generate hooks';
-            toast.error(message);
-            setStep('select-platform');
-        }
-    };
-
-    const handleGeneratePost = async () => {
-        if (!bookmark || !workspaceId) return;
-        const hookText = useCustom ? customHook.trim() : (selectedHookIndex !== null ? hooks[selectedHookIndex] : '');
-        if (!hookText) {
-            toast.error('Please select a hook or write your own');
-            return;
-        }
-        setStep('generating-post');
+        setStep('generating');
         try {
             const response = await contentStudioService.generate({
                 workspaceId,
                 bookmarkIds: [bookmark.id],
                 platform,
                 contentType: 'post',
-                hookText,
                 toneAuthorKey: selectedToneAuthorKey || undefined,
             });
             if (response.posts.length > 0) {
@@ -158,32 +136,46 @@ export default function ZapWizardDialog({ isOpen, onClose, bookmark, workspaceId
             }
             setStep('post-ready');
         } catch (error: any) {
-            const message = error?.response?.data?.error || error?.message || 'Failed to generate post';
+            if (error?.status === 403) {
+                handleClose();
+                onUpgradeRequired?.();
+                return;
+            }
+            const message = error?.data?.error || error?.data?.message || error?.message || 'Failed to generate post';
             toast.error(message);
-            setStep('pick-hook');
+            setStep('select-platform');
         }
     };
 
-    const handleRegenerate = async () => {
+    const handleDifferentAngle = async () => {
         if (!generatedPostId) return;
-        setStep('generating-post');
+        setStep('generating');
         try {
             const response = await contentStudioService.regeneratePost(generatedPostId);
             setGeneratedPost(response.post.content);
             setHistory(prev => prev.map(p => p.id === generatedPostId ? response.post : p));
             setStep('post-ready');
-        } catch {
-            toast.error('Regeneration failed');
+        } catch (error: any) {
+            if (error?.status === 403) {
+                handleClose();
+                onUpgradeRequired?.();
+                return;
+            }
+            toast.error('Failed to regenerate');
             setStep('post-ready');
         }
     };
 
     const handleCopy = async (text: string, setFn?: (v: boolean) => void) => {
         try {
-            await navigator.clipboard.writeText(text);
-            if (setFn) setFn(true);
+            const textToCopy = includeAttribution ? `${text}\n\n— Made with PostZaper` : text;
+            await navigator.clipboard.writeText(textToCopy);
+            if (setFn) {
+                setFn(true);
+                setHasCopiedOnce(true); // persists so share nudge stays visible
+                setTimeout(() => setFn(false), 2000);
+            }
             toast.success('Copied to clipboard');
-            if (setFn) setTimeout(() => setFn(false), 2000);
         } catch {
             toast.error('Failed to copy');
         }
@@ -198,14 +190,12 @@ export default function ZapWizardDialog({ isOpen, onClose, bookmark, workspaceId
         const diffHrs = Math.floor(diffMins / 60);
         if (diffHrs < 24) return `${diffHrs}h ago`;
         const diffDays = Math.floor(diffHrs / 24);
-        if (diffDays < 7) return `${diffDays}d ago`;
-        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        return diffDays < 7 ? `${diffDays}d ago` : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     };
 
     if (!bookmark) return null;
 
     const preview = getBookmarkPreview();
-    const isStep1 = ['select-platform', 'generating-hooks', 'pick-hook'].includes(step);
     const charCount = generatedPost?.length || 0;
     const isOverLimit = platform === 'twitter' && charCount > 280;
 
@@ -219,16 +209,24 @@ export default function ZapWizardDialog({ isOpen, onClose, bookmark, workspaceId
                             <Zap className="w-4 h-4 text-primary fill-primary/20" />
                         </div>
                         <div>
-                            <h3 className="text-sm font-bold text-foreground leading-tight">Create Post</h3>
+                            <h3 className="text-sm font-bold text-foreground leading-tight">Zap to Post</h3>
                             <span className="text-[10px] text-muted-foreground font-medium">
-                                {isStep1 ? 'Step 1: Choose a hook' : 'Step 2: Generated post'}
+                                {step === 'select-platform' && 'Choose platform & generate'}
+                                {step === 'generating' && 'Crafting your post...'}
+                                {step === 'post-ready' && 'Your post is ready'}
                             </span>
                         </div>
+                        {step === 'post-ready' && (
+                            <div className="ml-auto flex items-center gap-1 px-2 py-1 rounded-full bg-green-500/10 border border-green-500/20">
+                                <Check className="w-3 h-3 text-green-600" />
+                                <span className="text-[10px] font-bold text-green-600">Ready</span>
+                            </div>
+                        )}
                     </div>
 
                     {/* Scrollable Content */}
                     <div className="flex-1 overflow-y-auto">
-                        {/* Bookmark Preview */}
+                        {/* Bookmark Preview — always shown */}
                         <div className="px-4 pt-3 pb-2">
                             <div className="flex items-start gap-2 p-2.5 rounded-lg bg-muted/50 border border-border">
                                 <div className="w-5 h-5 rounded bg-muted flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -237,15 +235,19 @@ export default function ZapWizardDialog({ isOpen, onClose, bookmark, workspaceId
                                         : <Twitter className="w-3 h-3 text-sky-500" />
                                     }
                                 </div>
-                                <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-2">{preview.substring(0, 150)}{preview.length > 150 ? '...' : ''}</p>
+                                <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-2">
+                                    {preview.substring(0, 150)}{preview.length > 150 ? '...' : ''}
+                                </p>
                             </div>
                         </div>
 
-                        {/* Platform Selector */}
+                        {/* Step: Select Platform */}
                         {step === 'select-platform' && (
                             <div className="px-4 pb-3 space-y-3">
                                 <div>
-                                    <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Platform</label>
+                                    <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">
+                                        Post to
+                                    </label>
                                     <div className="flex bg-muted rounded-lg p-0.5 border border-border w-fit">
                                         <button
                                             onClick={() => setPlatform('twitter')}
@@ -263,7 +265,9 @@ export default function ZapWizardDialog({ isOpen, onClose, bookmark, workspaceId
                                 </div>
                                 {toneAuthors.length > 0 && (
                                     <div>
-                                        <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Voice / Tone (optional)</label>
+                                        <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">
+                                            Voice / Tone <span className="font-normal normal-case">(optional)</span>
+                                        </label>
                                         <AuthorPickerDropdown
                                             authors={toneAuthors}
                                             selectedAuthorKey={selectedToneAuthorKey}
@@ -274,91 +278,36 @@ export default function ZapWizardDialog({ isOpen, onClose, bookmark, workspaceId
                             </div>
                         )}
 
-                        {/* Step 1: Generating Hooks Loading */}
-                        {step === 'generating-hooks' && (
+                        {/* Step: Generating */}
+                        {step === 'generating' && (
                             <div className="flex flex-col items-center justify-center py-12 px-4">
-                                <Loader2 className="w-6 h-6 animate-spin text-primary mb-3" />
-                                <p className="text-sm font-medium text-foreground">Generating hooks...</p>
-                                <p className="text-xs text-muted-foreground mt-1">Creating 3 unique angles from this content</p>
-                            </div>
-                        )}
-
-                        {/* Step 1: Pick Hook */}
-                        {step === 'pick-hook' && (
-                            <div className="px-4 pb-3">
-                                <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Pick a hook to start with</p>
-                                <div className="space-y-2 mb-3">
-                                    {hooks.map((hook, i) => (
-                                        <button
-                                            key={i}
-                                            onClick={() => { setSelectedHookIndex(i); setUseCustom(false); }}
-                                            className={cn(
-                                                'w-full text-left p-3 rounded-lg border transition-all',
-                                                !useCustom && selectedHookIndex === i
-                                                    ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
-                                                    : 'border-border hover:border-primary/40 hover:bg-muted/50'
-                                            )}
-                                        >
-                                            <div className="flex items-start gap-2.5">
-                                                <div className={cn(
-                                                    'w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors',
-                                                    !useCustom && selectedHookIndex === i ? 'border-primary bg-primary' : 'border-muted-foreground/30'
-                                                )}>
-                                                    {!useCustom && selectedHookIndex === i && <Check className="w-3 h-3 text-white" />}
-                                                </div>
-                                                <p className="text-sm text-foreground leading-relaxed">{hook}</p>
-                                            </div>
-                                        </button>
-                                    ))}
+                                <div className="relative mb-4">
+                                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                                        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                                    </div>
+                                    <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary flex items-center justify-center animate-bounce">
+                                        <Sparkles className="w-2.5 h-2.5 text-white" />
+                                    </div>
                                 </div>
-
-                                {/* Custom Hook */}
-                                <div className="border-t border-border pt-3">
-                                    <button
-                                        onClick={() => { setUseCustom(true); setSelectedHookIndex(null); }}
-                                        className={cn(
-                                            'flex items-center gap-2 mb-2 text-xs font-semibold transition-colors',
-                                            useCustom ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
-                                        )}
-                                    >
-                                        <Pencil className="w-3.5 h-3.5" />
-                                        Or write your own hook
-                                    </button>
-                                    {useCustom && (
-                                        <textarea
-                                            value={customHook}
-                                            onChange={e => setCustomHook(e.target.value)}
-                                            placeholder="Type your hook or opening line..."
-                                            className="w-full bg-muted border border-border rounded-lg p-2.5 text-sm text-foreground resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition placeholder:text-muted-foreground/50"
-                                            rows={2}
-                                            autoFocus
-                                        />
-                                    )}
-                                </div>
+                                <p className="text-sm font-bold text-foreground">Crafting your post...</p>
+                                <p className="text-xs text-muted-foreground mt-1 text-center max-w-[200px]">
+                                    AI is reading the content and writing something great
+                                </p>
                             </div>
                         )}
 
-                        {/* Step 2: Generating Post Loading */}
-                        {step === 'generating-post' && (
-                            <div className="flex flex-col items-center justify-center py-12 px-4">
-                                <Loader2 className="w-6 h-6 animate-spin text-primary mb-3" />
-                                <p className="text-sm font-medium text-foreground">Creating your post...</p>
-                                <p className="text-xs text-muted-foreground mt-1">Building on your selected hook</p>
-                            </div>
-                        )}
-
-                        {/* Step 2: Post Ready */}
+                        {/* Step: Post Ready */}
                         {step === 'post-ready' && generatedPost && (
                             <div className="px-4 pb-3">
                                 <div className="bg-muted/30 rounded-lg border border-border p-4 mb-3">
                                     <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">{generatedPost}</p>
                                     <div className="flex items-center gap-2 mt-3">
                                         <span className={cn('text-[11px] font-medium', isOverLimit ? 'text-red-500' : 'text-muted-foreground')}>
-                                            {charCount} chars{isOverLimit ? ' (over 280)' : ''}
+                                            {charCount} chars{isOverLimit ? ' (over 280 limit)' : ''}
                                         </span>
-                                        <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
+                                        <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground ml-auto">
                                             {platform === 'twitter' ? <Twitter className="w-3 h-3" /> : <Linkedin className="w-3 h-3" />}
-                                            {platform === 'twitter' ? 'Twitter' : 'LinkedIn'}
+                                            {platform === 'twitter' ? 'Twitter / X' : 'LinkedIn'}
                                         </span>
                                     </div>
                                 </div>
@@ -373,7 +322,7 @@ export default function ZapWizardDialog({ isOpen, onClose, bookmark, workspaceId
                                     className="flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground hover:text-foreground transition-colors mb-2"
                                 >
                                     <Clock className="w-3.5 h-3.5" />
-                                    Previous ({history.length})
+                                    Previous versions ({history.length})
                                     <ChevronRight className={cn('w-3 h-3 transition-transform', showHistory && 'rotate-90')} />
                                 </button>
                                 {showHistory && (
@@ -415,33 +364,13 @@ export default function ZapWizardDialog({ isOpen, onClose, bookmark, workspaceId
                     <div className="px-4 py-3 border-t border-border bg-muted/20 flex items-center gap-2">
                         {step === 'select-platform' && (
                             <button
-                                onClick={handleGenerateHooks}
+                                onClick={handleZap}
                                 disabled={!workspaceId}
-                                className="flex-1 flex items-center justify-center gap-2 bg-primary text-white py-2.5 rounded-lg text-sm font-bold hover:bg-primary/90 transition disabled:opacity-50"
+                                className="flex-1 flex items-center justify-center gap-2 bg-primary text-white py-2.5 rounded-lg text-sm font-bold hover:bg-primary/90 transition disabled:opacity-50 shadow-sm shadow-primary/30"
                             >
-                                <Zap className="w-4 h-4" />
-                                Generate Hooks
+                                <Zap className="w-4 h-4 fill-white/20" />
+                                Zap to {platform === 'twitter' ? 'Twitter' : 'LinkedIn'}
                             </button>
-                        )}
-
-                        {step === 'pick-hook' && (
-                            <>
-                                <button
-                                    onClick={() => setStep('select-platform')}
-                                    className="flex items-center gap-1 px-3 py-2.5 text-xs font-semibold text-muted-foreground hover:text-foreground rounded-lg transition"
-                                >
-                                    <ChevronLeft className="w-3.5 h-3.5" />
-                                    Back
-                                </button>
-                                <button
-                                    onClick={handleGeneratePost}
-                                    disabled={!useCustom && selectedHookIndex === null || (useCustom && !customHook.trim())}
-                                    className="flex-1 flex items-center justify-center gap-2 bg-primary text-white py-2.5 rounded-lg text-sm font-bold hover:bg-primary/90 transition disabled:opacity-50"
-                                >
-                                    <Zap className="w-4 h-4" />
-                                    Generate Post
-                                </button>
-                            </>
                         )}
 
                         {step === 'post-ready' && (
@@ -449,24 +378,56 @@ export default function ZapWizardDialog({ isOpen, onClose, bookmark, workspaceId
                                 <button
                                     onClick={resetWizard}
                                     className="flex items-center gap-1 px-3 py-2.5 text-xs font-semibold text-muted-foreground hover:text-foreground rounded-lg transition"
+                                    title="Start over"
                                 >
                                     <ChevronLeft className="w-3.5 h-3.5" />
-                                    Start Over
+                                    New
                                 </button>
                                 <button
-                                    onClick={handleRegenerate}
+                                    onClick={handleDifferentAngle}
                                     className="flex items-center gap-1.5 px-3 py-2.5 text-xs font-semibold text-muted-foreground hover:text-foreground bg-muted rounded-lg transition"
+                                    title="Try a different angle"
                                 >
                                     <RefreshCw className="w-3.5 h-3.5" />
-                                    Regenerate
+                                    Different angle
                                 </button>
-                                <button
-                                    onClick={() => handleCopy(generatedPost!, setCopied)}
-                                    className="flex-1 flex items-center justify-center gap-2 bg-primary text-white py-2.5 rounded-lg text-sm font-bold hover:bg-primary/90 transition"
-                                >
-                                    {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                                    {copied ? 'Copied!' : 'Copy Post'}
-                                </button>
+                                <div className="flex-1 flex flex-col gap-1.5">
+                                    <button
+                                        onClick={() => handleCopy(generatedPost!, setCopied)}
+                                        className="w-full flex items-center justify-center gap-2 bg-primary text-white py-2.5 rounded-lg text-sm font-bold hover:bg-primary/90 transition"
+                                    >
+                                        {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                                        {copied ? 'Copied!' : 'Copy Post'}
+                                    </button>
+                                    <label className="flex items-center justify-center gap-1.5 cursor-pointer group">
+                                        <input
+                                            type="checkbox"
+                                            checked={includeAttribution}
+                                            onChange={e => setIncludeAttribution(e.target.checked)}
+                                            className="w-3 h-3 rounded accent-primary"
+                                        />
+                                        <span className="text-[10px] text-muted-foreground group-hover:text-foreground transition">Add PostZaper credit</span>
+                                    </label>
+                                    {/* Share nudge — appears after first copy and stays visible */}
+                                    {hasCopiedOnce && generatedPostId && (
+                                        <div className="flex items-center gap-1.5 pt-1 animate-in fade-in slide-in-from-top-1 duration-200">
+                                            <span className="text-[10px] text-muted-foreground">Share?</span>
+                                            <button
+                                                onClick={handleShareOnTwitter}
+                                                className="flex items-center gap-1 px-2 py-1 bg-gray-900 text-white rounded text-[10px] font-bold hover:bg-gray-800 transition"
+                                            >
+                                                <Twitter className="w-2.5 h-2.5" /> Tweet it
+                                            </button>
+                                            <button
+                                                onClick={handleCopyZapLink}
+                                                className="flex items-center gap-1 px-2 py-1 bg-muted border border-border text-foreground rounded text-[10px] font-semibold hover:bg-muted/80 transition"
+                                            >
+                                                {copiedLink ? <Check className="w-2.5 h-2.5" /> : <Link2 className="w-2.5 h-2.5" />}
+                                                {copiedLink ? 'Copied!' : 'Copy link'}
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
                             </>
                         )}
                     </div>

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Star, Trash2, ExternalLink, MessageCircle, Repeat2, Heart, MoreHorizontal, Play, List, FolderPlus, ChevronRight, X } from 'lucide-react';
+import { useState, memo } from 'react';
+import { Star, Trash2, ExternalLink, MessageCircle, Repeat2, Heart, MoreHorizontal, Play, List, FolderPlus, ChevronRight, X, Zap } from 'lucide-react';
 import type { Bookmark } from '../services/bookmarkService';
 import { formatDistanceToNow } from 'date-fns';
 import { useSearchParams } from 'react-router-dom';
@@ -20,9 +20,10 @@ interface BookmarkCardProps {
   onDelete: (id: string) => void;
   onAssignCluster?: (bookmarkId: string, clusterName: string) => void;
   onRemoveCluster?: (bookmarkId: string, clusterName: string) => void;
+  onZap?: (bookmark: Bookmark) => void;
 }
 
-export default function BookmarkCard({ bookmark, clusters = [], onToggleFavorite, onDelete, onAssignCluster, onRemoveCluster }: BookmarkCardProps) {
+function BookmarkCard({ bookmark, clusters = [], onToggleFavorite, onDelete, onAssignCluster, onRemoveCluster, onZap }: BookmarkCardProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const [showMore, setShowMore] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
@@ -218,7 +219,17 @@ export default function BookmarkCard({ bookmark, clusters = [], onToggleFavorite
           <p className="text-[11px] text-muted-foreground truncate font-medium">{author.handle}</p>
         </div>
 
-        <div className="relative">
+        <div className="flex items-center gap-1">
+          {onZap && !isProfileType() && ['tweet', 'linkedin', 'thread'].includes(bookmark.type) && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onZap(bookmark); }}
+              className="p-1.5 text-primary hover:bg-primary/10 rounded-lg transition duration-200"
+              title="Generate post from this"
+            >
+              <Zap className="w-4 h-4 fill-primary/20" />
+            </button>
+          )}
+          <div className="relative">
           <button
             onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }}
             className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg opacity-0 group-hover:opacity-100 transition duration-200"
@@ -309,6 +320,7 @@ export default function BookmarkCard({ bookmark, clusters = [], onToggleFavorite
             </>
           )}
         </div>
+        </div>
       </div>
 
       <div className="mb-4">
@@ -338,6 +350,8 @@ export default function BookmarkCard({ bookmark, clusters = [], onToggleFavorite
                 alt={validMedia[0].alt || ''}
                 className="w-full h-48 object-cover hover:scale-105 transition-transform duration-500"
                 onError={() => handleImageError(validMedia[0].url || validMedia[0].poster || '')}
+                loading="lazy"
+                decoding="async"
               />
               {(validMedia[0].type === 'video' || validMedia[0].type === 'gif') && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover/media:bg-black/40 transition-colors">
@@ -356,6 +370,8 @@ export default function BookmarkCard({ bookmark, clusters = [], onToggleFavorite
                     alt={item.alt || ''}
                     className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                     onError={() => handleImageError(item.url || item.poster || '')}
+                    loading="lazy"
+                    decoding="async"
                   />
                   {idx === 3 && validMedia.length > 4 && (
                     <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm">
@@ -458,3 +474,5 @@ export default function BookmarkCard({ bookmark, clusters = [], onToggleFavorite
     </div>
   );
 }
+
+export default memo(BookmarkCard);

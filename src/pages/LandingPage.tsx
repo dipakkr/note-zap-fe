@@ -1,4 +1,5 @@
 import Hero from "@/components/landing/Hero";
+import LiveDemo from "@/components/landing/LiveDemo";
 import TrustedBy from "@/components/landing/TrustedBy";
 import Problem from "@/components/landing/Problem";
 import HowItWorks from "@/components/landing/HowItWorks";
@@ -22,6 +23,7 @@ const LandingPage = () => {
         keywords="bookmark manager, twitter bookmarks, linkedin bookmarks, save tweets, social media organizer, content curation, chrome extension, ai content generation, content studio"
       />
       <Hero />
+      <LiveDemo />
       <TrustedBy />
       <Problem />
       <HowItWorks />

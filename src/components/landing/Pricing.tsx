@@ -19,11 +19,11 @@ const Pricing = () => {
     },
     {
       name: "Pro",
-      badge: "",
+      badge: "Best Value",
+      badgeColor: "bg-primary/10 text-primary",
       description: "Everything you need to save smarter",
       price: "$29",
-      priceLabel: "per year",
-      monthlyPrice: "$2.42",
+      priceLabel: "one-time",
       highlighted: true,
       features: [
         "Everything in Free, plus:",
@@ -33,6 +33,7 @@ const Pricing = () => {
         "Advanced search (filters, date ranges)",
         "Rich link previews",
         "Priority support (24hr response)",
+        "2-year access included",
       ],
       buttonText: "Upgrade Now",
     },

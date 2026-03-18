@@ -8,11 +8,12 @@ interface UpgradeDialogProps {
 }
 
 const FEATURES = [
-    'Unlimited bookmarks & collections',
-    'AI-powered search & smart filters',
-    'Auto-sync Twitter/X & LinkedIn',
-    'Export to Notion, CSV & JSON',
-    'Priority support channel'
+    { text: 'Unlimited bookmarks & collections' },
+    { text: 'AI-powered search & smart filters' },
+    { text: 'Auto-sync Twitter/X & LinkedIn' },
+    { text: 'Export to Notion, CSV & JSON' },
+    { text: 'Priority support channel' },
+    { text: '2-year access included', className: 'text-xs text-muted-foreground' }
 ];
 
 export default function UpgradeDialog({ isOpen, onClose }: UpgradeDialogProps) {
@@ -41,21 +42,15 @@ export default function UpgradeDialog({ isOpen, onClose }: UpgradeDialogProps) {
 
                         <div className="flex items-center justify-center gap-2 mb-3 bg-muted/50 p-1.5 pr-4 rounded-xl border border-border/50">
                             <span className="bg-background shadow-sm border border-border px-3 py-1.5 rounded-lg text-sm font-bold text-foreground">
-                                Yearly
+                                One-time
                             </span>
                             <div className="flex items-baseline gap-1">
                                 <span className="text-xl font-black text-foreground">$29</span>
-                                <span className="text-xs font-semibold text-muted-foreground mr-1">/ year</span>
                             </div>
                             <span className="text-[10px] font-bold text-green-600 bg-green-500/10 px-2 py-0.5 rounded-full">
                                 SAVE 40%
                             </span>
                         </div>
-
-                        {/* Urgency Text */}
-                        <p className="text-xs font-bold text-orange-500 mb-6 animate-pulse">
-                            🔥 Only 45 left at this price
-                        </p>
 
                         {/* Divider */}
                         <div className="w-full h-px bg-gradient-to-r from-transparent via-border to-transparent mb-8" />
@@ -67,7 +62,9 @@ export default function UpgradeDialog({ isOpen, onClose }: UpgradeDialogProps) {
                                     <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
                                         <Check className="w-3 h-3 text-primary" strokeWidth={3} />
                                     </div>
-                                    <span className="text-sm font-medium text-foreground/90">{feature}</span>
+                                    <span className={`text-sm font-medium text-foreground/90 ${feature.className || ''}`}>
+                                        {feature.text}
+                                    </span>
                                 </div>
                             ))}
                         </div>

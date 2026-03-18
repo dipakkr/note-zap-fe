@@ -30,29 +30,33 @@ import {
   Twitter,
   Users,
   Wand2,
+  Zap,
   LayoutGrid,
   Rows
 } from 'lucide-react';
-import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback, Suspense, lazy } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useClickOutside } from '../hooks/use-click-outside';
-import AddBookmarkDialog from '../components/AddBookmarkDialog';
 import BookmarkCard from '../components/BookmarkCard';
-import PostDetailDialog from '../components/PostDetailDialog';
-import ProfileDetailDialog from '../components/ProfileDetailDialog';
-import ProfilesTable from '../components/ProfilesTable';
-import SettingsDialog from '../components/SettingsDialog';
 import SEO from '../components/SEO';
 import { ConfirmDialog } from '../components/ui/confirm-dialog';
 import { Dialog, DialogContent } from '../components/ui/dialog';
 import { BookmarkGridSkeleton, ProfileTableSkeleton } from '../components/ui/skeleton';
-import UpgradeDialog from '../components/UpgradeDialog';
-import CreatorUpgradeDialog from '../components/CreatorUpgradeDialog';
-import { AnalyticsOverview } from '../components/analytics/AnalyticsOverview';
 import { useAuth } from '../contexts/AuthContext';
 import BookmarkPickerDialog from '../components/BookmarkPickerDialog';
 import AuthorPickerDropdown from '../components/AuthorPickerDropdown';
+
+// Lazy load heavy components and dialogs
+const AddBookmarkDialog = lazy(() => import('../components/AddBookmarkDialog'));
+const PostDetailDialog = lazy(() => import('../components/PostDetailDialog'));
+const ProfileDetailDialog = lazy(() => import('../components/ProfileDetailDialog'));
+const ProfilesTable = lazy(() => import('../components/ProfilesTable'));
+const SettingsDialog = lazy(() => import('../components/SettingsDialog'));
+const UpgradeDialog = lazy(() => import('../components/UpgradeDialog'));
+const CreatorUpgradeDialog = lazy(() => import('../components/CreatorUpgradeDialog'));
+const AnalyticsOverview = lazy(() => import('../components/analytics/AnalyticsOverview').then(module => ({ default: module.AnalyticsOverview })));
+const ZapWizardDialog = lazy(() => import('../components/ZapWizardDialog'));
 import { bookmarkService, clusterService, contentStudioService, type Bookmark, type Cluster, type GeneratedPost, type ToneAuthor } from '../services/bookmarkService';
 import { hasProAccess, isCreatorTier, getTierDisplayName } from '../lib/utils';
 
@@ -469,6 +473,7 @@ function ContentStudioView({ workspaceId, clusters, bookmarks, toneAuthors }: Co
   const [schedulingPostId, setSchedulingPostId] = useState<string | null>(null);
   const [scheduleDate, setScheduleDate] = useState('');
   const [isScheduling, setIsScheduling] = useState(false);
+  const [dailyUsage, setDailyUsage] = useState<{ used: number; limit: number; remaining: number } | null>(null);
 
   // Load existing generated posts
   useEffect(() => {
@@ -516,6 +521,9 @@ function ContentStudioView({ workspaceId, clusters, bookmarks, toneAuthors }: Co
       if (response.posts.length > 0) {
         setLatestPostId(response.posts[0].id);
       }
+      if (response.usage) {
+        setDailyUsage({ used: response.usage.dailyUsed, limit: response.usage.dailyLimit, remaining: response.usage.remainingGenerations });
+      }
       toast.success('Post generated!');
     } catch (error: any) {
       const message = error?.response?.data?.message || error?.message || 'Generation failed';
@@ -525,9 +533,12 @@ function ContentStudioView({ workspaceId, clusters, bookmarks, toneAuthors }: Co
     }
   };
 
-  const handleCopy = async (content: string) => {
+  const [studioIncludeAttribution, setStudioIncludeAttribution] = useState(true);
+
+  const handleCopy = async (content: string, withAttribution = true) => {
     try {
-      await navigator.clipboard.writeText(content);
+      const textToCopy = (withAttribution && studioIncludeAttribution) ? `${content}\n\n— Made with PostZaper` : content;
+      await navigator.clipboard.writeText(textToCopy);
       toast.success('Copied to clipboard');
     } catch {
       toast.error('Failed to copy');
@@ -748,6 +759,30 @@ function ContentStudioView({ workspaceId, clusters, bookmarks, toneAuthors }: Co
                 </>
               )}
             </button>
+
+            {dailyUsage && (
+              <div className="flex items-center justify-between mt-2">
+                <div className="flex-1 bg-muted rounded-full h-1.5 overflow-hidden">
+                  <div
+                    className="h-full bg-primary rounded-full transition-all"
+                    style={{ width: `${Math.min(100, (dailyUsage.used / dailyUsage.limit) * 100)}%` }}
+                  />
+                </div>
+                <span className="text-[10px] text-muted-foreground ml-2 whitespace-nowrap">
+                  {dailyUsage.remaining} / {dailyUsage.limit} remaining today
+                </span>
+              </div>
+            )}
+
+            <label className="flex items-center gap-2 mt-2 cursor-pointer group w-fit">
+              <input
+                type="checkbox"
+                checked={studioIncludeAttribution}
+                onChange={e => setStudioIncludeAttribution(e.target.checked)}
+                className="w-3 h-3 rounded accent-primary"
+              />
+              <span className="text-[10px] text-muted-foreground group-hover:text-foreground transition">Add PostZaper credit when copying</span>
+            </label>
           </div>
 
           {/* Latest Generated Post */}
@@ -1506,6 +1541,11 @@ export default function DashboardPage() {
   };
 
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedQuery(searchQuery), 300);
+    return () => clearTimeout(t);
+  }, [searchQuery]);
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewLayout, setViewLayout] = useState<'masonry' | 'feed'>('masonry');
@@ -1530,6 +1570,7 @@ export default function DashboardPage() {
   const numCols = useMasonryColumns();
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [zapBookmark, setZapBookmark] = useState<Bookmark | null>(null);
   const [clusters, setClusters] = useState<Cluster[]>([]);
   const [isClusterAddOpen, setIsClusterAddOpen] = useState(false);
   const [newClusterName, setNewClusterName] = useState('');
@@ -1694,7 +1735,7 @@ export default function DashboardPage() {
     };
   }, [loadBookmarks]);
 
-  const handleToggleFavorite = async (id: string) => {
+  const handleToggleFavorite = useCallback(async (id: string) => {
     try {
       await bookmarkService.toggleFavorite(id);
       setBookmarks(prev =>
@@ -1705,12 +1746,12 @@ export default function DashboardPage() {
       toast.error('Failed to update bookmark');
       loadBookmarks();
     }
-  };
+  }, [loadBookmarks]);
 
-  const handleDeleteClick = (id: string) => {
+  const handleDeleteClick = useCallback((id: string) => {
     setDeletingBookmarkId(id);
     setDeleteDialogOpen(true);
-  };
+  }, []);
 
   const handleDeleteConfirm = async () => {
     if (!deletingBookmarkId) return;
@@ -1719,7 +1760,7 @@ export default function DashboardPage() {
     try {
       await bookmarkService.deleteBookmark(deletingBookmarkId);
       setBookmarks(prev => prev.filter(b => b.id !== deletingBookmarkId));
-      toast.success('Bookmark deleted');
+      toast.success('Bookmark deleted', { duration: 1500 });
       setDeleteDialogOpen(false);
     } catch (error) {
       toast.error('Failed to delete bookmark');
@@ -1740,9 +1781,9 @@ export default function DashboardPage() {
 
   const displayBookmarks = useMemo(() => {
     let result = bookmarks.filter(bookmark => {
-      if (!searchQuery) return true;
+      if (!debouncedQuery) return true;
 
-      const query = searchQuery.toLowerCase();
+      const query = debouncedQuery.toLowerCase();
       return (
         bookmark.title.toLowerCase().includes(query) ||
         bookmark.description?.toLowerCase().includes(query) ||
@@ -1841,7 +1882,7 @@ export default function DashboardPage() {
     });
 
     return result;
-  }, [bookmarks, searchQuery, activeFilter, sourceFilter, typeFilter, authorFilter, tagFilter, sortBy, clusters]);
+  }, [bookmarks, debouncedQuery, activeFilter, sourceFilter, typeFilter, authorFilter, tagFilter, sortBy, clusters]);
 
 
   // Get available tags for the current view
@@ -2010,7 +2051,7 @@ export default function DashboardPage() {
     }
   };
 
-  const handleAssignSingleBookmarkToCluster = async (bookmarkId: string, clusterName: string) => {
+  const handleAssignSingleBookmarkToCluster = useCallback(async (bookmarkId: string, clusterName: string) => {
     try {
       const bookmark = bookmarks.find(b => b.id === bookmarkId);
       if (bookmark) {
@@ -2024,9 +2065,9 @@ export default function DashboardPage() {
     } catch (error) {
       toast.error('Failed to add to cluster');
     }
-  };
+  }, [bookmarks]);
 
-  const handleRemoveClusterFromBookmark = async (bookmarkId: string, clusterName: string) => {
+  const handleRemoveClusterFromBookmark = useCallback(async (bookmarkId: string, clusterName: string) => {
     try {
       const bookmark = bookmarks.find(b => b.id === bookmarkId);
       if (bookmark) {
@@ -2040,7 +2081,7 @@ export default function DashboardPage() {
     } catch (error) {
       toast.error('Failed to remove from cluster');
     }
-  };
+  }, [bookmarks]);
 
   const selectedBookmark = detailId ? bookmarks.find(b => b.id === detailId) : null;
   const isSelectedProfile = !!(selectedBookmark && (
@@ -2195,7 +2236,9 @@ export default function DashboardPage() {
                   </div>
                 )
               ) : activeFilter === 'insights' ? (
-                <AnalyticsOverview bookmarks={bookmarks} />
+                <Suspense fallback={<div className="flex justify-center p-12"><Loader2 className="animate-spin text-primary w-8 h-8" /></div>}>
+                  <AnalyticsOverview bookmarks={bookmarks} />
+                </Suspense>
               ) : (
                 <>
                   <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6 sm:mb-8">
@@ -2450,41 +2493,93 @@ export default function DashboardPage() {
                       <BookmarkGridSkeleton count={12} layout={viewLayout === 'feed' ? 'feed' : 'masonry'} />
                     )
                   ) : displayBookmarks.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-32 text-center bg-muted/30 rounded-3xl border border-dashed border-border">
-                      <div className="w-16 h-16 bg-card rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-border">
-                        <Star className="w-8 h-8 text-muted" />
-                      </div>
-                      <h3 className="text-xl font-bold text-foreground mb-2">
-                        {searchQuery ? 'No results found' : 'Start Bookmarking Posts'}
-                      </h3>
-                      <p className="text-muted-foreground max-w-sm mb-6 leading-relaxed">
-                        {searchQuery
-                          ? 'We couldn\'t find anything matching your search. Try a different term.'
-                          : 'Install our Chrome extension to save posts from LinkedIn & Twitter with one click.'}
-                      </p>
-                      {!searchQuery && (
-                        <a
-                          href="https://chromewebstore.google.com/detail/ecfbdcdbijkebgkjjdolbnapnkdpfoid"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2.5 px-5 py-3 bg-gray-900 text-white text-sm font-bold rounded-full hover:bg-gray-800 transition-all hover:scale-105 active:scale-95 shadow-lg"
-                        >
-                          <img src="/chrome.svg" alt="Chrome" className="w-5 h-5" />
-                          Install Chrome Extension
-                        </a>
+                    <div className="flex flex-col items-center justify-center py-20 text-center">
+                      {searchQuery ? (
+                        <>
+                          <div className="w-16 h-16 bg-card rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-border">
+                            <Search className="w-8 h-8 text-muted" />
+                          </div>
+                          <h3 className="text-xl font-bold text-foreground mb-2">No results found</h3>
+                          <p className="text-muted-foreground max-w-sm">We couldn't find anything matching your search. Try a different term.</p>
+                        </>
+                      ) : (
+                        <div className="max-w-lg w-full">
+                          {/* Main CTA */}
+                          <div className="mb-8">
+                            <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-5 mx-auto ring-1 ring-primary/20">
+                              <Zap className="w-8 h-8 text-primary fill-primary/20" />
+                            </div>
+                            <h3 className="text-2xl font-black text-foreground mb-2">Save a post, generate content</h3>
+                            <p className="text-muted-foreground leading-relaxed">
+                              Install the Chrome extension to save tweets and LinkedIn posts with one click — then Zap them into ready-to-publish content.
+                            </p>
+                          </div>
+
+                          {/* Two paths */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                            {/* Path 1: Extension */}
+                            <a
+                              href="https://chromewebstore.google.com/detail/ecfbdcdbijkebgkjjdolbnapnkdpfoid"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex flex-col items-center gap-3 p-5 bg-gray-900 text-white rounded-2xl hover:bg-gray-800 transition-all hover:scale-[1.02] active:scale-[0.99] shadow-lg group"
+                            >
+                              <img src="/chrome.svg" alt="Chrome" className="w-8 h-8" />
+                              <div className="text-center">
+                                <p className="text-sm font-bold">Install Chrome Extension</p>
+                                <p className="text-[11px] text-white/60 mt-0.5">One-click saving on any site</p>
+                              </div>
+                            </a>
+
+                            {/* Path 2: Manual add */}
+                            <button
+                              onClick={() => setIsAddDialogOpen(true)}
+                              className="flex flex-col items-center gap-3 p-5 bg-card border-2 border-dashed border-border rounded-2xl hover:border-primary/40 hover:bg-primary/5 transition-all hover:scale-[1.02] active:scale-[0.99] group"
+                            >
+                              <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center group-hover:bg-primary/10 transition-colors">
+                                <Plus className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                              </div>
+                              <div className="text-center">
+                                <p className="text-sm font-bold text-foreground">Add Manually</p>
+                                <p className="text-[11px] text-muted-foreground mt-0.5">Paste any URL to save it</p>
+                              </div>
+                            </button>
+                          </div>
+
+                          {/* How it works */}
+                          <div className="flex items-center justify-center gap-6 text-[11px] text-muted-foreground">
+                            <span className="flex items-center gap-1.5">
+                              <span className="w-5 h-5 rounded-full bg-primary/10 text-primary font-black flex items-center justify-center text-[10px]">1</span>
+                              Save a post
+                            </span>
+                            <span className="text-border">→</span>
+                            <span className="flex items-center gap-1.5">
+                              <span className="w-5 h-5 rounded-full bg-primary/10 text-primary font-black flex items-center justify-center text-[10px]">2</span>
+                              Click ⚡ Zap
+                            </span>
+                            <span className="text-border">→</span>
+                            <span className="flex items-center gap-1.5">
+                              <span className="w-5 h-5 rounded-full bg-primary/10 text-primary font-black flex items-center justify-center text-[10px]">3</span>
+                              Copy &amp; post
+                            </span>
+                          </div>
+                        </div>
                       )}
                     </div>
                   ) : activeFilter === 'profiles' ? (
-                    <ProfilesTable
-                      profiles={displayBookmarks}
-                      onToggleFavorite={handleToggleFavorite}
-                      onDelete={handleDeleteClick}
-                      onProfileClick={(id) => {
-                        const next = new URLSearchParams(searchParams);
-                        next.set('detailId', id);
-                        setSearchParams(next);
-                      }}
-                    />
+                    <Suspense fallback={<ProfileTableSkeleton count={8} />}>
+                      <ProfilesTable
+                        profiles={displayBookmarks}
+                        onToggleFavorite={handleToggleFavorite}
+                        onDelete={handleDeleteClick}
+                        onProfileClick={(id) => {
+                          const next = new URLSearchParams(searchParams);
+                          next.set('detailId', id);
+                          setSearchParams(next);
+                        }}
+                      />
+                    </Suspense>
+
                   ) : (
                     <div className={`
                       ${viewLayout === 'feed' ? 'max-w-2xl mx-auto flex flex-col gap-6' : 'flex gap-4 lg:gap-6 items-start'}
@@ -2515,6 +2610,7 @@ export default function DashboardPage() {
                                 onDelete={handleDeleteClick}
                                 onAssignCluster={handleAssignSingleBookmarkToCluster}
                                 onRemoveCluster={handleRemoveClusterFromBookmark}
+                                onZap={setZapBookmark}
                               />
                             </div>
                           </div>
@@ -2549,6 +2645,7 @@ export default function DashboardPage() {
                                       onDelete={handleDeleteClick}
                                       onAssignCluster={handleAssignSingleBookmarkToCluster}
                                       onRemoveCluster={handleRemoveClusterFromBookmark}
+                                      onZap={setZapBookmark}
                                     />
                                   </div>
                                 </div>
@@ -2623,7 +2720,17 @@ export default function DashboardPage() {
                       )}
                     </div>
 
-                    <button className="px-4 py-2.5 lg:px-5 lg:py-2.5 bg-gradient-to-r from-primary to-purple-500 hover:scale-105 rounded-xl text-[11px] font-black flex items-center gap-2.5 transition shadow-lg shadow-primary/25 group text-white">
+                    <button
+                      onClick={() => {
+                        if (isCreatorTier(user?.subscription)) {
+                          setActiveFilter('content-studio');
+                          setSelectedIds(new Set());
+                          setIsSelectionMode(false);
+                        } else {
+                          setIsUpgradeDialogOpen(true);
+                        }
+                      }}
+                      className="px-4 py-2.5 lg:px-5 lg:py-2.5 bg-gradient-to-r from-primary to-purple-500 hover:scale-105 rounded-xl text-[11px] font-black flex items-center gap-2.5 transition shadow-lg shadow-primary/25 group text-white">
                       <Wand2 className="w-4 h-4 group-hover:rotate-12 transition-transform" />
                       <span className="hidden xs:inline">Generate</span>
                     </button>
@@ -2715,12 +2822,14 @@ export default function DashboardPage() {
 
         {workspaceId && (
           <>
-            <AddBookmarkDialog
-              isOpen={isAddDialogOpen}
-              onClose={() => setIsAddDialogOpen(false)}
-              onSuccess={loadBookmarks}
-              workspaceId={workspaceId}
-            />
+            <Suspense fallback={null}>
+              <AddBookmarkDialog
+                isOpen={isAddDialogOpen}
+                onClose={() => setIsAddDialogOpen(false)}
+                onSuccess={loadBookmarks}
+                workspaceId={workspaceId}
+              />
+            </Suspense>
             <ConfirmDialog
               open={deleteDialogOpen}
               onOpenChange={setDeleteDialogOpen}
@@ -2748,37 +2857,48 @@ export default function DashboardPage() {
           loading={isDeletingCluster}
         />
 
-        {hasProAccess(user?.subscription) && !isCreatorTier(user?.subscription) ? (
-          <CreatorUpgradeDialog
-            isOpen={isUpgradeDialogOpen}
-            onClose={() => setIsUpgradeDialogOpen(false)}
+        <Suspense fallback={null}>
+          {hasProAccess(user?.subscription) && !isCreatorTier(user?.subscription) ? (
+            <CreatorUpgradeDialog
+              isOpen={isUpgradeDialogOpen}
+              onClose={() => setIsUpgradeDialogOpen(false)}
+            />
+          ) : (
+            <UpgradeDialog
+              isOpen={isUpgradeDialogOpen}
+              onClose={() => setIsUpgradeDialogOpen(false)}
+            />
+          )}
+
+          <SettingsDialog
+            isOpen={isSettingsOpen}
+            onClose={() => setIsSettingsOpen(false)}
+            onOpenUpgrade={() => setIsUpgradeDialogOpen(true)}
           />
-        ) : (
-          <UpgradeDialog
-            isOpen={isUpgradeDialogOpen}
-            onClose={() => setIsUpgradeDialogOpen(false)}
+
+          <ProfileDetailDialog
+            isOpen={!!detailId && isSelectedProfile}
+            onClose={handleCloseDetailDialog}
+            bookmark={selectedBookmark || null}
           />
-        )}
 
-        <SettingsDialog
-          isOpen={isSettingsOpen}
-          onClose={() => setIsSettingsOpen(false)}
-          onOpenUpgrade={() => setIsUpgradeDialogOpen(true)}
-        />
+          <PostDetailDialog
+            isOpen={!!detailId && !isSelectedProfile}
+            onClose={handleCloseDetailDialog}
+            bookmark={selectedBookmark || null}
+            workspaceId={workspaceId || undefined}
+            toneAuthors={pageToneAuthors}
+          />
 
-        <ProfileDetailDialog
-          isOpen={!!detailId && isSelectedProfile}
-          onClose={handleCloseDetailDialog}
-          bookmark={selectedBookmark || null}
-        />
-
-        <PostDetailDialog
-          isOpen={!!detailId && !isSelectedProfile}
-          onClose={handleCloseDetailDialog}
-          bookmark={selectedBookmark || null}
-          workspaceId={workspaceId || undefined}
-          toneAuthors={pageToneAuthors}
-        />
+          <ZapWizardDialog
+            isOpen={!!zapBookmark}
+            onClose={() => setZapBookmark(null)}
+            bookmark={zapBookmark}
+            workspaceId={workspaceId || undefined}
+            toneAuthors={pageToneAuthors}
+            onUpgradeRequired={() => { setZapBookmark(null); setIsUpgradeDialogOpen(true); }}
+          />
+        </Suspense>
       </div >
     </>
   );

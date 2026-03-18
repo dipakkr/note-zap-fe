@@ -357,6 +357,14 @@ export const contentStudioService = {
     return { post: mapPost(response.post) };
   },
 
+  getPublicPost: async (id: string) => {
+    const base = (import.meta.env.VITE_API_BASE_URL as string) || 'http://localhost:5002';
+    const res = await fetch(`${base}/api/content-studio/public/${id}`);
+    if (!res.ok) throw new Error('not found');
+    const data = await res.json();
+    return { post: mapPost(data.post) };
+  },
+
   getCalendarPosts: async (workspaceId: string, start: string, end: string) => {
     const params = new URLSearchParams({ start, end });
     const response = await apiClient.get<{ posts: GeneratedPost[] }>(

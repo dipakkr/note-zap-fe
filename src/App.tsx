@@ -22,6 +22,7 @@ const ContactPage = lazy(() => import('./pages/ContactPage'));
 const ProfileDetailPage = lazy(() => import('./pages/ProfileDetailPage'));
 const ToolsHubPage = lazy(() => import('./pages/ToolsHubPage'));
 const ToolDetailPage = lazy(() => import('./pages/ToolDetailPage'));
+const ZapCardPage = lazy(() => import('./pages/ZapCardPage'));
 
 // Skeleton loading component that shows header + footer + content placeholders
 // This provides a better perceived loading experience than a blank spinner
@@ -110,6 +111,7 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         />
+        <Route path="/z/:id" element={<ZapCardPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>
