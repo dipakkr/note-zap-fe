@@ -81,7 +81,7 @@ export default function LiveDemo() {
   };
 
   return (
-    <section className="py-20 bg-gradient-to-b from-white to-purple-50/30">
+    <section className="py-20 bg-gray-50/50">
       <div className="container-tight max-w-4xl mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-10">
@@ -128,7 +128,7 @@ export default function LiveDemo() {
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
             {/* Author */}
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-400 to-blue-500 flex items-center justify-center text-white font-black text-sm flex-shrink-0">
+              <div className="w-9 h-9 rounded-full bg-gray-700 flex items-center justify-center text-white font-black text-sm flex-shrink-0">
                 {post.author.name[0]}
               </div>
               <div>
@@ -182,7 +182,7 @@ export default function LiveDemo() {
 
           {/* Right: Generated post (appears after generation) */}
           {state === 'done' && (
-            <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-2xl border border-purple-100 shadow-sm p-5 animate-in fade-in slide-in-from-right-4 duration-400">
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 animate-in fade-in slide-in-from-right-4 duration-400">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <div className="w-6 h-6 rounded-md bg-purple-600 flex items-center justify-center">
@@ -224,7 +224,7 @@ export default function LiveDemo() {
 
               {/* Actions */}
               {displayedLines.length >= post.generated.split('\n').length && (
-                <div className="flex items-center gap-2 mt-4 pt-3 border-t border-purple-100 animate-in fade-in duration-300">
+                <div className="flex items-center gap-2 mt-4 pt-3 border-t border-gray-100 animate-in fade-in duration-300">
                   <button
                     onClick={handleCopy}
                     className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-600 text-white rounded-lg text-xs font-bold hover:bg-purple-700 transition"
@@ -252,7 +252,7 @@ export default function LiveDemo() {
           </p>
           <a
             href="/login"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-full text-sm font-bold shadow-lg shadow-purple-200 hover:shadow-xl hover:scale-105 active:scale-95 transition-all"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 text-white rounded-full text-sm font-bold shadow-lg shadow-gray-200 hover:bg-gray-800 hover:shadow-xl hover:scale-105 active:scale-95 transition-all"
           >
             <Zap className="w-4 h-4 fill-white/30" />
             Start for free — no credit card

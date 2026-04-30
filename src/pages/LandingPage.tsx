@@ -1,12 +1,6 @@
 import Hero from "@/components/landing/Hero";
-import LiveDemo from "@/components/landing/LiveDemo";
-import TrustedBy from "@/components/landing/TrustedBy";
 import Problem from "@/components/landing/Problem";
 import HowItWorks from "@/components/landing/HowItWorks";
-import Features from "@/components/landing/Features";
-import FeatureShowcase from "@/components/landing/FeatureShowcase";
-import UseCases from "@/components/landing/UseCases";
-import Testimonials from "@/components/landing/Testimonials";
 import Comparison from "@/components/landing/Comparison";
 import Pricing from "@/components/landing/Pricing";
 import FAQ from "@/components/landing/FAQ";
@@ -18,19 +12,13 @@ const LandingPage = () => {
   return (
     <>
       <SEO
-        title="PostZaper - Save Posts, Generate Content, Own Your Feed"
-        description="Bookmark the best posts from X & LinkedIn, then turn them into original content with AI. One-click save, AI Content Studio, collections, and calendar scheduling — all from one dashboard."
-        keywords="bookmark manager, twitter bookmarks, linkedin bookmarks, save tweets, social media organizer, content curation, chrome extension, ai content generation, content studio"
+        title="PostZaper - Bookmark Posts from X & LinkedIn. Find Them Instantly."
+        description="Save posts from X and LinkedIn with one click. Organize into collections, search instantly, and never lose a great piece of content again."
+        keywords="bookmark manager, twitter bookmarks, linkedin bookmarks, save tweets, social media organizer, content curation, chrome extension"
       />
       <Hero />
-      <LiveDemo />
-      <TrustedBy />
       <Problem />
       <HowItWorks />
-      <Features />
-      <FeatureShowcase />
-      <UseCases />
-      <Testimonials />
       <Comparison />
       <Pricing />
       <FAQ />

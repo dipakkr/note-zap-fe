@@ -2,14 +2,14 @@ import { Check, X, Minus, Zap, Crown } from "lucide-react";
 
 const Comparison = () => {
   const features = [
-    { name: "One-click save from social media", postzaper: true, browser: true, notion: false, pocket: true },
+    { name: "One-click save from X & LinkedIn", postzaper: true, browser: true, notion: false, pocket: true },
     { name: "Lightning fast search", postzaper: true, browser: false, notion: "partial", pocket: true },
     { name: "Saves full tweets & threads", postzaper: true, browser: false, notion: false, pocket: false },
     { name: "Rich previews & metadata", postzaper: true, browser: false, notion: false, pocket: true },
     { name: "Cross-device sync", postzaper: true, browser: "partial", notion: true, pocket: true },
-    { name: "AI-powered content generation", postzaper: true, browser: false, notion: false, pocket: false },
     { name: "LinkedIn profile saving", postzaper: true, browser: false, notion: false, pocket: false },
-    { name: "Bulk organization & tagging", postzaper: true, browser: false, notion: true, pocket: "partial" },
+    { name: "Collections & tagging", postzaper: true, browser: false, notion: true, pocket: "partial" },
+    { name: "Built for social media content", postzaper: true, browser: false, notion: false, pocket: false },
   ];
 
   const renderIcon = (value: boolean | string) => {
